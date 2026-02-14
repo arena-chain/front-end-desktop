@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile - Arena Chain</title>
+    <link href="../src/output.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0a0a0a] text-white font-sans antialiased h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-[#050505] border-r border-[#1a1a1a] flex flex-col justify-between">
+        <div>
+            <div class="p-8">
+                <h1 class="text-xl font-black text-[#00FF00] tracking-widest uppercase cursor-pointer" id="homeBtn">
+                    ARENA PLAYER</h1>
+            </div>
+            <nav class="px-4 space-y-1">
+                <a href="#"
+                    class="flex items-center gap-4 px-4 py-3 text-gray-500 hover:text-white hover:bg-[#111] rounded-lg transition-all group"
+                    id="dashboardLink">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                    </svg>
+                    <span class="font-medium text-sm">Play</span>
+                </a>
+                <a href="#"
+                    class="flex items-center gap-4 px-4 py-3 bg-[#1a1a1a] text-[#00FF00] rounded-lg border-l-4 border-[#00FF00] transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    <span class="font-bold text-sm">Profile</span>
+                </a>
+                <a href="#" id="leaguesLink"
+                    class="flex items-center gap-4 px-4 py-3 text-gray-500 hover:text-white hover:bg-[#111] rounded-lg transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 group-hover:text-gray-300">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-2.25c-.622 0-1.125.504-1.125 1.125V18.75m9 0V15.75m-9 3V15.75m0 0V4.5a2.25 2.25 0 0 1 2.25-2.25h2.25A2.25 2.25 0 0 1 18 4.5v11.25m-1.125-11.25h1.125m-11.25 4.5h1.125M7.5 12h1.125m-1.125 4.5h1.125" />
+                    </svg>
+                    <span class="font-medium text-sm">Leagues</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4">
+            <button id="logoutBtn"
+                class="flex items-center gap-4 px-4 py-3 text-red-500 hover:text-red-400 hover:bg-[#1a0505] rounded-lg transition-all w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                </svg>
+                <span class="font-bold text-sm">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-[#0a0a0a] p-8">
+        <div class="space-y-6">
+            <!-- Tabs Navigation -->
+            <div class="bg-[#1a1a1a] border border-white/5 rounded-xl overflow-hidden">
+                <div class="flex border-b border-white/5" id="tabsContainer">
+                    <button data-tab="resume"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider transition-all relative text-[#00FF00] bg-[#00FF00]/5">
+                        Résumé
+                        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00FF00]"></div>
+                    </button>
+                    <button data-tab="matches"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider transition-all relative text-gray-500 hover:text-white hover:bg-white/5">
+                        Historique de match
+                    </button>
+                    <button data-tab="stats"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider transition-all relative text-gray-500 hover:text-white hover:bg-white/5">
+                        Statistiques
+                    </button>
+                    <button data-tab="leagues"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider transition-all relative text-gray-500 hover:text-white hover:bg-white/5">
+                        Ligues
+                    </button>
+                    <button data-tab="tournaments"
+                        class="tab-btn px-6 py-4 text-sm font-bold uppercase tracking-wider transition-all relative text-gray-500 hover:text-white hover:bg-white/5">
+                        Tournois
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid grid-cols-12 gap-6">
+                <!-- Left Column - Profile Card -->
+                <div class="col-span-12 md:col-span-4 lg:col-span-3">
+                    <div class="bg-[#1a1a1a] border border-white/5 rounded-2xl p-6 sticky top-6">
+                        <!-- Avatar -->
+                        <div class="relative mb-6 group flex justify-center">
+                            <div
+                                class="w-32 h-32 rounded-full bg-[#2a2a2a] border-4 border-[#1a1a1a] flex items-center justify-center overflow-hidden">
+                                <img id="profileAvatar" src="" class="w-full h-full object-cover hidden" alt="Avatar" />
+                                <svg id="defaultAvatar" xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+                                    viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="8" r="5" />
+                                    <path d="M20 21a8 8 0 0 0-16 0" />
+                                </svg>
+                            </div>
+                            <div id="editAvatarOverlay"
+                                class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer w-32 h-32 mx-auto hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- View Mode Info -->
+                        <div id="viewModeInfo">
+                            <h1 id="profileNickname" class="text-xl font-bold text-white mb-4 text-center">-</h1>
+                            <p id="profileRegion" class="text-gray-500 text-sm mb-4 text-center">-</p>
+                        </div>
+
+                        <!-- Edit Mode Inputs -->
+                        <div id="editModeInputs" class="hidden">
+                            <input type="text" id="editNickname"
+                                class="w-full text-xl font-bold text-white text-center bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:border-[#00FF00]"
+                                placeholder="Nickname" />
+
+                            <select id="editRegion"
+                                class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-[#00FF00] mb-4">
+                                <!-- Options populated by JS -->
+                            </select>
+
+                            <!-- Avatar Settings -->
+                            <div class="mb-6 space-y-4">
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
+                                        Presets d'Avatars
+                                    </label>
+                                    <div class="flex flex-wrap gap-2 justify-center" id="avatarPresets">
+                                        <!-- Presets populated by JS -->
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                                        Importer une Image
+                                    </label>
+                                    <div class="flex gap-2">
+                                        <input type="file" id="avatarFileInput" accept="image/*" class="hidden" />
+                                        <button id="importAvatarBtn"
+                                            class="flex-1 bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-white text-xs hover:bg-[#2a2a2a] transition-all flex items-center justify-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="#00FF00" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                <polyline points="17 8 12 3 7 8" />
+                                                <line x1="12" y1="3" x2="12" y2="15" />
+                                            </svg>
+                                            Choisir un fichier
+                                        </button>
+                                        <button id="generateAvatarBtn"
+                                            class="bg-[#00FF00]/10 hover:bg-[#00FF00]/20 text-[#00FF00] p-2 rounded-lg border border-[#00FF00]/20 transition-all"
+                                            title="Générer aléatoirement">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                                                <path d="M21 3v5h-5" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-2 mb-6">
+                            <div id="viewModeButtons" class="flex gap-2 w-full">
+                                <button id="startEditBtn"
+                                    class="flex-1 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white font-bold py-2.5 px-4 rounded-lg uppercase text-xs tracking-wider transition-all border border-white/10 flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                    </svg>
+                                    Editer
+                                </button>
+                                <button
+                                    class="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white font-bold py-2.5 px-4 rounded-lg transition-all border border-white/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="18" cy="5" r="3" />
+                                        <circle cx="6" cy="12" r="3" />
+                                        <circle cx="18" cy="19" r="3" />
+                                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="editModeButtons" class="flex gap-2 w-full hidden">
+                                <button id="saveProfileBtn"
+                                    class="flex-1 bg-[#00FF00] hover:bg-[#00CC00] text-black font-bold py-2.5 px-4 rounded-lg uppercase text-xs tracking-wider transition-all">
+                                    Sauvegarder
+                                </button>
+                                <button id="cancelEditBtn"
+                                    class="flex-1 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white font-bold py-2.5 px-4 rounded-lg uppercase text-xs tracking-wider transition-all border border-white/10">
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Annonces Section -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-[#00FF00] mb-3">Annonces</h3>
+                            <div class="bg-[#1a1a1a] rounded-lg p-4 border border-white/5">
+                                <p class="text-gray-500 text-xs text-center">Aucune annonce</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Stats & Activity -->
+                <div class="col-span-12 md:col-span-8 lg:col-span-9 space-y-6">
+                    <div id="tabContent-resume">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                            <!-- Matchs -->
+                            <div
+                                class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6 hover:border-[#00FF00]/20 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-[#00FF00]/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="#00FF00" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                            <path d="M4 22h16" />
+                                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Matchs</p>
+                                        <p class="text-3xl font-black text-white" id="statsMatches">0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Victoires -->
+                            <div
+                                class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6 hover:border-green-500/20 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <circle cx="12" cy="12" r="6" />
+                                            <circle cx="12" cy="12" r="2" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-gray-500">Victoires
+                                        </p>
+                                        <p class="text-3xl font-black text-white" id="statsWins">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6">
+                            <h2 class="text-lg font-black text-white uppercase tracking-tight mb-6">Activité Récente
+                            </h2>
+                            <div class="text-center py-12">
+                                <p class="text-gray-500 text-sm">Aucune activité récente</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tabContent-matches" class="hidden">
+                        <div class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6">
+                            <h2 class="text-lg font-black text-white uppercase tracking-tight mb-6">Historique de Match
+                            </h2>
+                            <div class="text-center py-12">
+                                <p class="text-gray-500 text-sm">Aucun match joué</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tabContent-stats" class="hidden">
+                        <div class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6">
+                            <h2 class="text-lg font-black text-white uppercase tracking-tight mb-6">Statistiques</h2>
+                            <div class="text-center py-12">
+                                <p class="text-gray-500 text-sm">Aucune statistique disponible</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tabContent-leagues" class="hidden">
+                        <div class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6">
+                            <h2 class="text-lg font-black text-white uppercase tracking-tight mb-6">Ligues</h2>
+                            <div class="text-center py-12">
+                                <p class="text-gray-500 text-sm">Aucune ligue rejointe</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tabContent-tournaments" class="hidden">
+                        <div class="bg-[#1a1a1a] border border-white/5 rounded-xl p-6">
+                            <h2 class="text-lg font-black text-white uppercase tracking-tight mb-6">Tournois</h2>
+                            <div class="text-center py-12">
+                                <p class="text-gray-500 text-sm">Aucun tournoi rejoint</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="profile-renderer.js"></script>
+</body>
+
+</html>
