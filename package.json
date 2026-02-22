@@ -14,7 +14,6 @@
   "license": "ISC",
   "devDependencies": {
     "autoprefixer": "^10.4.24",
-    "electron": "^40.2.1",
     "electron-reload": "^2.0.0-alpha.1",
     "electron-reloader": "^1.2.3",
     "nodemon": "^3.1.11",
@@ -22,6 +21,7 @@
     "tailwindcss": "^4.1.18"
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
     "qrcode": "^1.5.4"
   }
 }

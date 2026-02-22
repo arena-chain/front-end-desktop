@@ -5,15 +5,19 @@ let win;
 
 function createWindow() {
     win = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 1600,
+        height: 1000,
+        minWidth: 1440,
+        minHeight: 900,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false // For simple renderer require usage
-        }
+            contextIsolation: false
+        },
+        backgroundColor: '#0a0b0f',
+        titleBarStyle: 'hiddenInset',
+        frame: true
     });
 
-    // Load Login by default
     win.loadFile(path.join(__dirname, "auth/login/index.html"));
 }
 
