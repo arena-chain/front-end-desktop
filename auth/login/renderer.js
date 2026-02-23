@@ -1,10 +1,10 @@
 const { ipcRenderer } = require('electron');
 const QRCode = require('qrcode');
+const { login, getPrimaryRole } = require('../../shared/api');
 
 // Generate QR Code
 const generateQRCode = async () => {
     const qrImage = document.getElementById('qr-code');
-    // In a real app, this would be a session ID or a socket connection ID
     const loginSessionId = `arena-login-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     try {
@@ -17,33 +17,77 @@ const generateQRCode = async () => {
             }
         });
         qrImage.src = url;
-        console.log('QR Code generated for session:', loginSessionId);
     } catch (err) {
         console.error('Error generating QR code:', err);
-        // Fallback or alert if generation fails
         qrImage.alt = "Failed to load QR Code";
     }
 };
 
-// Initialize
 generateQRCode();
 
-document.getElementById('loginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    // In a real app, validation and auth would happen here
+const loginForm = document.getElementById('loginForm');
+const submitBtn = loginForm.querySelector('button[type="submit"]');
+const btnOriginalText = submitBtn.innerHTML;
 
-    // For demo purposes, check specific emails to route to different dashboards
-    let role = 'player'; // Default
-    // Check specific credentials for Admin
-    if (email === 'admin@gmail.com' && document.getElementById('password').value === '123456') {
-        role = 'admin';
+function showError(message) {
+    let errEl = document.getElementById('login-error');
+    if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.id = 'login-error';
+        errEl.className = 'text-red-500 text-xs font-semibold mt-2 text-center';
+        loginForm.appendChild(errEl);
     }
-    // Demo fallbacks (keep for testing other roles easily)
-    else if (email.includes('referee')) role = 'referee';
-    else if (email.includes('manager')) role = 'team_manager';
+    errEl.textContent = message;
+    errEl.style.display = 'block';
+}
 
-    ipcRenderer.send('login-success', { role });
+function clearError() {
+    const errEl = document.getElementById('login-error');
+    if (errEl) errEl.style.display = 'none';
+}
+
+function setLoading(loading) {
+    submitBtn.disabled = loading;
+    if (loading) {
+        submitBtn.innerHTML = `
+            <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Signing in...`;
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    } else {
+        submitBtn.innerHTML = btnOriginalText;
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+    }
+}
+
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+        showError('Please fill in all fields.');
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        const data = await login(email, password);
+        const role = getPrimaryRole(data.user?.roles);
+        ipcRenderer.send('login-success', { role });
+    } catch (err) {
+        const msg = err.status === 401
+            ? 'Invalid email or password.'
+            : err.message || 'Something went wrong. Please try again.';
+        showError(msg);
+    } finally {
+        setLoading(false);
+    }
 });
 
 document.getElementById('goToRegister').addEventListener('click', (e) => {
