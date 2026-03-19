@@ -1,6 +1,36 @@
 const { ipcRenderer } = require('electron');
+const { requireAuth, getUser, logout } = require('../shared/api');
 
-// Enhanced Mouse Tracking for Parallax Effect
+// Auth gate: redirect to login if no token
+if (!requireAuth()) {
+    throw new Error('Not authenticated');
+}
+
+// Populate user info from stored profile
+const user = getUser();
+if (user) {
+    const nickname = user.nickname || 'Player';
+    const encodedName = encodeURIComponent(nickname);
+
+    const sidebarAvatar = document.getElementById('sidebar-avatar');
+    const sidebarNickname = document.getElementById('sidebar-nickname');
+    if (sidebarAvatar) sidebarAvatar.src = `https://ui-avatars.com/api/?name=${encodedName}&background=00ff87&color=0a0b0f&bold=true`;
+    if (sidebarNickname) sidebarNickname.textContent = nickname;
+
+    // Valorant leaderboard entry
+    const lbAvatar = document.querySelector('.leaderboard-avatar');
+    const lbNickname = document.querySelector('.leaderboard-nickname');
+    if (lbAvatar) lbAvatar.src = `https://ui-avatars.com/api/?name=${encodedName}&background=00ff87&color=0a0b0f`;
+    if (lbNickname) lbNickname.textContent = `${nickname} (You)`;
+
+    // LoL leaderboard entry
+    const lbAvatarLol = document.querySelector('.leaderboard-avatar-lol');
+    const lbNicknameLol = document.querySelector('.leaderboard-nickname-lol');
+    if (lbAvatarLol) lbAvatarLol.src = `https://ui-avatars.com/api/?name=${encodedName}&background=0bc6e3&color=0a0b0f`;
+    if (lbNicknameLol) lbNicknameLol.textContent = `${nickname} (You)`;
+}
+
+// Parallax effect on hover cards
 document.addEventListener('mousemove', (e) => {
     const cards = document.querySelectorAll('.glass-panel-hover');
     cards.forEach(card => {
@@ -39,11 +69,11 @@ function animateNumber(element, target, duration = 1000) {
     }, 16);
 }
 
-// Handle logout button click
+// Handle logout
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        ipcRenderer.send('navigate-to', 'login');
+        logout();
     });
 }
 
