@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 
-const BASE_URL = localStorage.getItem('arena_base_url') || 'http://localhost:3000';
+const BASE_URL = localStorage.getItem('arena_base_url') || 'http://localhost:3000/api';
 
 const TOKEN_KEYS = {
     access: 'arena_access_token',
