@@ -1,24 +1,33 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, nativeImage } = require("electron");
 const path = require("path");
 
 let win;
 
 function createWindow() {
+    const icon = nativeImage.createFromPath(path.join(__dirname, 'assets/logo.png'));
+    
     win = new BrowserWindow({
-        width: 1600,
-        height: 1000,
-        minWidth: 1440,
-        minHeight: 900,
+        width: 1280,
+        height: 820,
+        minWidth: 900,
+        minHeight: 620,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
         },
         backgroundColor: '#0a0b0f',
         titleBarStyle: 'hiddenInset',
-        frame: true
+        frame: true,
+        icon: icon
     });
 
-    win.loadFile(path.join(__dirname, "auth/login/index.html"));
+    if (process.platform === 'darwin') {
+        app.dock.setIcon(icon);
+    }
+
+    win.loadFile(path.join(__dirname, "src/auth/login/index.html"));
+    win.maximize();
+    win.webContents.openDevTools(); // Remove this line when done debugging
 }
 
 app.whenReady().then(() => {
@@ -39,16 +48,16 @@ ipcMain.on('navigate-to', (event, page) => {
 
     switch (page) {
         case 'login':
-            filePath = 'auth/login/index.html';
+            filePath = 'src/auth/login/index.html';
             break;
         case 'register':
-            filePath = 'auth/register/index.html';
+            filePath = 'src/auth/register/index.html';
             break;
         case 'admin-dashboard':
-            filePath = 'admin/dashboard.html';
+            filePath = 'src/admin/dashboard.html';
             break;
         case 'admin-tournaments':
-            filePath = 'admin/tournaments.html';
+            filePath = 'src/admin/tournaments.html';
             break;
         default:
             return; // Invalid page
@@ -62,19 +71,19 @@ ipcMain.on('login-success', (event, { role }) => {
 
     switch (role) {
         case 'player':
-            filePath = 'player/dashboard.html';
+            filePath = 'src/player/dashboard/dashboard.html';
             break;
         case 'admin':
-            filePath = 'admin/dashboard.html';
+            filePath = 'src/admin/dashboard.html';
             break;
         case 'referee':
-            filePath = 'referee/dashboard.html';
+            filePath = 'src/referee/dashboard.html';
             break;
         case 'team_manager':
-            filePath = 'team_manager/dashboard.html';
+            filePath = 'src/team_manager/dashboard.html';
             break;
         default:
-            filePath = 'player/dashboard.html'; // Default fallback
+            filePath = 'src/player/dashboard.html'; // Default fallback
     }
 
     win.loadFile(path.join(__dirname, filePath));

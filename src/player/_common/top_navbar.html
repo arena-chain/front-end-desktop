@@ -1,0 +1,108 @@
+<!-- Top Navigation Bar (Faceit Style) -->
+<style>
+    .top-navbar-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .top-navbar-scrollbar-hide::-webkit-scrollbar { display: none; width: 0; height: 0; }
+</style>
+<header class="bg-[#12141c] border-b border-white/5 w-full relative z-40">
+    <div class="px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        <!-- Left: Main Tabs -->
+        <nav class="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto whitespace-nowrap top-navbar-scrollbar-hide" aria-label="Main sections">
+            <a id="nav-page-events" href="../events/events.html"
+                class="px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-xl transition-all text-gray-500 hover:text-white">
+                EVENTS
+            </a>
+            <a id="nav-page-market" href="../market/market.html"
+                class="px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-xl transition-all text-gray-500 hover:text-white">
+                MARKET
+            </a>
+        </nav>
+
+        <!-- Right: Actions -->
+        <div class="w-full lg:w-auto flex items-center justify-end gap-2 sm:gap-3">
+            <div class="relative">
+                <input type="text" placeholder="Search..." class="bg-[#1a1c26] text-white text-sm placeholder-gray-600 px-4 py-2 pl-10 rounded-lg outline-none border border-white/5 focus:border-[#00ff87] transition-all w-32 sm:w-44 md:w-56 lg:w-64">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+
+            <button type="button" id="btn-upgrade"
+                class="px-4 py-2 bg-[#ff7800] hover:bg-[#e66d00] text-white font-bold text-sm rounded-lg transition-all neon-orange-glow uppercase tracking-wide whitespace-nowrap shrink-0">
+                UPGRADE
+            </button>
+
+            <div class="relative">
+                <button type="button" id="notif-toggle" aria-expanded="false" aria-haspopup="true"
+                    class="w-10 h-10 rounded-lg bg-[#1a1c26] hover:bg-white/10 flex items-center justify-center transition-all relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span id="notif-badge" class="absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1 bg-[#ff4654] rounded-full text-[10px] font-bold flex items-center justify-center">3</span>
+                </button>
+                <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-[min(100vw-2rem,20rem)] rounded-xl border border-white/10 bg-[#161822] shadow-2xl shadow-black/50 py-2 z-[60]">
+                    <p class="px-3 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Notifications</p>
+                    <button type="button" class="notif-item w-full text-left px-3 py-2.5 hover:bg-white/5 transition-colors border-l-2 border-[#00ff87]">
+                        <p class="text-sm font-semibold text-white">Match found</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Your Valorant queue popped — accept in 2:00</p>
+                        <p class="text-[10px] text-gray-600 mt-1">Just now</p>
+                    </button>
+                    <button type="button" class="notif-item w-full text-left px-3 py-2.5 hover:bg-white/5 transition-colors border-l-2 border-transparent">
+                        <p class="text-sm font-semibold text-white">Friend request</p>
+                        <p class="text-xs text-gray-500 mt-0.5">NightCrawler wants to add you</p>
+                        <p class="text-[10px] text-gray-600 mt-1">12 min ago</p>
+                    </button>
+                    <button type="button" class="notif-item w-full text-left px-3 py-2.5 hover:bg-white/5 transition-colors border-l-2 border-transparent">
+                        <p class="text-sm font-semibold text-white">Season reward</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Claim your Gold tier banner</p>
+                        <p class="text-[10px] text-gray-600 mt-1">1 hr ago</p>
+                    </button>
+                    <div class="px-3 pt-2 border-t border-white/5 mt-1">
+                        <button type="button" id="notif-mark-read" class="text-xs font-semibold text-[#00ff87] hover:underline">Mark all read</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="w-10 h-10 rounded-lg bg-[#1a1c26] hover:bg-white/10 flex items-center justify-center transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Upgrade status modal -->
+<div id="upgrade-modal" class="fixed inset-0 z-[10000] hidden p-4 bg-black/70 backdrop-blur-sm overflow-y-auto top-navbar-scrollbar-hide">
+    <div class="min-h-full flex items-center justify-center">
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#12141c] shadow-2xl p-6 relative my-8">
+        <button type="button" id="upgrade-modal-close" class="absolute top-4 right-4 text-gray-500 hover:text-white p-1" aria-label="Close">✕</button>
+        <h2 class="text-xl font-black text-white mb-1">Upgrade status</h2>
+        <p class="text-sm text-gray-400 mb-6">Boost your profile tier for queue priority, custom badge, and extra mission slots.</p>
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4 mb-4">
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Current</p>
+            <div class="flex items-center gap-3">
+                <span id="upgrade-current-badge" class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a0a00;">GOLD</span>
+                <span class="text-sm text-gray-400">Standard queues · 2 mission slots</span>
+            </div>
+        </div>
+        <div class="rounded-xl border border-[#00ff87]/30 bg-[#00ff87]/5 p-4 mb-6">
+            <p class="text-[10px] font-bold text-[#00ff87] uppercase tracking-wider mb-2">Arena Plus</p>
+            <ul class="text-sm text-gray-300 space-y-1.5 list-disc list-inside">
+                <li>Priority matchmaking</li>
+                <li>Animated nameplate &amp; border</li>
+                <li>+1 mission slot &amp; weekly bonus XP</li>
+            </ul>
+            <p class="text-xs text-gray-500 mt-3">Demo: clicking confirm updates your displayed tier locally.</p>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" id="upgrade-confirm" class="flex-1 py-3 rounded-xl bg-[#00ff87] text-[#0a0b0f] font-black text-sm uppercase tracking-wide hover:bg-[#00e67a] transition-colors">
+                Confirm upgrade
+            </button>
+            <button type="button" id="upgrade-cancel" class="px-5 py-3 rounded-xl border border-white/15 text-gray-300 font-semibold text-sm hover:bg-white/5 transition-colors">
+                Later
+            </button>
+        </div>
+    </div>
+    </div>
+</div>
