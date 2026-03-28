@@ -83,7 +83,7 @@ ipcMain.on('login-success', (event, { role }) => {
             filePath = 'src/team_manager/dashboard.html';
             break;
         default:
-            filePath = 'src/player/dashboard.html'; // Default fallback
+            filePath = 'src/player/dashboard/dashboard.html'; // Default fallback
     }
 
     win.loadFile(path.join(__dirname, filePath));
