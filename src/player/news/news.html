@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0b0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 135, 0.3);
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+
+        .sidebar-collapsible {
+            width: 104px;
+            position: relative;
+            z-index: 20;
+            overflow: visible !important;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-collapsible:hover {
+            width: 280px;
+        }
+
+        .sidebar-collapsible .sidebar-brand-text,
+        .sidebar-collapsible .sidebar-section-title,
+        .sidebar-collapsible .sidebar-profile-text {
+            display: none;
+        }
+
+        .sidebar-collapsible:hover .sidebar-brand-text,
+        .sidebar-collapsible:hover .sidebar-section-title,
+        .sidebar-collapsible:hover .sidebar-profile-text {
+            display: block;
+        }
+
+        .sidebar-scroll-area {
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .sidebar-collapsible .sidebar-menu-btn,
+        .sidebar-collapsible .game-select-btn {
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            width: 52px;
+            height: 44px;
+            margin-left: auto;
+            margin-right: auto;
+            overflow: visible;
+            z-index: 30;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            transition: all 0.22s ease;
+        }
+
+        .sidebar-collapsible:hover .sidebar-menu-btn,
+        .sidebar-collapsible:hover .game-select-btn {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }
+
+        .sidebar-collapsible .sidebar-label {
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            position: absolute;
+            left: 50px;
+        }
+
+        .sidebar-collapsible:hover .sidebar-label {
+            opacity: 1;
+        }
+
+        .news-card {
+            transition: all 0.3s ease;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(0, 255, 135, 0.3);
+        }
+
+        .news-card img {
+            transition: transform 0.5s ease;
+        }
+
+        .news-card:hover img {
+            transform: scale(1.05);
+        }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- News Content -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-8">Latest Updates</h1>
+
+                <!-- Featured Highlight (Hero News) -->
+                <div class="w-full h-80 rounded-3xl overflow-hidden relative cursor-pointer group mb-10">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#0a0b0f] via-[#12141c]/80 to-transparent z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#00ff87]/20 to-transparent z-10"></div>
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Featured News">
+                    
+                    <div class="absolute inset-0 z-20 flex flex-col justify-end p-10">
+                        <span class="px-3 py-1 bg-[#00ff87]/20 text-[#00ff87] text-xs font-bold rounded-lg border border-[#00ff87]/30 mb-4 inline-block w-max">MAJOR UPDATE</span>
+                        <h2 class="text-5xl font-black text-white mb-3 max-w-2xl leading-tight">Arena Chain Global Tournament V2</h2>
+                        <p class="text-gray-300 max-w-xl text-lg mb-6">The biggest update to our competitive infrastructure is here. Automated brackets, instant crypto payouts, and advanced anti-cheat integration.</p>
+                        <button class="px-8 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl hover:bg-[#00e67a] transition-all w-max shadow-[0_0_20px_rgba(0,255,135,0.4)] hover:shadow-[0_0_30px_rgba(0,255,135,0.6)]">READ FULL ARTICLE</button>
+                    </div>
+                </div>
+
+                <!-- News Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    
+                    <!-- News Card 1 -->
+                    <div class="news-card glass-panel rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full bg-[#12141c]">
+                        <div class="h-48 overflow-hidden relative">
+                            <span class="absolute top-4 left-4 z-10 px-2 py-1 bg-[#0bc6e3]/90 text-white text-[10px] font-bold rounded uppercase">Patch Notes</span>
+                            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop" class="w-full h-full object-cover" alt="Patch">
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="text-xl font-bold text-white mb-2 leading-tight">Client Update v2.4.0: Performance Enhancements</h3>
+                            <p class="text-sm text-gray-400 mb-4 flex-1">We've optimized the Electron renderer process, reducing memory footprint by 30% and significantly improving load times for game streams.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500 font-semibold mt-auto pt-4 border-t border-white/5">
+                                <span>2 HOURS AGO</span>
+                                <span>5 MIN READ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Card 2 -->
+                    <div class="news-card glass-panel rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full bg-[#12141c]">
+                        <div class="h-48 overflow-hidden relative">
+                            <span class="absolute top-4 left-4 z-10 px-2 py-1 bg-[#ff4654]/90 text-white text-[10px] font-bold rounded uppercase">Esports</span>
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover filter grayscale" alt="Tournament">
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="text-xl font-bold text-white mb-2 leading-tight">Sentinels Secure Victory in VCT Masters</h3>
+                            <p class="text-sm text-gray-400 mb-4 flex-1">An incredible 3-1 finish against Fnatic solidifies their spot in Champions. Full match breakdown and stats inside.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500 font-semibold mt-auto pt-4 border-t border-white/5">
+                                <span>1 DAY AGO</span>
+                                <span>8 MIN READ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Card 3 -->
+                    <div class="news-card glass-panel rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full bg-[#12141c]">
+                        <div class="h-48 overflow-hidden relative">
+                            <span class="absolute top-4 left-4 z-10 px-2 py-1 bg-[#a855f7]/90 text-white text-[10px] font-bold rounded uppercase">Community</span>
+                            <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover" alt="Community">
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="text-xl font-bold text-white mb-2 leading-tight">Creator Spotlight: TenZify's Radiant Journey</h3>
+                            <p class="text-sm text-gray-400 mb-4 flex-1">We sit down with one of the fastest growing variety streamers on Arena Chain to discuss mechanics, mentality, and the perfect sens.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500 font-semibold mt-auto pt-4 border-t border-white/5">
+                                <span>2 DAYS AGO</span>
+                                <span>12 MIN READ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Navigation Script -->
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // Go back to dashboard when clicking PLAY
+        const navPlay = document.getElementById('nav-play');
+        const navNews = document.getElementById('nav-news');
+        const navRecentMatches = document.getElementById('nav-recent-matches');
+        
+        if (navPlay && navNews) {
+            // Swap active states since we are on the News page
+            navPlay.classList.remove('active', 'text-white');
+            navPlay.classList.add('text-gray-400');
+            navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
+            
+            navNews.classList.add('active');
+            navNews.classList.remove('text-gray-400');
+            navNews.classList.add('text-[#00ff87]');
+
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            const { logout } = require('../../../shared/api');
+            if(logout) logout();
+        });
+    </script>
+</body>
+</html>

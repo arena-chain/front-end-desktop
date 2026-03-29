@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA — Matchmaking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .mm-section {
+            display: none;
+        }
+
+        .mm-section.is-visible {
+            display: block;
+        }
+
+        .mm-step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.15);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .mm-step-dot.is-active {
+            background: #00ff87;
+            transform: scale(1.25);
+            box-shadow: 0 0 12px rgba(0, 255, 135, 0.45);
+        }
+
+        .mm-step-dot.is-done {
+            background: rgba(0, 255, 135, 0.45);
+        }
+
+        @keyframes mm-pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        .mm-queue-pulse {
+            animation: mm-pulse 1.4s ease-in-out infinite;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden px-5 py-6 lg:px-10 lg:py-8 scrollbar-hide"
+                style="scrollbar-width: none;">
+                <div class="max-w-4xl mx-auto">
+                    <header class="mb-8">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00ff87]/80 mb-2">Competitive</p>
+                        <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight mb-2">Matchmaking</h1>
+                        <p class="text-gray-400 text-sm lg:text-base max-w-2xl">Queue for a match right now, or schedule
+                            one for when your squad is ready. Pick a path below to continue.</p>
+                    </header>
+
+                    <!-- Root: two paths -->
+                    <section id="mm-root" class="mm-section is-visible">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
+                            <button type="button" id="mm-choose-now"
+                                class="glass-panel rounded-3xl p-8 text-left transition-all hover:border-[#00ff87]/35 hover:shadow-[0_0_40px_rgba(0,255,135,0.12)] group border border-white/5">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/25 flex items-center justify-center mb-6 group-hover:bg-[#00ff87]/20 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-[#00ff87]" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-black text-white mb-2">Play now</h2>
+                                <p class="text-sm text-gray-400 leading-relaxed mb-4">Enter the queue immediately. Choose
+                                    your game and mode, then we’ll find opponents near your skill.</p>
+                                <span
+                                    class="inline-flex items-center gap-2 text-sm font-bold text-[#00ff87]">Start queue
+                                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg></span>
+                            </button>
+                            <button type="button" id="mm-choose-schedule"
+                                class="glass-panel rounded-3xl p-8 text-left transition-all hover:border-[#22d3ee]/35 hover:shadow-[0_0_40px_rgba(34,211,238,0.1)] group border border-white/5">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-[#22d3ee]/10 border border-[#22d3ee]/25 flex items-center justify-center mb-6 group-hover:bg-[#22d3ee]/15 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-[#22d3ee]" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-black text-white mb-2">Schedule a match</h2>
+                                <p class="text-sm text-gray-400 leading-relaxed mb-4">Lock in a date and time, game, and
+                                    format. We’ll remind you and reserve a lobby when it’s go-time.</p>
+                                <span
+                                    class="inline-flex items-center gap-2 text-sm font-bold text-[#22d3ee]">Plan match
+                                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg></span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Play now branch -->
+                    <section id="mm-now-flow" class="mm-section">
+                        <div class="flex flex-wrap items-center gap-3 mb-6">
+                            <button type="button" class="mm-back-root text-sm font-semibold text-gray-500 hover:text-white flex items-center gap-2 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                                All options
+                            </button>
+                            <span class="text-white/20">|</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-[#00ff87]">Play now</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-8" id="mm-now-steps" aria-hidden="true">
+                            <span class="mm-step-dot is-active" data-now-dot="0"></span>
+                            <span class="w-6 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-now-dot="1"></span>
+                            <span class="w-6 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-now-dot="2"></span>
+                        </div>
+
+                        <div id="mm-now-step-0" class="mm-now-pane">
+                            <h3 class="text-lg font-bold text-white mb-2">1 · Choose game</h3>
+                            <p class="text-sm text-gray-500 mb-6">Which title are you queuing for?</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <button type="button" class="mm-pick-game-now glass-panel rounded-2xl p-6 text-left border border-white/5 hover:border-[#ff4654]/40 transition-all" data-game="valorant">
+                                    <div class="w-12 h-12 rounded-xl bg-[#ff4654] flex items-center justify-center text-lg font-black mb-3">V</div>
+                                    <p class="font-bold text-white">Valorant</p>
+                                    <p class="text-xs text-gray-500 mt-1">Tactical FPS · Arena ladder</p>
+                                </button>
+                                <button type="button" class="mm-pick-game-now glass-panel rounded-2xl p-6 text-left border border-white/5 hover:border-[#0bc6e3]/40 transition-all" data-game="lol">
+                                    <div class="w-12 h-12 rounded-xl bg-[#0bc6e3] flex items-center justify-center text-sm font-black mb-3">LoL</div>
+                                    <p class="font-bold text-white">League of Legends</p>
+                                    <p class="text-xs text-gray-500 mt-1">MOBA · Ranked &amp; flex</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="mm-now-step-1" class="mm-now-pane hidden">
+                            <h3 class="text-lg font-bold text-white mb-2">2 · Queue settings</h3>
+                            <p class="text-sm text-gray-500 mb-6">Mode and party size for <span id="mm-now-game-label" class="text-gray-300 font-semibold">—</span></p>
+                            <div class="space-y-3 max-w-md">
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">Mode</label>
+                                <select id="mm-now-mode"
+                                    class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#00ff87]/40">
+                                    <option value="ranked">Ranked</option>
+                                    <option value="unrated">Unrated</option>
+                                    <option value="swift">Swift play</option>
+                                </select>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 pt-2">Party</label>
+                                <select id="mm-now-party"
+                                    class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#00ff87]/40">
+                                    <option value="solo">Solo</option>
+                                    <option value="duo">Duo</option>
+                                    <option value="flex">Flex (3–5)</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mt-8">
+                                <button type="button" id="mm-now-back-1" class="px-5 py-2.5 rounded-xl border border-white/15 text-sm font-bold text-gray-300 hover:bg-white/5 transition-colors">Back</button>
+                                <button type="button" id="mm-now-to-queue" class="px-6 py-2.5 rounded-xl bg-[#00ff87] text-[#0a0b0f] text-sm font-black uppercase tracking-wide hover:bg-[#00e67a] transition-colors">Find match</button>
+                            </div>
+                        </div>
+
+                        <div id="mm-now-step-2" class="mm-now-pane hidden">
+                            <div class="glass-panel rounded-3xl p-10 text-center border border-[#00ff87]/20 max-w-lg mx-auto">
+                                <div class="mm-queue-pulse w-16 h-16 rounded-full bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-8 h-8 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-black text-white mb-2">Searching for match</h3>
+                                <p id="mm-now-queue-summary" class="text-sm text-gray-400 mb-2">—</p>
+                                <p class="text-xs text-gray-600 mb-8">Estimated wait · demo · connect your matchmaking API</p>
+                                <button type="button" id="mm-now-cancel-queue" class="px-6 py-2.5 rounded-xl border-2 border-[#ff4654]/60 text-[#ff4654] text-sm font-bold hover:bg-[#ff4654]/10 transition-colors uppercase tracking-wide">Cancel queue</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Schedule branch -->
+                    <section id="mm-schedule-flow" class="mm-section">
+                        <div class="flex flex-wrap items-center gap-3 mb-6">
+                            <button type="button" class="mm-back-root text-sm font-semibold text-gray-500 hover:text-white flex items-center gap-2 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                                All options
+                            </button>
+                            <span class="text-white/20">|</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-[#22d3ee]">Schedule</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-8" id="mm-schedule-steps" aria-hidden="true">
+                            <span class="mm-step-dot is-active" data-sched-dot="0"></span>
+                            <span class="w-5 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-sched-dot="1"></span>
+                            <span class="w-5 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-sched-dot="2"></span>
+                            <span class="w-5 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-sched-dot="3"></span>
+                            <span class="w-5 h-px bg-white/10"></span>
+                            <span class="mm-step-dot" data-sched-dot="4"></span>
+                        </div>
+
+                        <div id="mm-sched-step-0" class="mm-sched-pane">
+                            <h3 class="text-lg font-bold text-white mb-2">1 · Game</h3>
+                            <p class="text-sm text-gray-500 mb-6">What are you scheduling?</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <button type="button" class="mm-pick-game-sched glass-panel rounded-2xl p-6 text-left border border-white/5 hover:border-[#ff4654]/40 transition-all" data-game="valorant">
+                                    <div class="w-12 h-12 rounded-xl bg-[#ff4654] flex items-center justify-center text-lg font-black mb-3">V</div>
+                                    <p class="font-bold text-white">Valorant</p>
+                                </button>
+                                <button type="button" class="mm-pick-game-sched glass-panel rounded-2xl p-6 text-left border border-white/5 hover:border-[#0bc6e3]/40 transition-all" data-game="lol">
+                                    <div class="w-12 h-12 rounded-xl bg-[#0bc6e3] flex items-center justify-center text-sm font-black mb-3">LoL</div>
+                                    <p class="font-bold text-white">League of Legends</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="mm-sched-step-1" class="mm-sched-pane hidden">
+                            <h3 class="text-lg font-bold text-white mb-2">2 · Format</h3>
+                            <p class="text-sm text-gray-500 mb-6">Match type and team size</p>
+                            <div class="space-y-3 max-w-md">
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">Match type</label>
+                                <select id="mm-sched-type"
+                                    class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40">
+                                    <option value="ranked">Ranked</option>
+                                    <option value="custom">Custom / scrim</option>
+                                    <option value="friendly">Friendly</option>
+                                </select>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 pt-2">Team size</label>
+                                <select id="mm-sched-size"
+                                    class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40">
+                                    <option value="5v5">5v5</option>
+                                    <option value="1v1">1v1</option>
+                                    <option value="2v2">2v2</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mt-8">
+                                <button type="button" class="mm-sched-back px-5 py-2.5 rounded-xl border border-white/15 text-sm font-bold text-gray-300 hover:bg-white/5 transition-colors" data-to="0">Back</button>
+                                <button type="button" class="mm-sched-next px-6 py-2.5 rounded-xl bg-[#22d3ee] text-[#0a0b0f] text-sm font-black uppercase tracking-wide hover:bg-[#06b6d4] transition-colors" data-to="2">Continue</button>
+                            </div>
+                        </div>
+
+                        <div id="mm-sched-step-2" class="mm-sched-pane hidden">
+                            <h3 class="text-lg font-bold text-white mb-2">3 · Date &amp; time</h3>
+                            <p class="text-sm text-gray-500 mb-6">We’ll notify you before the lobby opens</p>
+                            <div class="space-y-4 max-w-md">
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Start</label>
+                                    <input type="datetime-local" id="mm-sched-when"
+                                        class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40" />
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Notes for squad (optional)</label>
+                                    <textarea id="mm-sched-notes" rows="3" placeholder="e.g. Comms on Discord, pick/ban style…"
+                                        class="w-full rounded-xl bg-[#12141c] border border-white/10 text-white text-sm px-4 py-3 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40 resize-none"></textarea>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mt-8">
+                                <button type="button" class="mm-sched-back px-5 py-2.5 rounded-xl border border-white/15 text-sm font-bold text-gray-300 hover:bg-white/5 transition-colors" data-to="1">Back</button>
+                                <button type="button" class="mm-sched-next px-6 py-2.5 rounded-xl bg-[#22d3ee] text-[#0a0b0f] text-sm font-black uppercase tracking-wide hover:bg-[#06b6d4] transition-colors" data-to="3">Review</button>
+                            </div>
+                        </div>
+
+                        <div id="mm-sched-step-3" class="mm-sched-pane hidden">
+                            <h3 class="text-lg font-bold text-white mb-2">4 · Confirm</h3>
+                            <p class="text-sm text-gray-500 mb-6">Check everything before we create the booking</p>
+                            <div class="glass-panel rounded-2xl p-6 border border-white/08 space-y-3 text-sm max-w-lg">
+                                <div class="flex justify-between gap-4"><span class="text-gray-500">Game</span><span id="mm-review-game" class="font-semibold text-white text-right">—</span></div>
+                                <div class="flex justify-between gap-4"><span class="text-gray-500">Format</span><span id="mm-review-format" class="font-semibold text-white text-right">—</span></div>
+                                <div class="flex justify-between gap-4"><span class="text-gray-500">When</span><span id="mm-review-when" class="font-semibold text-white text-right">—</span></div>
+                                <div class="flex justify-between gap-4 items-start"><span class="text-gray-500 shrink-0">Notes</span><span id="mm-review-notes" class="font-medium text-gray-300 text-right">—</span></div>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mt-8">
+                                <button type="button" class="mm-sched-back px-5 py-2.5 rounded-xl border border-white/15 text-sm font-bold text-gray-300 hover:bg-white/5 transition-colors" data-to="2">Back</button>
+                                <button type="button" id="mm-sched-confirm" class="px-6 py-2.5 rounded-xl bg-[#00ff87] text-[#0a0b0f] text-sm font-black uppercase tracking-wide hover:bg-[#00e67a] transition-colors">Confirm schedule</button>
+                            </div>
+                        </div>
+
+                        <div id="mm-sched-step-4" class="mm-sched-pane hidden">
+                            <div class="glass-panel rounded-3xl p-10 text-center border border-[#22d3ee]/25 max-w-lg mx-auto">
+                                <div class="w-14 h-14 rounded-2xl bg-[#22d3ee]/15 border border-[#22d3ee]/30 flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-7 h-7 text-[#22d3ee]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-black text-white mb-2">Match scheduled</h3>
+                                <p id="mm-sched-success-msg" class="text-sm text-gray-400 mb-8">—</p>
+                                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <button type="button" id="mm-sched-another" class="px-6 py-2.5 rounded-xl border border-white/15 text-sm font-bold text-white hover:bg-white/5 transition-colors">Schedule another</button>
+                                    <button type="button" class="mm-back-root px-6 py-2.5 rounded-xl bg-white/10 text-sm font-bold text-white hover:bg-white/15 transition-colors">Back to options</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        (function () {
+            var state = {
+                branch: null,
+                nowGame: null,
+                nowStep: 0,
+                schedGame: null,
+                schedStep: 0
+            };
+
+            var gameNames = { valorant: 'Valorant', lol: 'League of Legends' };
+
+            function setRootView() {
+                state.branch = null;
+                state.nowStep = 0;
+                state.schedStep = 0;
+                document.querySelectorAll('.mm-section').forEach(function (s) {
+                    s.classList.toggle('is-visible', s.id === 'mm-root');
+                });
+                document.getElementById('mm-now-flow').classList.remove('is-visible');
+                document.getElementById('mm-schedule-flow').classList.remove('is-visible');
+                resetNowPanes();
+                resetSchedPanes();
+                updateNowDots(0);
+                updateSchedDots(0);
+            }
+
+            function resetNowPanes() {
+                document.querySelectorAll('.mm-now-pane').forEach(function (p, i) {
+                    p.classList.toggle('hidden', i !== 0);
+                });
+            }
+
+            function resetSchedPanes() {
+                document.querySelectorAll('.mm-sched-pane').forEach(function (p, i) {
+                    p.classList.toggle('hidden', i !== 0);
+                });
+            }
+
+            function openNowFlow() {
+                state.branch = 'now';
+                state.nowStep = 0;
+                state.nowGame = null;
+                document.getElementById('mm-root').classList.remove('is-visible');
+                document.getElementById('mm-schedule-flow').classList.remove('is-visible');
+                var flow = document.getElementById('mm-now-flow');
+                flow.classList.add('is-visible');
+                resetNowPanes();
+                updateNowDots(0);
+            }
+
+            function openSchedFlow() {
+                state.branch = 'schedule';
+                state.schedStep = 0;
+                state.schedGame = null;
+                document.getElementById('mm-root').classList.remove('is-visible');
+                document.getElementById('mm-now-flow').classList.remove('is-visible');
+                document.getElementById('mm-schedule-flow').classList.add('is-visible');
+                resetSchedPanes();
+                updateSchedDots(0);
+            }
+
+            function updateNowDots(active) {
+                document.querySelectorAll('[data-now-dot]').forEach(function (d) {
+                    var i = parseInt(d.getAttribute('data-now-dot'), 10);
+                    d.classList.remove('is-active', 'is-done');
+                    if (i < active) d.classList.add('is-done');
+                    if (i === active) d.classList.add('is-active');
+                });
+            }
+
+            function updateSchedDots(active) {
+                document.querySelectorAll('[data-sched-dot]').forEach(function (d) {
+                    var i = parseInt(d.getAttribute('data-sched-dot'), 10);
+                    d.classList.remove('is-active', 'is-done');
+                    if (i < active) d.classList.add('is-done');
+                    if (i === active) d.classList.add('is-active');
+                });
+            }
+
+            function showNowStep(n) {
+                state.nowStep = n;
+                document.querySelectorAll('.mm-now-pane').forEach(function (p, i) {
+                    p.classList.toggle('hidden', i !== n);
+                });
+                updateNowDots(n);
+            }
+
+            function showSchedStep(n) {
+                state.schedStep = n;
+                document.querySelectorAll('.mm-sched-pane').forEach(function (p, i) {
+                    p.classList.toggle('hidden', i !== n);
+                });
+                updateSchedDots(n);
+            }
+
+            document.getElementById('mm-choose-now').addEventListener('click', openNowFlow);
+            document.getElementById('mm-choose-schedule').addEventListener('click', openSchedFlow);
+
+            document.querySelectorAll('.mm-back-root').forEach(function (btn) {
+                btn.addEventListener('click', setRootView);
+            });
+
+            document.querySelectorAll('.mm-pick-game-now').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    state.nowGame = btn.getAttribute('data-game');
+                    document.getElementById('mm-now-game-label').textContent = gameNames[state.nowGame] || state.nowGame;
+                    showNowStep(1);
+                });
+            });
+
+            document.getElementById('mm-now-back-1').addEventListener('click', function () {
+                showNowStep(0);
+            });
+
+            document.getElementById('mm-now-to-queue').addEventListener('click', function () {
+                var mode = document.getElementById('mm-now-mode');
+                var party = document.getElementById('mm-now-party');
+                var modeText = mode.options[mode.selectedIndex].text;
+                var partyText = party.options[party.selectedIndex].text;
+                var g = gameNames[state.nowGame] || 'Game';
+                document.getElementById('mm-now-queue-summary').textContent = g + ' · ' + modeText + ' · ' + partyText;
+                showNowStep(2);
+            });
+
+            document.getElementById('mm-now-cancel-queue').addEventListener('click', function () {
+                showNowStep(1);
+            });
+
+            document.querySelectorAll('.mm-pick-game-sched').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    state.schedGame = btn.getAttribute('data-game');
+                    showSchedStep(1);
+                });
+            });
+
+            function fillScheduleReview() {
+                var typeSel = document.getElementById('mm-sched-type');
+                var sizeSel = document.getElementById('mm-sched-size');
+                var whenEl = document.getElementById('mm-sched-when');
+                var notes = document.getElementById('mm-sched-notes').value.trim();
+                document.getElementById('mm-review-game').textContent = gameNames[state.schedGame] || '—';
+                document.getElementById('mm-review-format').textContent =
+                    typeSel.options[typeSel.selectedIndex].text + ' · ' + sizeSel.options[sizeSel.selectedIndex].text;
+                var whenStr = whenEl.value
+                    ? new Date(whenEl.value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+                    : 'Not set';
+                document.getElementById('mm-review-when').textContent = whenStr;
+                document.getElementById('mm-review-notes').textContent = notes || '—';
+            }
+
+            document.querySelectorAll('.mm-sched-next').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var to = parseInt(btn.getAttribute('data-to'), 10);
+                    if (to === 3) fillScheduleReview();
+                    showSchedStep(to);
+                });
+            });
+
+            document.querySelectorAll('.mm-sched-back').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var to = parseInt(btn.getAttribute('data-to'), 10);
+                    showSchedStep(to);
+                });
+            });
+
+            document.getElementById('mm-sched-confirm').addEventListener('click', function () {
+                var summary = document.getElementById('mm-review-when').textContent;
+                document.getElementById('mm-sched-success-msg').textContent =
+                    'You’re set for ' + summary + '. Reminders will appear in-app once the backend is connected.';
+                showSchedStep(4);
+            });
+
+            document.getElementById('mm-sched-another').addEventListener('click', function () {
+                state.schedGame = null;
+                showSchedStep(0);
+                updateSchedDots(0);
+            });
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            function setSidebarActive() {
+                document.querySelectorAll('.sidebar-menu-btn.nav-menu-btn').forEach(function (b) {
+                    b.classList.remove('active');
+                });
+                var mm = document.getElementById('nav-matchmaking');
+                if (mm) mm.classList.add('active');
+            }
+            setTimeout(setSidebarActive, 0);
+
+            var ev = document.getElementById('nav-page-events');
+            var mk = document.getElementById('nav-page-market');
+            if (ev) ev.classList.add('text-gray-500');
+            if (mk) mk.classList.add('text-gray-500');
+
+            function bindLogout() {
+                var lb = document.getElementById('logoutBtn');
+                if (!lb) return false;
+                lb.addEventListener('click', function () {
+                    try {
+                        var api = require('../../../shared/api');
+                        if (api.logout) api.logout();
+                    } catch (e) {}
+                });
+                return true;
+            }
+            if (!bindLogout()) setTimeout(bindLogout, 100);
+        });
+    </script>
+</think>
+<think>
+I made a mistake - I duplicated the confirm button logic incorrectly. The flow should be:
+- Step 3 is "Review" - user sees summary filled when they click "Review" from step 2
+- Actually re-read the HTML:
+  - mm-sched-step-2 has "Review" button data-to="3" - goes to step 3 which is "Confirm" with the review card
+  - So when going from step 2 to 3, we need to FILL the review fields first, then show step 3
+  - Step 3 has "Confirm schedule" which should go to step 4 success
+
+So:
+- mm-sched-next from step 2 should fill review + show step 3
+- mm-sched-confirm should show step 4 with success message
+
+I incorrectly added mm-sched-confirm to fill review - that's wrong. The "Review" button on step 2 should populate review and go to step 3. The "Confirm schedule" on step 3 should go to step 4.
+
+Let me fix the HTML/JS:
+1. Remove the duplicate IIFE fixConfirmFlow entirely
+2. Remove the wrong first listener on mm-sched-confirm
+3. On mm-sched-next with data-to="3" - need to fill review when transitioning from step 2 to 3
+4. mm-sched-confirm - only show step 4 and set success message
+
+Also mm-sched-confirm in my first block was wrong - I had it fill review and show step 3. Remove that.
+
+Steps:
+- data-to on step 1 "Continue" goes to 2 - OK
+- step 2 "Review" goes to 3 - need handler to populate review before showSchedStep(3)
+- step 3 "Confirm schedule" -> showSchedStep(4) with success text
+
+I'll fix the script section completely - remove duplicate, fix handlers.
+
+Also step 3 in HTML is "4 · Confirm" - the review panel is on step 3 (index 3). Wait:
+mm-sched-step-0 = game
+mm-sched-step-1 = format  
+mm-sched-step-2 = datetime
+mm-sched-step-3 = confirm/review
+mm-sched-step-4 = success
+
+From step 2, button "Review" data-to="3" - correct
+From step 3, "Confirm schedule" -> step 4
+
+Populate review when moving from step 2 to 3: handle in mm-sched-next click when data-to is 3.
+
+I'll rewrite the script cleanly without the buggy duplicate.
+</think>
+Fixing the schedule flow: populate the review when leaving step 2, and make "Confirm schedule" advance to the success step. Removing the duplicate/broken script.
+
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+Read
