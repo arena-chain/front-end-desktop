@@ -93,17 +93,33 @@ loginForm.addEventListener('submit', async (e) => {
 
     setLoading(true);
 
+    // Timeout for the login request to prevent getting stuck
+    const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timed out. Please check your connection or server status.')), 15000)
+    );
+
     try {
-        const data = await login(email, password);
+        console.log('Attempting login for:', email);
+        const data = await Promise.race([
+            login(email, password),
+            timeoutPromise
+        ]);
+        
+        console.log('Login successful, determining role...');
         const role = getPrimaryRole(data.user?.roles);
+        console.log('Redirecting for role:', role);
+        
         ipcRenderer.send('login-success', { role });
     } catch (err) {
+        console.error('Login error:', err);
         const msg = err.status === 401
             ? 'Invalid email or password.'
             : err.message || 'Something went wrong. Please try again.';
         showError(msg);
+        setLoading(false); // Ensure loading is cleared on error
     } finally {
-        setLoading(false);
+        // We only clear loading if we haven't navigated away
+        // If ipcRenderer.send was successful, the page will change
     }
 });
 

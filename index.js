@@ -59,6 +59,9 @@ ipcMain.on('navigate-to', (event, page) => {
         case 'admin-tournaments':
             filePath = 'src/admin/tournaments.html';
             break;
+        case 'player-dashboard':
+            filePath = 'src/player/dashboard/dashboard.html';
+            break;
         case 'training-dashboard':
             filePath = 'src/player/training/dashboard.html';
             break;

@@ -38,9 +38,16 @@
             <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
                 <div class="max-w-6xl mx-auto">
                     <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h1 class="text-4xl font-black tracking-tight mb-2">AIM TRAINING <span class="text-[#00ff87]">LABS</span></h1>
-                            <p class="text-gray-400">Sharpen your reflexes and precision with our advanced training engine.</p>
+                        <div class="flex items-center gap-4">
+                            <button id="back-btn" class="p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tight mb-2">AIM TRAINING <span class="text-[#00ff87]">LABS</span></h1>
+                                <p class="text-gray-400">Sharpen your reflexes and precision with our advanced training engine.</p>
+                            </div>
                         </div>
                         <div class="flex gap-4">
                             <button id="start-btn" class="px-8 py-4 bg-[#00ff87] text-[#0a0b0f] font-black rounded-2xl hover:scale-105 transition-all neon-green-glow">
@@ -86,6 +93,22 @@
                                         <button class="duration-btn flex-1 p-3 rounded-xl border border-white/5 bg-white/5 font-bold transition-all" data-value="120">120s</button>
                                         <button class="duration-btn flex-1 p-3 rounded-xl border border-white/5 bg-white/5 font-bold transition-all" data-value="180">180s</button>
                                     </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <label class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 block">Sound Effects</label>
+                                    <button id="sound-toggle" class="w-full flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/5 font-bold transition-all hover:bg-white/10 group">
+                                        <div class="flex items-center gap-3">
+                                            <svg id="sound-icon-on" class="w-5 h-5 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                            </svg>
+                                            <svg id="sound-icon-off" class="w-5 h-5 text-gray-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm13.121-6.879l-4.242 4.242m4.242 0l-4.242-4.242" />
+                                            </svg>
+                                            <span id="sound-text">ENABLED</span>
+                                        </div>
+                                        <div id="sound-indicator" class="w-2 h-2 rounded-full bg-[#00ff87] shadow-[0_0_10px_#00ff87]"></div>
+                                    </button>
                                 </div>
                             </div>
                         </div>

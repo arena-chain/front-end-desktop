@@ -13,8 +13,50 @@ let selectedDuration = 60;
 const difficultyBtns = document.querySelectorAll('.difficulty-btn');
 const durationBtns = document.querySelectorAll('.duration-btn');
 const startBtn = document.getElementById('start-btn');
+const backBtn = document.getElementById('back-btn');
 const leaderboardBody = document.getElementById('leaderboard-body');
 const lbDifficultySelect = document.getElementById('lb-difficulty');
+const soundToggle = document.getElementById('sound-toggle');
+
+// Sound Configuration
+let soundEnabled = localStorage.getItem('arena_sound_enabled') !== 'false';
+updateSoundUI();
+
+if (soundToggle) {
+    soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('arena_sound_enabled', soundEnabled);
+        updateSoundUI();
+    });
+}
+
+function updateSoundUI() {
+    const iconOn = document.getElementById('sound-icon-on');
+    const iconOff = document.getElementById('sound-icon-off');
+    const text = document.getElementById('sound-text');
+    const indicator = document.getElementById('sound-indicator');
+
+    if (soundEnabled) {
+        iconOn.classList.remove('hidden');
+        iconOff.classList.add('hidden');
+        text.textContent = 'ENABLED';
+        text.className = 'text-[#00ff87]';
+        indicator.className = 'w-2 h-2 rounded-full bg-[#00ff87] shadow-[0_0_10px_#00ff87]';
+    } else {
+        iconOn.classList.add('hidden');
+        iconOff.classList.remove('hidden');
+        text.textContent = 'DISABLED';
+        text.className = 'text-gray-500';
+        indicator.className = 'w-2 h-2 rounded-full bg-gray-700';
+    }
+}
+
+// Navigation
+if (backBtn) {
+    backBtn.addEventListener('click', () => {
+        ipcRenderer.send('navigate-to', 'player-dashboard');
+    });
+}
 
 // Setup toggle logic
 difficultyBtns.forEach(btn => {
@@ -43,7 +85,7 @@ async function fetchLeaderboard() {
         const data = response.data || [];
         
         if (!data || data.length === 0) {
-            leaderboardBody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-500">No results found for this difficulty. Be the first!</td></tr>';
+            leaderboardBody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-500">No one scored yet. Be the first!</td></tr>';
             return;
         }
 
