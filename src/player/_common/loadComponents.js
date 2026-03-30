@@ -37,6 +37,7 @@ class CommonNavbar extends HTMLElement {
             'nav-channel': '../channel/channel_dashboard.html',
             'nav-streams': '../stream/stream_dashboard.html',
             'nav-chat': '../chat/chat.html',
+            'nav-friends': '../freinds/freinds.html',
             'nav-missions': '../missions/missions.html',
             'nav-rewards': '../rewards/rewards.html',
             'nav-training': '../training/dashboard.html'
