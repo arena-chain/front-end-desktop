@@ -438,6 +438,9 @@
   .col-span-8 {
     grid-column: span 8 / span 8;
   }
+  .col-span-full {
+    grid-column: 1 / -1;
+  }
   .container {
     width: 100%;
     @media (width >= 40rem) {
@@ -720,11 +723,17 @@
   .w-2\.5 {
     width: calc(var(--spacing) * 2.5);
   }
+  .w-2\/3 {
+    width: calc(2 / 3 * 100%);
+  }
   .w-3 {
     width: calc(var(--spacing) * 3);
   }
   .w-3\.5 {
     width: calc(var(--spacing) * 3.5);
+  }
+  .w-3\/4 {
+    width: calc(3 / 4 * 100%);
   }
   .w-4 {
     width: calc(var(--spacing) * 4);
@@ -1491,9 +1500,6 @@
   .bg-\[\#0bc6e3\]\/20 {
     background-color: color-mix(in oklab, #0bc6e3 20%, transparent);
   }
-  .bg-\[\#0bc6e3\]\/90 {
-    background-color: color-mix(in oklab, #0bc6e3 90%, transparent);
-  }
   .bg-\[\#0d0f16\]\/80 {
     background-color: color-mix(in oklab, #0d0f16 80%, transparent);
   }
@@ -1578,9 +1584,6 @@
   .bg-\[\#a855f7\]\/20 {
     background-color: color-mix(in oklab, #a855f7 20%, transparent);
   }
-  .bg-\[\#a855f7\]\/90 {
-    background-color: color-mix(in oklab, #a855f7 90%, transparent);
-  }
   .bg-\[\#ff4654\] {
     background-color: #ff4654;
   }
@@ -1592,9 +1595,6 @@
   }
   .bg-\[\#ff4654\]\/20 {
     background-color: color-mix(in oklab, #ff4654 20%, transparent);
-  }
-  .bg-\[\#ff4654\]\/90 {
-    background-color: color-mix(in oklab, #ff4654 90%, transparent);
   }
   .bg-\[\#ff5757\] {
     background-color: #ff5757;
@@ -3152,6 +3152,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: color-mix(in oklab, #00ff87 5%, transparent);
+      }
+    }
+  }
+  .hover\:bg-\[\#00ff87\]\/10 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in oklab, #00ff87 10%, transparent);
       }
     }
   }
