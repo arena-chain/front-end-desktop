@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Missions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 135, 0.5); }
+
+        .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .neon-green-glow { box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2); }
+        .green-accent { background: #00ff87; }
+        
+        .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
+
+        .progress-bar-bg { background: rgba(255, 255, 255, 0.1); border-radius: 100px; overflow: hidden; height: 8px; position: relative; }
+        .progress-bar-fill { background: #00ff87; height: 100%; border-radius: 100px; transition: width 1s ease-in-out; }
+        .progress-bar-fill.purple { background: #a855f7; }
+        .progress-bar-fill.orange { background: #ff9800; }
+        .progress-bar-fill.blue { background: #0bc6e3; }
+
+        /* Sidebar styles from common */
+        .sidebar-collapsible { width: 104px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; height: 100%; }
+        .sidebar-collapsible:hover { width: 280px; }
+        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 52px; height: 44px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
+        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
+        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- MISSIONS CONTENT -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                
+                <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Missions</h1>
+                        <p class="text-gray-400 text-sm">Complete daily and weekly gaming challenges to earn Arena Tokens and exclusive NFT drops.</p>
+                    </div>
+                </div>
+
+                <!-- Daily Missions -->
+                <div class="mb-10">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-bold text-white uppercase tracking-wide">Daily Quests</h2>
+                            <span class="px-3 py-1 bg-[#00ff87]/20 text-[#00ff87] text-xs font-bold rounded-full">Resets in 14h 22m</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Mission Card 1 -->
+                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group hover:border-[#00ff87]/30 transition-colors">
+                            <div class="absolute top-0 right-0 p-4">
+                                <span class="text-[#00ff87] font-black text-lg">+150 XP</span>
+                            </div>
+                            
+                            <div class="w-12 h-12 rounded-xl bg-[#ff4654]/10 flex items-center justify-center mb-4">
+                                <span class="text-[#ff4654] font-black font-lg">V</span>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-white mb-2 leading-tight">First Blood Master</h3>
+                            <p class="text-sm text-gray-400 mb-6">Secure 5 First Bloods in Valorant Ranked matches.</p>
+                            
+                            <div class="mb-2 flex items-center justify-between text-xs font-bold">
+                                <span class="text-white">Progress</span>
+                                <span class="text-[#00ff87]">3 / 5</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mission Card 2 -->
+                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden group hover:border-[#ff9800]/30 transition-colors">
+                            <div class="absolute top-0 right-0 p-4">
+                                <span class="text-[#00ff87] font-black text-lg">+200 XP</span>
+                            </div>
+                            
+                            <div class="w-12 h-12 rounded-xl bg-[#ff9800]/10 flex items-center justify-center mb-4">
+                                <span class="text-[#ff9800] font-black font-lg">CS</span>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-white mb-2 leading-tight">Clutch Minister</h3>
+                            <p class="text-sm text-gray-400 mb-6">Win 2 rounds where you are the last player alive (1vX) in CS2.</p>
+                            
+                            <div class="mb-2 flex items-center justify-between text-xs font-bold">
+                                <span class="text-white">Progress</span>
+                                <span class="text-[#ff9800]">1 / 2</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill orange" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mission Card 3 (Completed) -->
+                        <div class="glass-panel p-6 rounded-3xl relative overflow-hidden opacity-60">
+                            <div class="absolute inset-0 bg-[#00ff87]/5 pointer-events-none"></div>
+                            <div class="absolute top-0 right-0 p-4">
+                                <div class="w-8 h-8 rounded-full bg-[#00ff87] flex items-center justify-center text-[#0a0b0f]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                </div>
+                            </div>
+                            
+                            <div class="w-12 h-12 rounded-xl bg-[#0bc6e3]/10 flex items-center justify-center mb-4">
+                                <span class="text-[#0bc6e3] font-black font-lg">LoL</span>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-white mb-2 leading-tight">Rift Herald Tamer</h3>
+                            <p class="text-sm text-gray-400 mb-6">Participate in taking down the Rift Herald in League of Legends.</p>
+                            
+                            <div class="mb-2 flex items-center justify-between text-xs font-bold">
+                                <span class="text-white">Progress</span>
+                                <span class="text-[#00ff87]">1 / 1</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Weekly / Special Missions -->
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-bold text-white uppercase tracking-wide">Weekly Operations</h2>
+                            <span class="px-3 py-1 bg-[#a855f7]/20 text-[#a855f7] text-xs font-bold rounded-full">Resets in 4 days</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Epic Mission -->
+                        <div class="glass-panel rounded-3xl p-1 relative overflow-hidden group">
+                            <!-- Gradient Border Effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-[#a855f7] to-[#00ff87] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            
+                            <div class="bg-[#12141c] rounded-[22px] p-6 relative z-10 flex flex-col md:flex-row gap-6 items-center">
+                                <div class="w-24 h-24 rounded-2xl bg-[#a855f7]/10 flex flex-col items-center justify-center flex-shrink-0 border border-[#a855f7]/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-[#a855f7] mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+                                    <span class="text-[10px] font-black text-white tracking-widest uppercase">NFT Drop</span>
+                                </div>
+                                
+                                <div class="flex-1 w-full text-center md:text-left">
+                                    <h3 class="text-xl font-bold text-white mb-2 leading-tight">Arena Gladiator</h3>
+                                    <p class="text-sm text-gray-400 mb-4">Play and complete 25 competitive matches across any supported game on Arena Chain.</p>
+                                    
+                                    <div class="mb-2 flex items-center justify-between text-xs font-bold">
+                                        <span class="text-white">Progress</span>
+                                        <span class="text-[#a855f7]">14 / 25</span>
+                                    </div>
+                                    <div class="progress-bar-bg h-3">
+                                        <div class="progress-bar-fill purple" style="width: 56%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex-shrink-0 flex flex-col items-center gap-2">
+                                    <span class="text-2xl font-black text-white">+1,500</span>
+                                    <span class="text-xs text-gray-500 font-bold tracking-widest uppercase">Tokens</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Epic Mission 2 -->
+                        <div class="glass-panel rounded-3xl p-1 relative overflow-hidden group">
+                            <!-- Gradient Border Effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-[#00ff87] to-[#0bc6e3] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            
+                            <div class="bg-[#12141c] rounded-[22px] p-6 relative z-10 flex flex-col md:flex-row gap-6 items-center">
+                                <div class="w-24 h-24 rounded-2xl bg-[#00ff87]/10 flex flex-col items-center justify-center flex-shrink-0 border border-[#00ff87]/30 shadow-[0_0_20px_rgba(0,255,135,0.2)]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-[#00ff87] mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    <span class="text-[10px] font-black text-white tracking-widest uppercase">Power Up</span>
+                                </div>
+                                
+                                <div class="flex-1 w-full text-center md:text-left">
+                                    <h3 class="text-xl font-bold text-white mb-2 leading-tight">Headhunter</h3>
+                                    <p class="text-sm text-gray-400 mb-4">Achieve 100 Headshot kills in Valorant or CS2 across all game modes.</p>
+                                    
+                                    <div class="mb-2 flex items-center justify-between text-xs font-bold">
+                                        <span class="text-white">Progress</span>
+                                        <span class="text-[#0bc6e3]">72 / 100</span>
+                                    </div>
+                                    <div class="progress-bar-bg h-3">
+                                        <div class="progress-bar-fill blue" style="width: 72%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex-shrink-0 flex flex-col items-center gap-2">
+                                    <span class="text-2xl font-black text-white">+800</span>
+                                    <span class="text-xs text-gray-500 font-bold tracking-widest uppercase">Tokens</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Navigation Script & Setup -->
+    <script>
+        // Set Missions tab as active globally
+        setTimeout(() => {
+            const navMissions = document.getElementById('nav-missions');
+            const navPlay = document.getElementById('nav-play');
+            
+            if (navMissions) {
+                if(navPlay) {
+                    navPlay.classList.remove('active', 'text-white');
+                    navPlay.classList.add('text-gray-400');
+                    if (navPlay.querySelector('svg')) {
+                        navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
+                    }
+                }
+                navMissions.classList.add('active');
+                navMissions.classList.remove('text-gray-400');
+                navMissions.classList.add('text-[#00ff87]');
+            }
+        }, 150);
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+# Scouter Redesign – Wyscout for Gaming
+
+Redesign the scouter experience to be the "Wyscout of esports": a professional scouting tool where scouts can discover players, review match history & highlights, manage a watchlist/favorites, and write reports.
+
+---
+
+## New Navigation Structure (5 tabs)
+
+| Tab | Icon | Purpose |
+|---|---|---|
+| **Feed** | `rss_feed` | Activity stream: trending players, recent match results, highlights |
+| **Explore** | `search` | Browse & filter players by game/rank/region, search by nickname |
+| **Matches** | `sports_esports` | Browse scheduled, live & completed matches with scores |
+| **Watchlist** | `bookmark` | Saved players by status: WATCHLIST / PROSPECT / ELITE / SIGNED |
+| **Reports** | `assignment` | All scouting reports you've written |
+
+---
+
+## Proposed Changes
+
+### Shell & Navigation
+
+#### [MODIFY] [scouter_home_screen.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_home_screen.dart)
+- Replace 4-tab nav with 5-tab: Feed · Explore · Matches · Watchlist · Reports
+- Remove old Dashboard provider (ScouterHomeViewModel no longer needed as first tab)
+
+---
+
+### Tab 1 – Feed (replaces Dashboard)
+
+#### [MODIFY] [scouter_dashboard_tab.dart → scouter_feed_tab.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_dashboard_tab.dart)
+Rename + completely rewrite as an **activity feed**:
+- **Header**: scout avatar + "Scout Feed" + notification bell
+- **Trending Players card**: horizontal scroll of top-ranked players with game badge, ELO, tier chip → tap → player detail
+- **Recent Matches section**: vertical list of recent completed matches with score, game logo, team names
+- **For You**: players you've scouted before with updated stats
+- Pull-to-refresh
+
+---
+
+### Tab 2 – Explore / Players
+
+#### [MODIFY] [scouter_players_tab.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_players_tab.dart)
+Major redesign:
+- **Search bar** at top (search by nickname)
+- **Game filter chips** (horizontal scroll – same as today)
+- **View toggle**: Leaderboard 🏆 | Cards 🃏
+- **Leaderboard view**: rank badge, avatar initial, nickname, team, ELO, tier — same as today but visual polish
+- **Cards view**: larger player card with avatar, nickname, game, ELO, region, PRO badge, watchlist heart icon
+- Filter FAB → same bottom sheet (tier/country/hasTeam/prospectLevel/priority)
+
+---
+
+### Tab 3 – Matches (NEW)
+
+#### [NEW] [scouter_matches_tab.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_matches_tab.dart)
+- **Sub-tabs**: `LIVE` | `TODAY` | `UPCOMING` | `RESULTS`
+- Each match row: team1 vs team2, score (if completed/live), game badge, date/time
+- LIVE rows: animated green pulse dot
+- Tap → Match Detail modal (teams, score, player list with links to profiles, basic stats)
+
+#### [NEW] [scouter_matches_view_model.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/view_model/scouter_matches_view_model.dart)
+- Fetches matches from `/scouter/players/:id/matches` aggregated across evaluated players, or a general matches endpoint if available
+
+---
+
+### Tab 4 – Watchlist (NEW, replaces Recommendations)
+
+#### [NEW] [scouter_watchlist_tab.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_watchlist_tab.dart)
+- Sub-tabs: `WATCHLIST` | `PROSPECT` | `ELITE` | `SIGNED`
+- Each entry: player avatar, nickname, game, ELO, prospect level badge
+- Quick actions: change level (long-press menu), view profile, remove
+- Empty state per category
+
+#### [NEW] [scouter_watchlist_view_model.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/view_model/scouter_watchlist_view_model.dart)
+- Uses `/scouting/prospects` list endpoint with optional `?prospectLevel=` filter
+
+---
+
+### Player Detail Screen – Full Wyscout-Style Redesign
+
+#### [MODIFY] [scouter_player_detail_screen.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_player_detail_screen.dart)
+
+**Header (SliverAppBar):**
+- Avatar (large), nickname, team badge + name, game
+- ELO bar, Tier chip, Region flag emoji, PRO badge
+- **Watchlist heart button** (top-right): tap to cycle WATCHLIST → PROSPECT → ELITE → SIGNED → remove
+- Share icon
+
+**Action row (below header):**
+- `+ Report` | `📋 Recommend` | `✓ Evaluated`
+
+**Tabs (4):**
+
+| Tab | Content |
+|---|---|
+| **Info** | Stats grid (ELO, Rank, Region, Team, isPro), bio section, physical/account info |
+| **Matches** | Recent match history: score, date, status, win/loss color bar — tap for match detail |
+| **Highlights** | Placeholder cards for match clips/videos (links to external VODs/replays) |
+| **Reports** | Reports written about this player, with rating circles |
+
+---
+
+### Reports Tab – Visual Refresh
+
+#### [MODIFY] [scouter_reports_tab.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/scouter_reports_tab.dart)
+- Add search bar to filter reports by player nickname
+- Group reports by date (Today / This Week / Older)
+- Better card: player avatar initial, rating ring, strengths snippet, date badge
+
+---
+
+### Bottom Sheets – Minor Updates
+
+#### [MODIFY] [create_report_bottom_sheet.dart](file:///Users/khalilmouscou/Documents/_Esprit/projet%20Integr%C3%A9/arena_chain_flutter/lib/screens/scouter/ui/create_report_bottom_sheet.dart)
+- Add `matchId` auto-population if opened from a match context
+- Gaming-specific role options (Duelist, IGL, Support, Lurker, Rifler, AWPer, Jungler, Carry, Tank, Support, Controller, Sentinel, Initiator)
+
+---
+
+## Verification Plan
+
+### Automated
+```bash
+flutter analyze --no-pub
+```
+
+### Manual
+1. Log in as scouter → lands on **Feed** tab
+2. Feed shows trending players and recent matches (or graceful empty state)
+3. Explore tab → game chip → leaderboard loads → tap player → detail opens
+4. Player detail: all 4 tabs scroll correctly, watchlist button cycles levels
+5. Matches tab → LIVE/TODAY/UPCOMING/RESULTS sub-filter works
+6. Watchlist tab → filtered by prospect level
+7. Reports tab → swipe to delete, search bar filters
+8. Create Report from player detail → submits and shows success snackbar
