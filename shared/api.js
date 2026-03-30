@@ -1,7 +1,7 @@
 const { ipcRenderer } = require('electron');
 
-const configuredBaseUrl = localStorage.getItem('arena_base_url') || 'http://localhost:3000';
-const BASE_URL = configuredBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+const _storedUrl = localStorage.getItem('arena_base_url') || 'http://localhost:3000';
+const BASE_URL = _storedUrl.replace(/\/api\/?$/, '').replace(/\/$/, '') + '/api';
 
 const TOKEN_KEYS = {
     access: 'arena_access_token',

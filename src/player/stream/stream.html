@@ -113,7 +113,7 @@
     </script>
     <script>
         const { getUser } = require('../../../shared/api');
-        const { getChannelMessages, createLiveSocket, getIceServers, BASE_URL } = require('../../../shared/creator');
+        const { getChannelMessages, createLiveSocket, getIceServers, BASE_URL, ROOT_URL } = require('../../../shared/creator');
 
         const params = new URLSearchParams(window.location.search);
         const channelId = params.get('channelId');
@@ -302,7 +302,7 @@
         });
 
         copyWatchLink.addEventListener('click', async () => {
-            const url = `${BASE_URL}/watch/${channelId}`;
+            const url = `${ROOT_URL}/watch/${channelId}`;
             try {
                 await navigator.clipboard.writeText(url);
                 copyWatchLink.textContent = 'Copied';

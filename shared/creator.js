@@ -1,5 +1,7 @@
 const { BASE_URL, getAccessToken, getUser } = require('./api');
 
+const ROOT_URL = BASE_URL.replace(/\/api\/?$/, '');
+
 function authHeaders() {
     const token = getAccessToken();
     return {
@@ -116,7 +118,7 @@ function ensureSocketIoClient() {
     if (!socketLoaderPromise) {
         socketLoaderPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = `${BASE_URL}/socket.io/socket.io.js`;
+            script.src = `${ROOT_URL}/socket.io/socket.io.js`;
             script.onload = () => window.io ? resolve(window.io) : reject(new Error('Socket.IO client failed to load'));
             script.onerror = () => reject(new Error('Unable to load Socket.IO client'));
             document.head.appendChild(script);
@@ -128,7 +130,7 @@ function ensureSocketIoClient() {
 
 async function createLiveSocket() {
     const io = await ensureSocketIoClient();
-    return io(BASE_URL, {
+    return io(ROOT_URL, {
         auth: { token: getAccessToken() },
         transports: ['websocket', 'polling'],
     });
@@ -179,6 +181,7 @@ function buildChannelPayload(draft) {
 
 module.exports = {
     BASE_URL,
+    ROOT_URL,
     getMyChannel,
     createChannel,
     updateChannel,
