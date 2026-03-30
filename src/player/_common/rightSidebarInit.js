@@ -23,13 +23,10 @@ function avatarUrl(name) {
 
 function renderFriends() {
     const list = document.getElementById('friends-connected-list');
-    const statFriends = document.getElementById('stat-friends-online');
     if (!list) return;
 
     const online = friends.filter(f => f.status !== 'offline');
     const offline = friends.filter(f => f.status === 'offline');
-
-    if (statFriends) statFriends.textContent = String(online.length);
 
     if (friends.length === 0) {
         list.innerHTML = '<p class="text-center text-gray-600 text-xs py-6">No friends yet</p>';

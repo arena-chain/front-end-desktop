@@ -20,18 +20,9 @@
             height: 100vh;
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0a0b0f;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 255, 135, 0.3);
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0f; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
 
         .glass-panel {
             background: rgba(18, 20, 28, 0.6);
@@ -48,53 +39,46 @@
             color: #00ff87;
         }
 
-        .win-glow {
-            box-shadow: inset 4px 0 0 #00ff87;
+        .win-glow { box-shadow: inset 4px 0 0 #00ff87; }
+        .loss-glow { box-shadow: inset 4px 0 0 #ff4654; }
+        .remake-glow { box-shadow: inset 4px 0 0 #6b7280; }
+
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
-        .loss-glow {
-            box-shadow: inset 4px 0 0 #ff4654;
-        }
-
-        /* Sidebar styles from common */
         .sidebar-collapsible {
-            width: 104px;
-            position: relative;
-            z-index: 20;
-            overflow: visible !important;
-            transition: width 0.3s ease;
+            width: 104px; position: relative; z-index: 20;
+            overflow: visible !important; transition: width 0.3s ease;
         }
-
         .sidebar-collapsible:hover { width: 280px; }
-        
         .sidebar-collapsible .sidebar-brand-text,
         .sidebar-collapsible .sidebar-section-title,
         .sidebar-collapsible .sidebar-profile-text { display: none; }
-        
         .sidebar-collapsible:hover .sidebar-brand-text,
         .sidebar-collapsible:hover .sidebar-section-title,
         .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        
         .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
-        
         .sidebar-collapsible .sidebar-menu-btn,
         .sidebar-collapsible .game-select-btn {
             position: relative; justify-content: center; align-items: center; width: 52px; height: 44px;
             margin-left: auto; margin-right: auto; overflow: visible; z-index: 30;
             padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease;
         }
-        
         .sidebar-collapsible:hover .sidebar-menu-btn,
         .sidebar-collapsible:hover .game-select-btn {
             width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important;
         }
-        
         .sidebar-collapsible .sidebar-label {
             opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease;
             position: absolute; left: 50px;
         }
-        
         .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+
+        @keyframes skeleton-pulse { 0%,100%{opacity:.4} 50%{opacity:.15} }
+        .skeleton-pulse { animation: skeleton-pulse 1.5s ease-in-out infinite; }
     </style>
     <script src="../_common/loadComponents.js"></script>
 </head>
@@ -105,171 +89,54 @@
 
         <common-navbar src="left_side_navbar.html"></common-navbar>
 
-        <!-- Main Content Area -->
         <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
             
             <common-navbar src="top_navbar.html"></common-navbar>
 
-            <!-- MATCH HISTORY CONTENT -->
             <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
-                <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center justify-between mb-6">
                     <div>
                         <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Match History</h1>
-                        <p class="text-gray-400 text-sm">Review your past performance, analyze stats, and download replays.</p>
+                        <p id="subtitle" class="text-gray-400 text-sm">Review your past performance across Riot Games.</p>
+                    </div>
+                    <div id="riot-badge" class="hidden">
+                        <div class="glass-panel rounded-xl px-4 py-2.5 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-[#ff4654]/20 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#ff4654]" viewBox="0 0 24 24" fill="currentColor"><path d="M3.877 2L1 6.838v14.29h5.663V24h3.186l3.174-2.872h4.857L24 15.293V2H3.877zm1.59 2.116h16.417v10.12l-3.77 3.77h-5.654L9.275 21.17v-3.166H5.467V4.116z"/></svg>
+                            </div>
+                            <div>
+                                <p id="riot-name" class="text-sm font-bold text-white"></p>
+                                <p id="riot-region" class="text-[10px] text-gray-500 uppercase tracking-wider"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="flex items-center gap-3 mb-6">
-                    <button class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-lg transition-all border border-white/5">All Games</button>
-                    <button class="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-400 font-semibold text-sm rounded-lg transition-all border border-transparent">Valorant</button>
-                    <button class="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-400 font-semibold text-sm rounded-lg transition-all border border-transparent">CS2</button>
-                    <button class="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-400 font-semibold text-sm rounded-lg transition-all border border-transparent">League of Legends</button>
-                </div>
+                <!-- Game Filters -->
+                <div id="game-filters" class="flex items-center gap-3 mb-6"></div>
 
                 <!-- Match List -->
-                <div class="space-y-4">
-                    
-                    <!-- Match 1: WIN -->
-                    <div class="glass-panel rounded-2xl p-5 flex items-center gap-6 hover:bg-white/5 transition-all cursor-pointer win-glow">
-                        <div class="w-16 h-16 rounded-xl bg-[#ff4654]/10 flex items-center justify-center flex-shrink-0">
-                            <span class="text-2xl font-black text-[#ff4654]">V</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-[#00ff87]/20 text-[#00ff87]">VICTORY</span>
-                                <span class="text-sm font-bold text-white">Valorant • Ranked</span>
-                            </div>
-                            <p class="text-xs text-gray-500">Ascent • 13 - 11 • 2 hours ago</p>
-                        </div>
-                        <div class="flex items-center gap-6 lg:gap-10 pr-4">
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">K / D / A</p>
-                                <p class="text-sm font-black text-white">24 / 12 / 8</p>
-                            </div>
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Combat Score</p>
-                                <p class="text-sm font-black text-[#00ff87]">312</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">ELO</p>
-                                <p class="text-sm font-black text-[#00ff87]">+ 24</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Match 2: LOSS -->
-                    <div class="glass-panel rounded-2xl p-5 flex items-center gap-6 hover:bg-white/5 transition-all cursor-pointer loss-glow">
-                        <div class="w-16 h-16 rounded-xl bg-[#ff9800]/10 flex items-center justify-center flex-shrink-0">
-                            <span class="text-2xl font-black text-[#ff9800]">CS</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-[#ff4654]/20 text-[#ff4654]">DEFEAT</span>
-                                <span class="text-sm font-bold text-white">CS2 • Premier</span>
-                            </div>
-                            <p class="text-xs text-gray-500">Mirage • 9 - 13 • Yesterday</p>
-                        </div>
-                        <div class="flex items-center gap-6 lg:gap-10 pr-4">
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">K / D / A</p>
-                                <p class="text-sm font-black text-white">14 / 18 / 4</p>
-                            </div>
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">HLTV Rating</p>
-                                <p class="text-sm font-black text-gray-300">0.94</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">ELO</p>
-                                <p class="text-sm font-black text-[#ff4654]">- 18</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Match 3: WIN -->
-                    <div class="glass-panel rounded-2xl p-5 flex items-center gap-6 hover:bg-white/5 transition-all cursor-pointer win-glow">
-                        <div class="w-16 h-16 rounded-xl bg-[#0bc6e3]/10 flex items-center justify-center flex-shrink-0">
-                            <span class="text-2xl font-black text-[#0bc6e3]">LoL</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-[#00ff87]/20 text-[#00ff87]">VICTORY</span>
-                                <span class="text-sm font-bold text-white">League of Legends • Ranked Solo/Duo</span>
-                            </div>
-                            <p class="text-xs text-gray-500">Summoner's Rift • 32:45 • 2 days ago</p>
-                        </div>
-                        <div class="flex items-center gap-6 lg:gap-10 pr-4">
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">K / D / A</p>
-                                <p class="text-sm font-black text-white">11 / 2 / 14</p>
-                            </div>
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">CS</p>
-                                <p class="text-sm font-black text-[#00ff87]">284</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">LP</p>
-                                <p class="text-sm font-black text-[#00ff87]">+ 21</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Match 4: WIN -->
-                    <div class="glass-panel rounded-2xl p-5 flex items-center gap-6 hover:bg-white/5 transition-all cursor-pointer win-glow">
-                        <div class="w-16 h-16 rounded-xl bg-[#ff4654]/10 flex items-center justify-center flex-shrink-0">
-                            <span class="text-2xl font-black text-[#ff4654]">V</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-[#00ff87]/20 text-[#00ff87]">VICTORY</span>
-                                <span class="text-sm font-bold text-white">Valorant • Ranked</span>
-                            </div>
-                            <p class="text-xs text-gray-500">Bind • 13 - 4 • 2 days ago</p>
-                        </div>
-                        <div class="flex items-center gap-6 lg:gap-10 pr-4">
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">K / D / A</p>
-                                <p class="text-sm font-black text-white">19 / 9 / 5</p>
-                            </div>
-                            <div class="text-center hidden sm:block">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Combat Score</p>
-                                <p class="text-sm font-black text-[#00ff87]">268</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">ELO</p>
-                                <p class="text-sm font-black text-[#00ff87]">+ 28</p>
-                            </div>
-                        </div>
-                    </div>
-
+                <div id="match-list" class="space-y-3">
+                    <!-- Populated by renderer.js -->
                 </div>
 
+                <!-- Load More -->
+                <div id="load-more-container" class="mt-6"></div>
             </div>
         </main>
     </div>
 
-    <!-- Navigation Script & Setup -->
-    <script>
-        // Wait briefly for common-navbar to render asynchronously
-        setTimeout(() => {
-            const navPlay = document.getElementById('nav-play');
-            const navNews = document.getElementById('nav-news');
-            const navRecentMatches = document.getElementById('nav-recent-matches');
-            
-            if (navPlay && navRecentMatches) {
-                // Swap active states (Play to Recent Matches)
-                navPlay.classList.remove('active', 'text-white');
-                navPlay.classList.add('text-gray-400');
-                if(navPlay.querySelector('svg')) {
-                    navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-                }
-                
-                navRecentMatches.classList.add('active');
-                navRecentMatches.classList.remove('text-gray-400');
-                navRecentMatches.classList.add('text-[#00ff87]');
+    <!-- Match Detail Modal -->
+    <div id="match-detail-overlay"
+         class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
+        <div id="match-detail-card"
+             class="w-full max-w-3xl glass-panel rounded-2xl border border-white/10 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+            <div id="match-detail-content">
+                <!-- Populated by renderer.js -->
+            </div>
+        </div>
+    </div>
 
-            }
-        }, 100);
-    </script>
+    <script src="./renderer.js"></script>
 </body>
 </html>

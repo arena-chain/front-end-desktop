@@ -687,6 +687,9 @@
   .max-h-72 {
     max-height: calc(var(--spacing) * 72);
   }
+  .max-h-\[85vh\] {
+    max-height: 85vh;
+  }
   .max-h-\[calc\(100vh-140px\)\] {
     max-height: calc(100vh - 140px);
   }
@@ -1286,6 +1289,9 @@
   }
   .border-\[\#0a0b0f\] {
     border-color: #0a0b0f;
+  }
+  .border-\[\#0bc6e3\] {
+    border-color: #0bc6e3;
   }
   .border-\[\#0bc6e3\]\/30 {
     border-color: color-mix(in oklab, #0bc6e3 30%, transparent);
@@ -2675,6 +2681,12 @@
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-black) 50%, transparent) var(--tw-shadow-alpha), transparent);
     }
   }
+  .ring-\[\#0bc6e3\]\/30 {
+    --tw-ring-color: color-mix(in oklab, #0bc6e3 30%, transparent);
+  }
+  .ring-\[\#0bc6e3\]\/40 {
+    --tw-ring-color: color-mix(in oklab, #0bc6e3 40%, transparent);
+  }
   .ring-\[\#0bc6e3\]\/60 {
     --tw-ring-color: color-mix(in oklab, #0bc6e3 60%, transparent);
   }
@@ -2686,6 +2698,12 @@
   }
   .ring-\[\#ff4654\] {
     --tw-ring-color: #ff4654;
+  }
+  .ring-\[\#ff4654\]\/30 {
+    --tw-ring-color: color-mix(in oklab, #ff4654 30%, transparent);
+  }
+  .ring-\[\#ff4654\]\/40 {
+    --tw-ring-color: color-mix(in oklab, #ff4654 40%, transparent);
   }
   .ring-\[\#ff4654\]\/60 {
     --tw-ring-color: color-mix(in oklab, #ff4654 60%, transparent);
@@ -3274,6 +3292,13 @@
       }
     }
   }
+  .hover\:bg-\[\#e03e4c\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #e03e4c;
+      }
+    }
+  }
   .hover\:bg-\[\#e63e4d\] {
     &:hover {
       @media (hover: hover) {
@@ -3850,6 +3875,11 @@
   .lg\:w-96 {
     @media (width >= 64rem) {
       width: calc(var(--spacing) * 96);
+    }
+  }
+  .lg\:w-\[280px\] {
+    @media (width >= 64rem) {
+      width: 280px;
     }
   }
   .lg\:w-auto {
