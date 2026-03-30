@@ -303,6 +303,9 @@
   .-top-1 {
     top: calc(var(--spacing) * -1);
   }
+  .-top-2 {
+    top: calc(var(--spacing) * -2);
+  }
   .-top-20 {
     top: calc(var(--spacing) * -20);
   }
@@ -335,6 +338,9 @@
   }
   .-right-1 {
     right: calc(var(--spacing) * -1);
+  }
+  .-right-2 {
+    right: calc(var(--spacing) * -2);
   }
   .-right-20 {
     right: calc(var(--spacing) * -20);
@@ -788,6 +794,9 @@
   }
   .w-32 {
     width: calc(var(--spacing) * 32);
+  }
+  .w-48 {
+    width: calc(var(--spacing) * 48);
   }
   .w-64 {
     width: calc(var(--spacing) * 64);
@@ -1485,6 +1494,12 @@
       border-color: color-mix(in oklab, var(--color-white) 20%, transparent);
     }
   }
+  .border-yellow-400\/20 {
+    border-color: color-mix(in srgb, oklch(85.2% 0.199 91.936) 20%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-yellow-400) 20%, transparent);
+    }
+  }
   .border-yellow-500\/20 {
     border-color: color-mix(in srgb, oklch(79.5% 0.184 86.047) 20%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1629,11 +1644,11 @@
   .bg-\[\#ff9800\]\/20 {
     background-color: color-mix(in oklab, #ff9800 20%, transparent);
   }
+  .bg-\[\#ffd700\] {
+    background-color: #ffd700;
+  }
   .bg-\[\#ffd700\]\/20 {
     background-color: color-mix(in oklab, #ffd700 20%, transparent);
-  }
-  .bg-amber-400 {
-    background-color: var(--color-amber-400);
   }
   .bg-amber-500 {
     background-color: var(--color-amber-500);
@@ -1771,6 +1786,12 @@
     background-color: color-mix(in srgb, #fff 3%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, var(--color-white) 3%, transparent);
+    }
+  }
+  .bg-yellow-400\/10 {
+    background-color: color-mix(in srgb, oklch(85.2% 0.199 91.936) 10%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-yellow-400) 10%, transparent);
     }
   }
   .bg-yellow-500\/10 {
@@ -2391,6 +2412,9 @@
   .text-\[\#00ff87\]\/80 {
     color: color-mix(in oklab, #00ff87 80%, transparent);
   }
+  .text-\[\#1a0a00\] {
+    color: #1a0a00;
+  }
   .text-\[\#7A86AC\] {
     color: #7A86AC;
   }
@@ -2429,12 +2453,6 @@
   }
   .text-amber-400 {
     color: var(--color-amber-400);
-  }
-  .text-amber-400\/90 {
-    color: color-mix(in srgb, oklch(82.8% 0.189 84.429) 90%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-amber-400) 90%, transparent);
-    }
   }
   .text-black {
     color: var(--color-black);
@@ -2564,6 +2582,9 @@
   .opacity-30 {
     opacity: 30%;
   }
+  .opacity-40 {
+    opacity: 40%;
+  }
   .opacity-50 {
     opacity: 50%;
   }
@@ -2657,23 +2678,29 @@
   .ring-\[\#0bc6e3\]\/60 {
     --tw-ring-color: color-mix(in oklab, #0bc6e3 60%, transparent);
   }
-  .ring-\[\#00ff87\] {
-    --tw-ring-color: #00ff87;
-  }
   .ring-\[\#00ff87\]\/40 {
     --tw-ring-color: color-mix(in oklab, #00ff87 40%, transparent);
   }
   .ring-\[\#12141c\] {
     --tw-ring-color: #12141c;
   }
-  .ring-\[\#a855f7\]\/50 {
-    --tw-ring-color: color-mix(in oklab, #a855f7 50%, transparent);
-  }
   .ring-\[\#ff4654\] {
     --tw-ring-color: #ff4654;
   }
   .ring-\[\#ff4654\]\/60 {
     --tw-ring-color: color-mix(in oklab, #ff4654 60%, transparent);
+  }
+  .ring-amber-400\/50 {
+    --tw-ring-color: color-mix(in srgb, oklch(82.8% 0.189 84.429) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-amber-400) 50%, transparent);
+    }
+  }
+  .ring-gray-600\/30 {
+    --tw-ring-color: color-mix(in srgb, oklch(44.6% 0.03 256.802) 30%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-gray-600) 30%, transparent);
+    }
   }
   .ring-white\/10 {
     --tw-ring-color: color-mix(in srgb, #fff 10%, transparent);
@@ -3703,6 +3730,11 @@
   .sm\:grid-cols-2 {
     @media (width >= 40rem) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .sm\:grid-cols-4 {
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
   .sm\:grid-cols-8 {

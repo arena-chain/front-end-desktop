@@ -291,7 +291,7 @@ function renderFriendsList(container) {
         return;
     }
     container.innerHTML = state.friends.map(f => `
-        <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-[#00ff87]/20 transition-all">
+        <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-[#00ff87]/20 transition-all cursor-pointer" data-profile-id="${f.userId}">
             <img src="${avatar(f.nickname)}" class="w-12 h-12 rounded-full bg-white/5" alt="">
             <div class="flex-1 min-w-0">
                 <p class="text-white font-bold text-sm truncate">${esc(f.nickname)}</p>
@@ -304,6 +304,7 @@ function renderFriendsList(container) {
         </div>
     `).join('');
     bindActions(container);
+    bindProfileClicks(container);
 }
 
 function renderPendingList(container) {
@@ -377,6 +378,15 @@ function bindActions(container) {
     });
 }
 
+function bindProfileClicks(container) {
+    container.querySelectorAll('[data-profile-id]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('.action-btn')) return;
+            window.location.href = `../profile/profile.html?userId=${el.dataset.profileId}`;
+        });
+    });
+}
+
 function renderSearchResults() {
     const container = document.getElementById('search-results');
     if (!state.searchQuery || state.searchQuery.length < 2) {
@@ -412,7 +422,7 @@ function renderSearchResults() {
             actionHtml = `<button data-action="add" data-id="${u._id}" class="search-action-btn px-4 py-1.5 text-[10px] font-bold rounded-lg bg-[#00ff87]/20 text-[#00ff87] border border-[#00ff87]/30 hover:bg-[#00ff87]/30 transition-all">ADD FRIEND</button>`;
         }
         return `
-            <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all">
+            <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all cursor-pointer" data-profile-id="${u._id}">
                 <img src="${avatar(u.nickname)}" class="w-9 h-9 rounded-full bg-white/5" alt="">
                 <div class="flex-1 min-w-0">
                     <p class="text-white font-semibold text-sm truncate">${esc(u.nickname)}</p>
@@ -427,6 +437,13 @@ function renderSearchResults() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (btn.dataset.action === 'add') sendRequest(btn.dataset.id);
+        });
+    });
+
+    container.querySelectorAll('[data-profile-id]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('.search-action-btn')) return;
+            window.location.href = `../profile/profile.html?userId=${el.dataset.profileId}`;
         });
     });
 }

@@ -10,15 +10,19 @@ class CommonNavbar extends HTMLElement {
         const file = this.getAttribute('src');
         if (file) {
             try {
-                // Since this script is loaded via <script src="...">, __dirname represents the folder 
-                // of the HTML file (e.g. src/player/dashboard). The common components are in ../_common/
-                const componentPath = path.join(__dirname, '../_common', file);
+                const commonDir = path.join(__dirname, '../_common');
+                const componentPath = path.join(commonDir, file);
                 const content = fs.readFileSync(componentPath, 'utf8');
-                this.innerHTML = content;
-                
-                // If we specifically loaded the left sidebar, attach the global navigation listeners
+
+                const htmlOnly = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+                this.innerHTML = htmlOnly;
+
                 if (file === 'left_side_navbar.html') {
                     this.attachNavigation();
+                }
+
+                if (file === 'right_navbar.html') {
+                    require(path.join(commonDir, 'rightSidebarInit.js'));
                 }
             } catch (err) {
                 console.error('Failed to load component: ' + file, err);

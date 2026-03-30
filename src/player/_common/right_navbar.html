@@ -8,6 +8,12 @@
         align-items: center;
         justify-content: center;
     }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 </style>
 <aside class="flex flex-col flex-1 min-h-0 w-full bg-[#12141c]">
 
@@ -22,12 +28,12 @@
             <div class="flex items-center justify-center gap-4 text-sm">
                 <div>
                     <p class="text-[10px] text-gray-500 uppercase tracking-wide">Online</p>
-                    <p class="text-base font-black text-[#00ff87]">2.3K</p>
+                    <p id="stat-online" class="text-base font-black text-[#00ff87]">—</p>
                 </div>
                 <div class="w-px h-7 bg-white/10"></div>
                 <div>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wide">In Queue</p>
-                    <p class="text-base font-black text-white">347</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wide">Friends</p>
+                    <p id="stat-friends-online" class="text-base font-black text-white">—</p>
                 </div>
             </div>
         </div>
@@ -37,66 +43,12 @@
     <div class="flex-1 flex flex-col min-h-0 bg-[#12141c]">
         <div class="px-5 pt-4 pb-2 flex-shrink-0 bg-[#12141c]">
             <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Connected</h3>
-            <p class="text-[11px] text-gray-600 mt-0.5">Tap a friend to open your chat history</p>
+            <p class="text-[11px] text-gray-600 mt-0.5">Click a friend to view their profile</p>
         </div>
 
         <div class="right-rail-scrollbar-hide flex-1 overflow-y-auto px-5 pb-3 min-h-0 bg-[#12141c]">
             <div class="space-y-2" id="friends-connected-list">
-                <button type="button" data-friend-id="sarah"
-                    class="friend-row w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all hover:bg-white/5 border border-transparent hover:border-white/10">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 rounded-lg overflow-hidden ring-2 ring-[#ff4654]/60">
-                            <img src="https://ui-avatars.com/api/?name=Sarah+K&background=ff4654&color=fff" alt="" class="h-full w-full shrink-0 object-cover" />
-                        </div>
-                        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ff4654] border-2 border-[#12141c] rounded-full" title="In game"></span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-white truncate">Sarah K.</p>
-                        <p class="text-[11px] text-[#ff4654] truncate">In game · Valorant · Ascent</p>
-                    </div>
-                </button>
-
-                <button type="button" data-friend-id="mike"
-                    class="friend-row w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all hover:bg-white/5 border border-transparent hover:border-white/10">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 rounded-lg overflow-hidden ring-2 ring-[#0bc6e3]/60">
-                            <img src="https://ui-avatars.com/api/?name=Mike+R&background=0bc6e3&color=0a0b0f" alt="" class="h-full w-full shrink-0 object-cover" />
-                        </div>
-                        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#00ff87] border-2 border-[#12141c] rounded-full"></span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-white truncate">Mike R.</p>
-                        <p class="text-[11px] text-[#0bc6e3] truncate">In queue · League · Ranked Solo/Duo</p>
-                    </div>
-                </button>
-
-                <button type="button" data-friend-id="alex"
-                    class="friend-row w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all hover:bg-white/5 border border-transparent hover:border-white/10">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 rounded-lg overflow-hidden ring-2 ring-[#a855f7]/50">
-                            <img src="https://ui-avatars.com/api/?name=Alex+J&background=a855f7&color=fff" alt="" class="h-full w-full shrink-0 object-cover" />
-                        </div>
-                        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-400 border-2 border-[#12141c] rounded-full" title="Away"></span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-white truncate">Alex J.</p>
-                        <p class="text-[11px] text-amber-400/90 truncate">Away · Was in League client</p>
-                    </div>
-                </button>
-
-                <button type="button" data-friend-id="emma"
-                    class="friend-row w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all hover:bg-white/5 border border-transparent hover:border-white/10">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-10 h-10 rounded-lg overflow-hidden ring-2 ring-[#00ff87]">
-                            <img src="https://ui-avatars.com/api/?name=Emma+L&background=ec4899&color=fff" alt="" class="h-full w-full shrink-0 object-cover" />
-                        </div>
-                        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#00ff87] border-2 border-[#12141c] rounded-full"></span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-white truncate">Emma L.</p>
-                        <p class="text-[11px] text-gray-500 truncate">Online · In lobby</p>
-                    </div>
-                </button>
+                <!-- Populated by rightSidebarInit.js -->
             </div>
         </div>
     </div>
@@ -112,6 +64,7 @@
         </button>
     </div>
 </aside>
+
 
 <!-- Messages popup (fixed overlay; opens when a friend row is clicked) -->
 <div id="dm-popup-overlay"
