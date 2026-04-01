@@ -54,7 +54,7 @@ function updateSoundUI() {
 // Navigation
 if (backBtn) {
     backBtn.addEventListener('click', () => {
-        ipcRenderer.send('navigate-to', 'player-dashboard');
+        window.location.href = '../match/matchmaking.html';
     });
 }
 

@@ -1105,13 +1105,6 @@
             showSchedStep(0);
         });
 
-        // Sidebar active
-        setTimeout(() => {
-            document.querySelectorAll('.sidebar-menu-btn.nav-menu-btn').forEach(b => b.classList.remove('active'));
-            const mm = $('nav-matchmaking');
-            if (mm) mm.classList.add('active');
-        }, 0);
-
         // Logout
         function bindLogout() {
             const lb = $('logoutBtn');

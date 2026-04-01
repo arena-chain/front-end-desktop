@@ -171,20 +171,6 @@
         </main>
     </div>
 
-    <script>
-        setTimeout(() => {
-            const navPlay = document.getElementById('nav-play');
-            const navChannel = document.getElementById('nav-channel');
-            if (navPlay && navChannel) {
-                navPlay.classList.remove('active', 'text-white');
-                navPlay.classList.add('text-gray-400');
-                if (navPlay.querySelector('svg')) navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-                navChannel.classList.add('active');
-                navChannel.classList.remove('text-gray-400');
-                navChannel.classList.add('text-[#00ff87]');
-            }
-        }, 100);
-    </script>
     <script src="./renderer.js"></script>
 </body>
 </html>

@@ -472,16 +472,6 @@ searchInput.addEventListener('focus', () => {
     }
 });
 
-// ─── Nav active state ───
-
-const navPlay = document.getElementById('nav-play');
-if (navPlay) {
-    navPlay.classList.remove('active', 'text-white');
-    navPlay.classList.add('text-gray-400');
-    const svg = navPlay.querySelector('svg');
-    if (svg) svg.classList.remove('text-[#00ff87]');
-}
-
 // Logout
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {

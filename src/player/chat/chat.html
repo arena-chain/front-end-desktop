@@ -235,24 +235,6 @@
 
     <!-- Navigation Script & Setup -->
     <script>
-        // Set Chat tab as active
-        setTimeout(() => {
-            const navChat = document.getElementById('nav-chat');
-            const navPlay = document.getElementById('nav-play');
-            
-            if (navChat) {
-                if (navPlay) {
-                    navPlay.classList.remove('active', 'text-white');
-                    navPlay.classList.add('text-gray-400');
-                    if (navPlay.querySelector('svg')) {
-                        navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-                    }
-                }
-                navChat.classList.add('active');
-                navChat.classList.remove('text-gray-400');
-                navChat.classList.add('text-[#00ff87]');
-            }
-        }, 100);
     </script>
 </body>
 </html>

@@ -646,22 +646,6 @@ async function fetchMatches(initial = false) {
 
 // ── Navigation active state ─────────────────────────────────────────────
 
-setTimeout(() => {
-    const navPlay = document.getElementById('nav-play');
-    const navRecentMatches = document.getElementById('nav-recent-matches');
-
-    if (navPlay && navRecentMatches) {
-        navPlay.classList.remove('active', 'text-white');
-        navPlay.classList.add('text-gray-400');
-        if (navPlay.querySelector('svg')) {
-            navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-        }
-        navRecentMatches.classList.add('active');
-        navRecentMatches.classList.remove('text-gray-400');
-        navRecentMatches.classList.add('text-[#00ff87]');
-    }
-}, 100);
-
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) logoutBtn.addEventListener('click', () => { logout(); });
 

@@ -490,28 +490,6 @@
                         </div>
                     </div>
 
-                    <!-- Friends Activities Ticket -->
-                    <div id="friends-activities-ticket" class="ticket-card glass-panel rounded-3xl p-8 relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-gradient-to-br from-[#22d3ee]/10 to-[#a855f7]/5 group-hover:from-[#22d3ee]/20 group-hover:to-[#a855f7]/10 transition-all"></div>
-                        <div class="relative z-10">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#22d3ee] to-[#a855f7] flex items-center justify-center mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-xl font-black text-white mb-2">FRIENDS ACTIVITIES</h3>
-                            <p class="text-sm text-gray-400 leading-relaxed mb-4">See what your friends are up to. Join live matches, complete co-op missions together, and earn bonus XP.</p>
-                            <div class="flex items-center gap-3">
-                                <div class="flex -space-x-2">
-                                    <img src="https://ui-avatars.com/api/?name=Sarah+K&background=00ff87&color=0a0b0f&size=28" class="w-7 h-7 rounded-full ring-2 ring-[#12141c]" />
-                                    <img src="https://ui-avatars.com/api/?name=Mike+R&background=22d3ee&color=0a0b0f&size=28" class="w-7 h-7 rounded-full ring-2 ring-[#12141c]" />
-                                    <img src="https://ui-avatars.com/api/?name=Alex+J&background=a855f7&color=fff&size=28" class="w-7 h-7 rounded-full ring-2 ring-[#12141c]" />
-                                </div>
-                                <span class="text-sm font-semibold text-[#22d3ee]">4 friends online</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Missions Ticket -->
                     <a href="../missions/missions.html" class="ticket-card glass-panel rounded-3xl p-8 relative overflow-hidden group block no-underline">
                         <div class="absolute inset-0 bg-gradient-to-br from-[#00ff87]/10 to-[#22d3ee]/5 group-hover:from-[#00ff87]/20 group-hover:to-[#22d3ee]/10 transition-all"></div>
@@ -523,9 +501,27 @@
                             </div>
                             <h3 class="text-xl font-black text-white mb-2">MISSIONS</h3>
                             <p class="text-sm text-gray-400 leading-relaxed mb-4">Complete daily and weekly missions to earn XP, rewards, and climb the ranks. Track your progress in real time.</p>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2.5 py-1 bg-[#00ff87]/15 text-[#00ff87] text-xs font-bold rounded-lg border border-[#00ff87]/20">3 Active</span>
+                            <div class="flex items-center gap-2" id="dashboard-missions-badge">
+                                <span class="px-2.5 py-1 bg-[#00ff87]/15 text-[#00ff87] text-xs font-bold rounded-lg border border-[#00ff87]/20" id="dashboard-missions-count">— Active</span>
                                 <span class="text-sm font-semibold text-gray-500">missions available</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Friends Activities Ticket (Dynamic) -->
+                    <a href="../missions/missions.html?scope=friends" class="ticket-card glass-panel rounded-3xl p-8 relative overflow-hidden group block no-underline" id="friends-activities-ticket">
+                        <div class="absolute inset-0 bg-gradient-to-br from-[#22d3ee]/10 to-[#a855f7]/5 group-hover:from-[#22d3ee]/20 group-hover:to-[#a855f7]/10 transition-all"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#22d3ee] to-[#a855f7] flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-black text-white mb-2">FRIENDS ACTIVITIES</h3>
+                            <p class="text-sm text-gray-400 leading-relaxed mb-4">See what your friends are up to. Join live matches, complete co-op missions together, and earn bonus XP.</p>
+                            <div class="flex items-center gap-3" id="dashboard-friends-badge">
+                                <div class="flex -space-x-2" id="dashboard-friends-avatars"></div>
+                                <span class="text-sm font-semibold text-[#22d3ee]" id="dashboard-friends-mission-count"></span>
                             </div>
                         </div>
                     </a>
@@ -724,116 +720,19 @@
                     </div>
                 </div>
 
-                <!-- Competitive Missions -->
-                <div class="mb-8">
+                <!-- Competitive Missions (Dynamic) -->
+                <div class="mb-8" id="dashboard-solo-missions">
                     <h2 class="text-lg font-bold text-white uppercase tracking-wider mb-5">Competitive Missions</h2>
-                    <div class="space-y-3">
-                        <!-- Mission 1 -->
-                        <div class="glass-panel rounded-2xl p-5 flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#00ff87] to-[#22d3ee] flex items-center justify-center flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-[#0a0b0f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <p class="text-base font-bold text-white">Win 5 Ranked Matches</p>
-                                    <span class="px-2 py-0.5 bg-[#00ff87]/20 text-[#00ff87] text-xs font-bold rounded">+500 XP</span>
-                                </div>
-                                <p class="text-xs text-gray-500">Mike R. is also working on this mission</p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                                        <div class="h-full w-[60%] bg-gradient-to-r from-[#00ff87] to-[#22d3ee] rounded-full"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-gray-400">3/5</span>
-                                </div>
-                            </div>
-                            <div class="flex -space-x-2">
-                                <img src="https://ui-avatars.com/api/?name=Mike+R&background=22d3ee&color=0a0b0f&size=28" class="w-7 h-7 rounded-full ring-2 ring-[#12141c]" />
-                            </div>
-                        </div>
-
-                        <!-- Mission 2 -->
-                        <div class="glass-panel rounded-2xl p-5 flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ff7800] to-[#ff4654] flex items-center justify-center flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <p class="text-base font-bold text-white">Get 50 Kills in Competitive</p>
-                                    <span class="px-2 py-0.5 bg-[#ff7800]/20 text-[#ff7800] text-xs font-bold rounded">+350 XP</span>
-                                </div>
-                                <p class="text-xs text-gray-500">Emma L. completed this mission</p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                                        <div class="h-full w-[84%] bg-gradient-to-r from-[#ff7800] to-[#ff4654] rounded-full"></div>
-                                    </div>
-                                    <span class="text-xs font-bold text-gray-400">42/50</span>
-                                </div>
-                            </div>
-                            <div class="flex -space-x-2">
-                                <img src="https://ui-avatars.com/api/?name=Emma+L&background=ec4899&color=fff&size=28" class="w-7 h-7 rounded-full ring-2 ring-[#12141c]" />
-                            </div>
-                        </div>
-                    </div>
+                    <div class="space-y-3" id="dashboard-solo-missions-list"></div>
                 </div>
 
-                <!-- Together Missions (Co-op for XP Bonus) -->
-                <div>
+                <!-- Friends Co-op Missions (Dynamic) -->
+                <div id="dashboard-friend-missions" class="mb-8">
                     <div class="flex items-center gap-3 mb-5">
-                        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Together Missions</h2>
-                        <span class="px-3 py-1 bg-[#a855f7]/20 text-[#a855f7] text-xs font-bold rounded-lg border border-[#a855f7]/30">2x XP BONUS</span>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Friends Missions</h2>
+                        <span class="px-3 py-1 bg-[#a855f7]/20 text-[#a855f7] text-xs font-bold rounded-lg border border-[#a855f7]/30">Co-op</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-5">
-                        <!-- Together Mission 1 -->
-                        <div class="glass-panel rounded-2xl p-6 hover:border-[#a855f7]/30 transition-all cursor-pointer">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#7c3aed] flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="text-base font-bold text-white">Duo Queue Challenge</h4>
-                                    <p class="text-xs text-[#a855f7] font-semibold">+1,000 XP Bonus</p>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-400 mb-4">Win 3 ranked matches with a friend in duo queue. Both players get the XP reward.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <img src="https://ui-avatars.com/api/?name=Mike+R&background=22d3ee&color=0a0b0f&size=24" class="w-6 h-6 rounded-full" />
-                                    <span class="text-xs text-gray-400">Mike R. invited you</span>
-                                </div>
-                                <button class="px-4 py-2 bg-[#a855f7] text-white font-bold text-xs rounded-lg hover:bg-[#9333ea] transition-all">Accept</button>
-                            </div>
-                        </div>
-
-                        <!-- Together Mission 2 -->
-                        <div class="glass-panel rounded-2xl p-6 hover:border-[#00ff87]/30 transition-all cursor-pointer">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ff87] to-[#22d3ee] flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#0a0b0f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="text-base font-bold text-white">Squad Domination</h4>
-                                    <p class="text-xs text-[#00ff87] font-semibold">+2,500 XP Bonus</p>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-400 mb-4">Play 5 matches as a full 5-player party. All party members earn double XP for every match.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex -space-x-2">
-                                    <img src="https://ui-avatars.com/api/?name=Sarah+K&background=00ff87&color=0a0b0f&size=24" class="w-6 h-6 rounded-full ring-2 ring-[#12141c]" />
-                                    <img src="https://ui-avatars.com/api/?name=Emma+L&background=ec4899&color=fff&size=24" class="w-6 h-6 rounded-full ring-2 ring-[#12141c]" />
-                                    <span class="w-6 h-6 rounded-full bg-white/10 ring-2 ring-[#12141c] flex items-center justify-center text-[8px] font-bold text-gray-400">+2</span>
-                                </div>
-                                <button class="px-4 py-2 bg-[#00ff87] text-[#0a0b0f] font-bold text-xs rounded-lg hover:bg-[#00e67a] transition-all">Join Party</button>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="grid grid-cols-2 gap-5" id="dashboard-friend-missions-list"></div>
                 </div>
             </div>
 

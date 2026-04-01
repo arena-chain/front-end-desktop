@@ -158,20 +158,6 @@
     </div>
 
     <script>
-        setTimeout(() => {
-            const navPlay = document.getElementById('nav-play');
-            const navStreams = document.getElementById('nav-streams');
-            if (navPlay && navStreams) {
-                navPlay.classList.remove('active', 'text-white');
-                navPlay.classList.add('text-gray-400');
-                if (navPlay.querySelector('svg')) navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-                navStreams.classList.add('active');
-                navStreams.classList.remove('text-gray-400');
-                navStreams.classList.add('text-[#00ff87]');
-            }
-        }, 100);
-    </script>
-    <script>
         const { getLiveStreams } = require('../../../shared/creator');
 
         const streamsGrid = document.getElementById('streams-grid');

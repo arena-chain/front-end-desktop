@@ -284,21 +284,6 @@ async function loadMore() {
     await fetchNews(false);
 }
 
-// Nav active-state swap
-const navPlay = document.getElementById('nav-play');
-const navNews = document.getElementById('nav-news');
-
-if (navPlay && navNews) {
-    navPlay.classList.remove('active', 'text-white');
-    navPlay.classList.add('text-gray-400');
-    const playSvg = navPlay.querySelector('svg');
-    if (playSvg) playSvg.classList.remove('text-[#00ff87]');
-
-    navNews.classList.add('active');
-    navNews.classList.remove('text-gray-400');
-    navNews.classList.add('text-[#00ff87]');
-}
-
 // Logout
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {

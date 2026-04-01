@@ -227,24 +227,6 @@
 
     <!-- Navigation Script & Setup -->
     <script>
-        // Set Rewards tab as active globally
-        setTimeout(() => {
-            const navRewards = document.getElementById('nav-rewards');
-            const navPlay = document.getElementById('nav-play');
-            
-            if (navRewards) {
-                if(navPlay) {
-                    navPlay.classList.remove('active', 'text-white');
-                    navPlay.classList.add('text-gray-400');
-                    if (navPlay.querySelector('svg')) {
-                        navPlay.querySelector('svg').classList.remove('text-[#00ff87]');
-                    }
-                }
-                navRewards.classList.add('active');
-                navRewards.classList.remove('text-gray-400');
-                navRewards.classList.add('text-[#00ff87]');
-            }
-        }, 150);
     </script>
 </body>
 </html>
