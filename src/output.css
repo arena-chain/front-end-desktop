@@ -1323,6 +1323,9 @@
   .border-\[\#00ff87\] {
     border-color: #00ff87;
   }
+  .border-\[\#00ff87\]\/10 {
+    border-color: color-mix(in oklab, #00ff87 10%, transparent);
+  }
   .border-\[\#00ff87\]\/20 {
     border-color: color-mix(in oklab, #00ff87 20%, transparent);
   }
@@ -2028,6 +2031,10 @@
     --tw-gradient-to: #22d3ee;
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
+  .to-\[\#22d3ee\]\/5 {
+    --tw-gradient-to: color-mix(in oklab, #22d3ee 5%, transparent);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
   .to-\[\#22d3ee\]\/10 {
     --tw-gradient-to: color-mix(in oklab, #22d3ee 10%, transparent);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
@@ -2197,9 +2204,6 @@
   }
   .py-3 {
     padding-block: calc(var(--spacing) * 3);
-  }
-  .py-3\.5 {
-    padding-block: calc(var(--spacing) * 3.5);
   }
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
@@ -2605,6 +2609,9 @@
   .uppercase {
     text-transform: uppercase;
   }
+  .no-underline {
+    text-decoration-line: none;
+  }
   .antialiased {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -2953,6 +2960,13 @@
       }
     }
   }
+  .group-hover\:bg-\[\#00ff87\]\/25 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        background-color: color-mix(in oklab, #00ff87 25%, transparent);
+      }
+    }
+  }
   .group-hover\:bg-\[\#22d3ee\]\/15 {
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
@@ -2977,6 +2991,14 @@
       }
     }
   }
+  .group-hover\:from-\[\#00ff87\]\/20 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        --tw-gradient-from: color-mix(in oklab, #00ff87 20%, transparent);
+        --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+      }
+    }
+  }
   .group-hover\:from-\[\#22d3ee\]\/20 {
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
@@ -2989,6 +3011,14 @@
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
         --tw-gradient-from: color-mix(in oklab, #ff7800 20%, transparent);
+        --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+      }
+    }
+  }
+  .group-hover\:to-\[\#22d3ee\]\/10 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        --tw-gradient-to: color-mix(in oklab, #22d3ee 10%, transparent);
         --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
       }
     }
@@ -3249,6 +3279,16 @@
       }
     }
   }
+  .hover\:border-white\/15 {
+    &:hover {
+      @media (hover: hover) {
+        border-color: color-mix(in srgb, #fff 15%, transparent);
+        @supports (color: color-mix(in lab, red, red)) {
+          border-color: color-mix(in oklab, var(--color-white) 15%, transparent);
+        }
+      }
+    }
+  }
   .hover\:bg-\[\#0aabc6\] {
     &:hover {
       @media (hover: hover) {
@@ -3274,13 +3314,6 @@
     &:hover {
       @media (hover: hover) {
         background-color: #00e67a;
-      }
-    }
-  }
-  .hover\:bg-\[\#00ff87\]\/5 {
-    &:hover {
-      @media (hover: hover) {
-        background-color: color-mix(in oklab, #00ff87 5%, transparent);
       }
     }
   }
@@ -3330,6 +3363,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: color-mix(in oklab, #22d3ee 10%, transparent);
+      }
+    }
+  }
+  .hover\:bg-\[\#22d3ee\]\/30 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in oklab, #22d3ee 30%, transparent);
       }
     }
   }
@@ -3407,6 +3447,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: color-mix(in oklab, #ff4654 20%, transparent);
+      }
+    }
+  }
+  .hover\:bg-\[\#ff7800\]\/30 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in oklab, #ff7800 30%, transparent);
       }
     }
   }

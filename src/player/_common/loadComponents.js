@@ -31,20 +31,11 @@ class CommonNavbar extends HTMLElement {
     }
 
     attachNavigation() {
-        // Map of button IDs to their relative destination URL
-        // This works perfectly because all player pages are 1-level deep inside src/player/
         const routes = {
             'nav-play': '../dashboard/dashboard.html',
-            'nav-news': '../news/news.html',
-            'nav-recent-matches': '../recent_games/recent_games.html',
             'nav-matchmaking': '../match/matchmaking.html',
             'nav-channel': '../channel/channel_dashboard.html',
             'nav-streams': '../stream/stream_dashboard.html',
-            'nav-chat': '../chat/chat.html',
-            'nav-friends': '../freinds/freinds.html',
-            'nav-missions': '../missions/missions.html',
-            'nav-rewards': '../rewards/rewards.html',
-            'nav-training': '../training/dashboard.html'
         };
 
         for (const [id, path] of Object.entries(routes)) {

@@ -200,6 +200,26 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
 
     const regionFlag = (user.country || '').toLowerCase() === 'tunisia' ? 'TN' : (user.region || 'EU');
 
+    const friendsBtnHtml = isOwnProfile ? `
+        <a href="../freinds/freinds.html"
+           class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold bg-[#22d3ee]/20 text-[#22d3ee] rounded-xl border border-[#22d3ee]/30 hover:bg-[#22d3ee]/30 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            FRIENDS
+        </a>
+    ` : '';
+
+    const recentMatchesBtnHtml = isOwnProfile ? `
+        <a href="../recent_games/recent_games.html"
+           class="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold bg-[#ff7800]/20 text-[#ff7800] rounded-xl border border-[#ff7800]/30 hover:bg-[#ff7800]/30 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 5h8m-8 5h5M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+            </svg>
+            RECENT MATCHES
+        </a>
+    ` : '';
+
     container.innerHTML = `
         <!-- Header -->
         <div class="flex items-start gap-6">
@@ -218,7 +238,7 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
                 </div>
                 <p class="text-sm text-gray-500 mt-1">${esc(user.email || '')}</p>
                 ${riotHtml}
-                <div class="mt-3">${friendActionHtml}</div>
+                <div class="mt-3 flex items-center gap-3 flex-wrap">${friendActionHtml}${friendsBtnHtml}${recentMatchesBtnHtml}</div>
             </div>
         </div>
 
