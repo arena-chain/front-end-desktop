@@ -143,11 +143,11 @@
                 <p id="sidebar-nickname" class="text-sm font-black text-white truncate leading-tight">Player</p>
                 <!-- Rank badge -->
                 <div class="flex items-center gap-1.5 mt-0.5">
-                    <span
+                    <span id="sidebar-rank-badge"
                         class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide"
                         style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a0a00">&#9670;
-                        GOLD</span>
-                    <span class="text-[10px] text-gray-500 font-medium">#1,247</span>
+                        Unranked</span>
+                    <span id="sidebar-rank-meta" class="text-[10px] text-gray-500 font-medium">—</span>
                 </div>
             </div>
 
@@ -165,12 +165,12 @@
         <!-- XP Bar (hidden in icon-only mode) -->
         <div class="sidebar-profile-text px-4 pb-2">
             <div class="flex items-center justify-between mb-1">
-                <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Level 42</span>
-                <span class="text-[10px] text-[#00ff87] font-bold">7,840 / 10,000 XP</span>
+                <span id="sidebar-level-label" class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Level —</span>
+                <span id="sidebar-xp-text" class="text-[10px] text-[#00ff87] font-bold">— / — XP</span>
             </div>
             <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.07)">
-                <div class="h-full rounded-full"
-                    style="width: 78%; background: linear-gradient(90deg, #00ff87, #22d3ee); box-shadow: 0 0 8px rgba(0,255,135,0.5)">
+                <div id="sidebar-xp-bar" class="h-full rounded-full"
+                    style="width: 0%; background: linear-gradient(90deg, #00ff87, #22d3ee); box-shadow: 0 0 8px rgba(0,255,135,0.5)">
                 </div>
             </div>
         </div>
@@ -179,15 +179,15 @@
         <div class="sidebar-profile-text px-4 pb-4">
             <div class="grid grid-cols-3 gap-1.5">
                 <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
-                    <p class="text-xs font-black text-white">2.1</p>
+                    <p id="sidebar-stat-kd" class="text-xs font-black text-white">—</p>
                     <p class="text-[9px] text-gray-500 uppercase font-semibold">K/D</p>
                 </div>
                 <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
-                    <p class="text-xs font-black text-[#00ff87]">68%</p>
+                    <p id="sidebar-stat-win" class="text-xs font-black text-[#00ff87]">—</p>
                     <p class="text-[9px] text-gray-500 uppercase font-semibold">WIN</p>
                 </div>
                 <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
-                    <p class="text-xs font-black text-white">347</p>
+                    <p id="sidebar-stat-elo" class="text-xs font-black text-white">—</p>
                     <p class="text-[9px] text-gray-500 uppercase font-semibold">ELO</p>
                 </div>
             </div>

@@ -619,6 +619,11 @@ async function fetchMatches(initial = false) {
 
         state.hasMore = (data.matches || []).length >= state.count;
         state.start += (data.matches || []).length;
+
+        // Backend syncs play_match missions on this request; notify missions UI if open.
+        try {
+            window.dispatchEvent(new CustomEvent('arenachain-missions-sync'));
+        } catch (_) {}
     } catch (e) {
         console.error('[RecentGames] Fetch failed:', e);
         if (state.matches.length === 0) {

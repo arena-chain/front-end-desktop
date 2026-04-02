@@ -19,6 +19,11 @@ class CommonNavbar extends HTMLElement {
 
                 if (file === 'left_side_navbar.html') {
                     this.attachNavigation();
+                    try {
+                        require(path.join(commonDir, 'sidebarProfileInit.js')).initSidebarProfile();
+                    } catch (e) {
+                        console.error('sidebarProfileInit failed', e);
+                    }
                 }
 
                 if (file === 'right_navbar.html') {

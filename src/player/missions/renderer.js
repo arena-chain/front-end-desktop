@@ -329,6 +329,9 @@
                     }
                     showClaimToast(`+${result.rewardAmount} ${REWARD_LABELS[result.rewardType] || result.rewardType} claimed!`);
                     renderAll();
+                    try {
+                        window.dispatchEvent(new CustomEvent('arenachain-sidebar-profile-sync'));
+                    } catch (_) {}
                 } catch (err) {
                     btn.disabled = false;
                     btn.textContent = 'Claim';
@@ -428,6 +431,10 @@
 
         // Load data
         ensureSeeded().then(fetchMissions);
+
+        window.addEventListener('arenachain-missions-sync', () => {
+            fetchMissions();
+        });
     }
 
     if (document.readyState === 'loading') {
