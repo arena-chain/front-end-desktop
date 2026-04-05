@@ -24,6 +24,15 @@ class CommonNavbar extends HTMLElement {
                     } catch (e) {
                         console.error('sidebarProfileInit failed', e);
                     }
+                    try {
+                        const { getAccessToken } = require(path.join(commonDir, '..', '..', '..', 'shared', 'api'));
+                        if (getAccessToken()) {
+                            const { connectPresence } = require(path.join(commonDir, '..', '..', '..', 'shared', 'presence'));
+                            connectPresence().catch(e => console.warn('[Presence] bg connect failed:', e.message || e));
+                        }
+                    } catch (e) {
+                        console.warn('[Presence] Could not start presence from sidebar:', e.message || e);
+                    }
                 }
 
                 if (file === 'right_navbar.html') {

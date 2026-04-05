@@ -14,6 +14,7 @@ const STATUS_CONFIG = {
 const GAME_COLORS = { valorant: '#ff4654', lol: '#0bc6e3', cs2: '#f59e0b', fortnite: '#a855f7' };
 
 let friends = [];
+let presenceReady = false;
 
 function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -85,6 +86,41 @@ function friendFromDoc(doc) {
     };
 }
 
+function mergePresenceIntoFriends(presenceFriends) {
+    if (!presenceFriends || presenceFriends.length === 0) return;
+
+    const presenceMap = new Map();
+    for (const pf of presenceFriends) {
+        presenceMap.set(String(pf.userId), pf);
+    }
+
+    for (const f of friends) {
+        const pf = presenceMap.get(String(f.userId));
+        if (pf) {
+            f.status = pf.status || 'offline';
+            f.game = pf.game;
+            f.details = pf.details;
+            if (pf.nickname && pf.nickname !== 'Unknown') f.nickname = pf.nickname;
+            if (pf.avatar) f.avatar = pf.avatar;
+        }
+    }
+
+    for (const pf of presenceFriends) {
+        const exists = friends.some(f => String(f.userId) === String(pf.userId));
+        if (!exists) {
+            friends.push({
+                userId: pf.userId,
+                nickname: pf.nickname || 'Unknown',
+                email: pf.email || '',
+                avatar: pf.avatar || null,
+                status: pf.status || 'offline',
+                game: pf.game,
+                details: pf.details,
+            });
+        }
+    }
+}
+
 async function loadFriendsViaRest() {
     const user = getUser();
     const myId = user?.id || user?._id;
@@ -96,7 +132,19 @@ async function loadFriendsViaRest() {
     try {
         const docs = await apiRequest(`/friendship/friends/${myId}`);
         const arr = Array.isArray(docs) ? docs : [];
-        friends = arr.map(friendFromDoc);
+
+        if (presenceReady) {
+            const restFriends = arr.map(friendFromDoc);
+            const existingIds = new Set(friends.map(f => String(f.userId)));
+            for (const rf of restFriends) {
+                if (!existingIds.has(String(rf.userId))) {
+                    friends.push(rf);
+                }
+            }
+        } else {
+            friends = arr.map(friendFromDoc);
+        }
+
         console.log(`[RightSidebar] Loaded ${friends.length} friends via REST`);
         renderFriends();
     } catch (e) {
@@ -118,16 +166,35 @@ function updateFriend(userId, changes) {
     return false;
 }
 
+async function fetchAndApplyPresence(getFriends) {
+    try {
+        const presenceFriends = await getFriends();
+        if (presenceFriends && presenceFriends.length > 0) {
+            presenceReady = true;
+            mergePresenceIntoFriends(presenceFriends);
+            renderFriends();
+        }
+    } catch (e) {
+        console.warn('[RightSidebar] Failed to fetch presence friends:', e.message || e);
+    }
+}
+
 async function initPresence() {
     if (!presenceModule) return;
 
-    const { connectPresence, getFriends, onPresence } = presenceModule;
+    const { connectPresence, clearListeners, getFriends, onPresence } = presenceModule;
 
-    onPresence('connected', async () => {
-        console.log('[RightSidebar] Presence connected, fetching friends');
-        const presenceFriends = await getFriends();
-        if (presenceFriends && presenceFriends.length > 0) {
-            friends = presenceFriends;
+    clearListeners();
+
+    onPresence('connected', () => {
+        console.log('[RightSidebar] Presence connected');
+    });
+
+    onPresence('presence-ready', (data) => {
+        console.log('[RightSidebar] Received presence-ready with', data?.friends?.length, 'friends');
+        if (data?.friends) {
+            presenceReady = true;
+            mergePresenceIntoFriends(data.friends);
             renderFriends();
         }
     });

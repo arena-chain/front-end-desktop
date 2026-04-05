@@ -30,6 +30,7 @@ const TIER_COLORS = {
 const GAME_ICONS = {
     valorant: { letter: 'V', color: '#ff4654' },
     lol: { letter: 'LoL', color: '#0bc6e3' },
+    leagueoflegends: { letter: 'LoL', color: '#0bc6e3' },
     cs2: { letter: 'CS', color: '#f59e0b' },
     fortnite: { letter: 'FN', color: '#a855f7' },
 };
@@ -41,6 +42,15 @@ function avatarUrl(name, bg) {
 function tierGradient(tier) {
     const t = TIER_COLORS[(tier || '').toUpperCase()] || TIER_COLORS.IRON;
     return t;
+}
+
+function pickPrimaryArenaRank(ranks) {
+    if (!Array.isArray(ranks) || ranks.length === 0) return null;
+    const lol = ranks.find((r) => {
+        const t = (r.game && (r.game.title || r.game.name) || '').toLowerCase();
+        return t.includes('league') || /\blol\b/.test(t);
+    });
+    return lol || ranks[0];
 }
 
 async function loadProfile() {
@@ -93,8 +103,9 @@ function showLoading() {
 function renderProfile(user, profile, ranks, friendshipStatus) {
     const container = document.getElementById('profile-content');
     const nickname = user.nickname || 'Unknown';
-    const tier = profile?.rank || 'Unranked';
-    const elo = profile?.elo || 1000;
+    const primaryRank = pickPrimaryArenaRank(ranks);
+    const tier = primaryRank?.tier || 'Unranked';
+    const elo = primaryRank?.elo ?? 1000;
     const tc = tierGradient(tier);
     const riotLinked = profile?.riotLinkStatus === 'verified';
 
@@ -120,12 +131,12 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
     const statsHtml = `
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
             <div class="glass-panel rounded-2xl p-4 text-center">
-                <p class="text-2xl font-black text-white">${elo}</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Global ELO</p>
+                <p class="text-2xl font-black text-white">${esc(String(elo))}</p>
+                <p class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Arena ELO</p>
             </div>
             <div class="glass-panel rounded-2xl p-4 text-center">
-                <p class="text-2xl font-black" style="color: ${tc.text}">${esc(tier.toUpperCase())}</p>
-                <p class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Rank</p>
+                <p class="text-2xl font-black" style="color: ${tc.text}">${esc(String(tier).toUpperCase())}</p>
+                <p class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Tier</p>
             </div>
             <div class="glass-panel rounded-2xl p-4 text-center">
                 <p class="text-2xl font-black text-white">${ranks.length}</p>
@@ -143,7 +154,7 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
             <h2 class="text-lg font-black text-white uppercase tracking-wider mb-4">Game Rankings</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 ${ranks.map(r => {
-                    const gameName = r.game?.name || 'Unknown';
+                    const gameName = r.game?.title || r.game?.name || 'Unknown';
                     const gameKey = (gameName || '').toLowerCase().replace(/\s+/g, '');
                     const gi = GAME_ICONS[gameKey] || { letter: gameName.charAt(0).toUpperCase(), color: '#6b7280' };
                     const rtc = tierGradient(r.tier);

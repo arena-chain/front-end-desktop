@@ -10,6 +10,15 @@ function fmtNum(n) {
     return Number(n).toLocaleString();
 }
 
+function pickPrimaryArenaRank(ranks) {
+    if (!Array.isArray(ranks) || ranks.length === 0) return null;
+    const lol = ranks.find((r) => {
+        const t = (r.game && (r.game.title || r.game.name) || '').toLowerCase();
+        return t.includes('league') || /\blol\b/.test(t);
+    });
+    return lol || ranks[0];
+}
+
 function setRankBadge(el, rank) {
     if (!el) return;
     const raw = (rank || 'Unranked').toString();
@@ -19,6 +28,9 @@ function setRankBadge(el, rank) {
     if (r.includes('unranked') || r.includes('iron')) {
         el.style.background = 'linear-gradient(135deg, #4b5563, #374151)';
         el.style.color = '#e5e7eb';
+    } else if (r.includes('bronze')) {
+        el.style.background = 'linear-gradient(135deg, #8b4513, #cd853f)';
+        el.style.color = '#1a0a00';
     } else if (r.includes('gold')) {
         el.style.background = 'linear-gradient(135deg, #ffd700, #ff8c00)';
         el.style.color = '#1a0a00';
@@ -28,6 +40,9 @@ function setRankBadge(el, rank) {
     } else if (r.includes('diamond') || r.includes('plat')) {
         el.style.background = 'linear-gradient(135deg, #22d3ee, #6366f1)';
         el.style.color = '#0a0b0f';
+    } else if (r.includes('master') || r.includes('challenger') || r.includes('grand')) {
+        el.style.background = 'linear-gradient(135deg, #7b2d8b, #d4af37)';
+        el.style.color = '#fafafa';
     } else {
         el.style.background = 'linear-gradient(135deg, #ffd700, #ff8c00)';
         el.style.color = '#1a0a00';
@@ -75,30 +90,46 @@ async function refreshSidebarProfile() {
 
     try {
         const profile = await apiRequest('/player/me');
-        const rank = profile.rank || 'Unranked';
-        setRankBadge(document.getElementById('sidebar-rank-badge'), rank);
-
-        const elo = profile.elo;
-        const eloEl = document.getElementById('sidebar-stat-elo');
-        if (eloEl) eloEl.textContent = elo != null ? fmtNum(elo) : '—';
-
         const stats = profile.stats || {};
         const kdEl = document.getElementById('sidebar-stat-kd');
-        const winEl = document.getElementById('sidebar-stat-win');
         if (kdEl) {
             const kd = stats.kd ?? stats.kda ?? stats.kdRatio;
             kdEl.textContent = kd != null && kd !== '' ? String(kd) : '—';
         }
+    } catch (e) {
+        console.warn('[sidebar] /player/me failed', e.message || e);
+    }
+
+    try {
+        const ranks = await apiRequest('/rank/me/all');
+        const primary = pickPrimaryArenaRank(Array.isArray(ranks) ? ranks : []);
+        const tierLabel = primary?.tier ? String(primary.tier) : 'Unranked';
+        setRankBadge(document.getElementById('sidebar-rank-badge'), tierLabel);
+
+        const eloEl = document.getElementById('sidebar-stat-elo');
+        if (eloEl) {
+            eloEl.textContent =
+                primary != null && primary.elo != null ? fmtNum(primary.elo) : fmtNum(1000);
+        }
+
+        const winEl = document.getElementById('sidebar-stat-win');
         if (winEl) {
-            const w = stats.winRate ?? stats.winPct ?? stats.winrate;
-            if (w != null && w !== '') {
-                winEl.textContent = typeof w === 'number' && w <= 1 ? `${Math.round(w * 100)}%` : String(w);
+            if (primary && primary.totalMatches > 0) {
+                const pct = primary.winRate != null
+                    ? Number(primary.winRate)
+                    : Math.round((primary.wins / primary.totalMatches) * 100);
+                winEl.textContent = `${pct}%`;
             } else {
                 winEl.textContent = '—';
             }
         }
     } catch (e) {
-        console.warn('[sidebar] /player/me failed', e.message || e);
+        console.warn('[sidebar] /rank/me/all failed', e.message || e);
+        setRankBadge(document.getElementById('sidebar-rank-badge'), 'Unranked');
+        const eloEl = document.getElementById('sidebar-stat-elo');
+        if (eloEl) eloEl.textContent = fmtNum(1000);
+        const winEl = document.getElementById('sidebar-stat-win');
+        if (winEl) winEl.textContent = '—';
     }
 }
 
@@ -110,6 +141,9 @@ function initSidebarProfile() {
         });
         window.addEventListener('arenachain-missions-sync', () => {
             refreshSidebarProfile();
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') refreshSidebarProfile();
         });
     }
     setTimeout(() => refreshSidebarProfile(), 0);

@@ -4,6 +4,7 @@ const ROOT_URL = BASE_URL.replace(/\/api\/?$/, '');
 
 let socketLoaderPromise = null;
 let presenceSocket = null;
+let connectPromise = null;
 let listeners = [];
 
 function ensureSocketIoClient() {
@@ -26,11 +27,34 @@ function ensureSocketIoClient() {
     return socketLoaderPromise;
 }
 
-async function connectPresence() {
-    if (presenceSocket && presenceSocket.connected) return presenceSocket;
+function clearListeners() {
+    listeners = [];
+}
 
+async function connectPresence() {
     const token = getAccessToken();
     if (!token) return null;
+
+    if (presenceSocket && presenceSocket.connected) {
+        setTimeout(() => emit('connected'), 0);
+        return presenceSocket;
+    }
+
+    if (connectPromise) return connectPromise;
+
+    connectPromise = _doConnect(token);
+    try {
+        return await connectPromise;
+    } finally {
+        connectPromise = null;
+    }
+}
+
+async function _doConnect(token) {
+    if (presenceSocket) {
+        presenceSocket.disconnect();
+        presenceSocket = null;
+    }
 
     const io = await ensureSocketIoClient();
 
@@ -38,8 +62,8 @@ async function connectPresence() {
         auth: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,
-        reconnectionDelay: 2000,
-        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: Infinity,
     });
 
     presenceSocket.on('connect', () => {
@@ -62,6 +86,10 @@ async function connectPresence() {
         emit('friend-status', data);
     });
 
+    presenceSocket.on('presence-ready', (data) => {
+        emit('presence-ready', data);
+    });
+
     return presenceSocket;
 }
 
@@ -72,13 +100,19 @@ function disconnectPresence() {
     }
 }
 
+function isConnected() {
+    return !!(presenceSocket && presenceSocket.connected);
+}
+
 function getFriends() {
     return new Promise((resolve) => {
         if (!presenceSocket || !presenceSocket.connected) {
             resolve([]);
             return;
         }
+        const timeout = setTimeout(() => resolve([]), 5000);
         presenceSocket.emit('get-friends', {}, (response) => {
+            clearTimeout(timeout);
             resolve(response?.friends || []);
         });
     });
@@ -113,6 +147,8 @@ function emit(event, data) {
 module.exports = {
     connectPresence,
     disconnectPresence,
+    clearListeners,
+    isConnected,
     getFriends,
     updateStatus,
     onPresence,

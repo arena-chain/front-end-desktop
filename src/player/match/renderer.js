@@ -1064,10 +1064,42 @@
             });
         });
         $('gr-done-btn').addEventListener('click', async () => {
-            if (state.gameId) {
-                try { await apiRequest(`/matchmaking/games/${state.gameId}/acknowledge`, { method: 'POST' }); } catch {}
+            const gid = state.gameId;
+            if (gid) {
+                try {
+                    await apiRequest(`/matchmaking/games/${gid}/acknowledge`, { method: 'POST' });
+                } catch (_) { /* may already be IN_PROGRESS */ }
+
+                const user = JSON.parse(localStorage.getItem('arena_user') || '{}');
+                const uid = user.id != null ? String(user.id) : '';
+                const parts = state.game?.participants || [];
+                const me = parts.find((p) => String(p.userId) === uid);
+                const myTeam = me?.team;
+
+                if (myTeam === 'BLUE' || myTeam === 'RED') {
+                    const weWon = await window.showArenaConfirm(
+                        'Match result',
+                        'Record the result to update your Arena ELO and sidebar stats. Did your team win?',
+                        'Yes, we won',
+                        'No, we lost',
+                    );
+                    const winningTeam = weWon ? myTeam : (myTeam === 'BLUE' ? 'RED' : 'BLUE');
+                    try {
+                        await apiRequest(`/matchmaking/games/${gid}/complete`, {
+                            method: 'POST',
+                            body: JSON.stringify({ winningTeam }),
+                        });
+                    } catch (err) {
+                        let msg = err.body?.message || err.message || 'Could not save match result.';
+                        if (Array.isArray(msg)) msg = msg.join('. ');
+                        await window.showArenaAlert('Match result', String(msg), 'error');
+                    }
+                }
             }
             leaveGameRoom();
+            try {
+                window.dispatchEvent(new CustomEvent('arenachain-sidebar-profile-sync'));
+            } catch (_) {}
         });
         $('gr-error-back-btn').addEventListener('click', leaveGameRoom);
 
