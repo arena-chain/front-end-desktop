@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Aim Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; color: white; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-green-glow { box-shadow: 0 0 20px rgba(0, 255, 135, 0.15); }
+        .difficulty-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            border-color: #00ff87;
+            color: #00ff87;
+        }
+        .duration-btn.active {
+            background: rgba(34, 211, 238, 0.15);
+            border-color: #22d3ee;
+            color: #22d3ee;
+        }
+    </style>
+    <script src="../../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <common-navbar src="../dashboard/left_side_navbar.html"></common-navbar>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <common-navbar src="../dashboard/top_navbar.html"></common-navbar>
+            
+            <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <button id="back-btn" class="p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tight mb-2">AIM TRAINING <span class="text-[#00ff87]">LABS</span></h1>
+                                <p class="text-gray-400">Sharpen your reflexes and precision with our advanced training engine.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button id="start-btn" class="px-8 py-4 bg-[#00ff87] text-[#0a0b0f] font-black rounded-2xl hover:scale-105 transition-all neon-green-glow">
+                                START SESSION
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Configuration Panel -->
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="glass-panel rounded-3xl p-6">
+                                <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                    CONFIGURATION
+                                </h3>
+                                
+                                <div class="mb-8">
+                                    <label class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 block">Difficulty</label>
+                                    <div class="grid grid-cols-1 gap-2">
+                                        <button class="difficulty-btn active w-full p-4 rounded-xl border border-white/5 bg-white/5 text-left font-bold transition-all" data-value="MEDIUM">
+                                            <div class="flex justify-between items-center">
+                                                <span>MEDIUM</span>
+                                                <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded">RECOMMENDED</span>
+                                            </div>
+                                        </button>
+                                        <button class="difficulty-btn w-full p-4 rounded-xl border border-white/5 bg-white/5 text-left font-bold transition-all" data-value="EASY">
+                                            <span>EASY</span>
+                                        </button>
+                                        <button class="difficulty-btn w-full p-4 rounded-xl border border-white/5 bg-white/5 text-left font-bold transition-all" data-value="HARD">
+                                            <div class="flex justify-between items-center">
+                                                <span>HARD</span>
+                                                <span class="text-[10px] text-red-500 font-black">ELITE</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 block">Session Duration</label>
+                                    <div class="flex gap-2">
+                                        <button class="duration-btn active flex-1 p-3 rounded-xl border border-white/5 bg-white/5 font-bold transition-all" data-value="60">60s</button>
+                                        <button class="duration-btn flex-1 p-3 rounded-xl border border-white/5 bg-white/5 font-bold transition-all" data-value="120">120s</button>
+                                        <button class="duration-btn flex-1 p-3 rounded-xl border border-white/5 bg-white/5 font-bold transition-all" data-value="180">180s</button>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <label class="text-xs font-black text-gray-500 uppercase tracking-widest mb-4 block">Sound Effects</label>
+                                    <button id="sound-toggle" class="w-full flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/5 font-bold transition-all hover:bg-white/10 group">
+                                        <div class="flex items-center gap-3">
+                                            <svg id="sound-icon-on" class="w-5 h-5 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                            </svg>
+                                            <svg id="sound-icon-off" class="w-5 h-5 text-gray-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm13.121-6.879l-4.242 4.242m4.242 0l-4.242-4.242" />
+                                            </svg>
+                                            <span id="sound-text">ENABLED</span>
+                                        </div>
+                                        <div id="sound-indicator" class="w-2 h-2 rounded-full bg-[#00ff87] shadow-[0_0_10px_#00ff87]"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leaderboard Panel -->
+                        <div class="lg:col-span-2">
+                            <div class="glass-panel rounded-3xl p-6 h-full min-h-[500px]">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-bold flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-[#22d3ee]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                        TOP MARKSMEN
+                                    </h3>
+                                    <div class="flex gap-2">
+                                        <select id="lb-difficulty" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-xs font-bold outline-none">
+                                            <option value="">All Difficulty</option>
+                                            <option value="EASY">Easy</option>
+                                            <option value="MEDIUM">Medium</option>
+                                            <option value="HARD">Hard</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-hidden">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="text-[10px] font-black text-gray-500 uppercase tracking-widest border-b border-white/5">
+                                                <th class="pb-4">Rank</th>
+                                                <th class="pb-4">Player</th>
+                                                <th class="pb-4">Score</th>
+                                                <th class="pb-4">Accuracy</th>
+                                                <th class="pb-4">Difficulty</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leaderboard-body">
+                                            <!-- Data injected here -->
+                                            <tr><td colspan="5" class="py-20 text-center text-gray-600">Loading leaderboard...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

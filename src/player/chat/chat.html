@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0b0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 135, 0.3);
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+        
+        /* Online Status Dots */
+        .status-dot-online { border: 3px solid #0a0b0f; background: #00ff87; }
+        .status-dot-ingame { border: 3px solid #0a0b0f; background: #a855f7; }
+        .status-dot-offline { border: 3px solid #0a0b0f; background: #6b7280; }
+
+        /* Sidebar styles from common */
+        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
+        .sidebar-collapsible:hover { width: 250px; }
+        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
+        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
+        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+
+        /* Voice Room Specific */
+        .voice-room-btn { border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s; }
+        .voice-room-btn:hover { background: rgba(0, 255, 135, 0.08); border-color: rgba(0, 255, 135, 0.2); }
+        .voice-room-btn.active { background: rgba(0, 255, 135, 0.15); border-color: #00ff87; }
+        .voice-user-indicator { width: 3px; height: 12px; background: #00ff87; border-radius: 2px; animation: voice-pulse 1s infinite; }
+        @keyframes voice-pulse { 0% { transform: scaleY(0.5); } 50% { transform: scaleY(1.2); } 100% { transform: scaleY(0.5); } }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- CHAT DASHBOARD CONTENT -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                
+                <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Messages</h1>
+                        <p class="text-gray-400 text-sm">Chat with friends, strategize with your squad, and coordinate matches.</p>
+                    </div>
+                    
+                    <button onclick="startNewMessage()" class="px-6 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl hover:bg-[#00e67a] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,135,0.4)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        NEW MESSAGE
+                    </button>
+                </div>
+
+                <!-- Main Layout Container -->
+                <div class="flex flex-col lg:flex-row gap-8 min-h-0">
+                    
+                    <!-- Left Column: Search & Chat List -->
+                    <div class="flex-1 flex flex-col min-h-0 bg-[#12141c]/50 border border-white/5 rounded-3xl p-6">
+                        
+                        <!-- Search Bar -->
+                        <div class="relative w-full mb-6">
+                            <input type="text" placeholder="Search conversations..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl py-3 pl-11 pr-4 text-sm outline-none focus:border-[#00ff87] transition-all focus:bg-white/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+
+                        <!-- Chat List Container -->
+                        <div id="chatList" class="flex-1 overflow-y-auto space-y-2 pr-2">
+                            <div class="flex items-center justify-center h-40">
+                                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-[#00ff87]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Sidebar -->
+                    <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 h-full">
+                        
+                        <!-- Active Now -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <h3 class="text-xs font-black text-white/40 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse"></span>
+                                AMIS EN LIGNE
+                            </h3>
+                            
+                            <div id="activeFriends" class="space-y-4">
+                                <p class="text-gray-500 text-[10px] uppercase font-black italic opacity-30 text-center py-4">Chargement...</p>
+                            </div>
+                        </div>
+
+                        <!-- Voice Rooms -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <h3 class="text-xs font-black text-white/40 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                                SALONS VOCAUX
+                            </h3>
+                            
+                            <div id="voiceRoomList" class="space-y-2">
+                                <div id="room-Global" class="voice-room-btn cursor-pointer p-3 rounded-2xl bg-white/2 hover:bg-white/5 transition-all" onclick="joinVoiceRoom('Global')">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-gray-300"># GLOBAL</span>
+                                        <span id="count-Global" class="text-[10px] text-gray-500 font-bold">0</span>
+                                    </div>
+                                    <div id="participants-Global" class="flex flex-wrap gap-1 mt-2"></div>
+                                </div>
+                                <div id="room-TeamA" class="voice-room-btn cursor-pointer p-3 rounded-2xl bg-white/2 hover:bg-white/5 transition-all" onclick="joinVoiceRoom('TeamA')">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-gray-300"># TEAM ALPHA</span>
+                                        <span id="count-TeamA" class="text-[10px] text-gray-500 font-bold">0</span>
+                                    </div>
+                                    <div id="participants-TeamA" class="flex flex-wrap gap-1 mt-2"></div>
+                                </div>
+                                <div id="room-TeamB" class="voice-room-btn cursor-pointer p-3 rounded-2xl bg-white/2 hover:bg-white/5 transition-all" onclick="joinVoiceRoom('TeamB')">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-gray-300"># TEAM BRAVO</span>
+                                        <span id="count-TeamB" class="text-[10px] text-gray-500 font-bold">0</span>
+                                    </div>
+                                    <div id="participants-TeamB" class="flex flex-wrap gap-1 mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Control Panel -->
+                        <div id="voiceControlPanel" class="hidden glass-panel p-4 rounded-3xl bg-[#00ff87]/10 border border-[#00ff87]/30 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse"></div>
+                                <div class="text-[10px] font-black text-[#00ff87] uppercase tracking-tighter" id="activeRoomName">Global</div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="muteBtn" onclick="toggleMute()" class="w-8 h-8 rounded-lg bg-black/40 flex items-center justify-center text-gray-400 hover:text-white transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                                </button>
+                                <button onclick="leaveVoiceRoom()" class="w-8 h-8 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Suggestions -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <h3 class="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-4">Plus d'options</h3>
+                            <button class="w-full py-4 rounded-xl border border-dashed border-white/10 text-gray-600 hover:text-gray-400 hover:border-white/20 transition-all text-xs font-bold flex flex-col items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                Paramètres vocaux
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- CUSTOM PROMPT MODAL (for Electron compatibility) -->
+            <div id="userSearchModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+                <div class="glass-panel p-8 rounded-3xl w-full max-w-md border border-[#00ff87]/30 shadow-[0_0_50px_rgba(0,255,135,0.2)]">
+                    <h3 class="text-xl font-black text-white italic uppercase tracking-wider mb-2">Contacter un joueur</h3>
+                    <p class="text-gray-400 text-sm mb-6">Entrez l'ID du joueur ou son pseudo exact.</p>
+                    <input type="text" id="userIdInput" placeholder="Ex: 6987b67b..." class="w-full bg-white/5 border border-white/20 text-white rounded-xl py-3 px-4 mb-6 outline-none focus:border-[#00ff87] transition-all">
+                    <div class="flex gap-3">
+                        <button onclick="toggleUserSearch(false)" class="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all text-sm uppercase">Annuler</button>
+                        <button onclick="submitUserSearch()" class="flex-1 py-3 rounded-xl bg-[#00ff87] text-black font-black hover:bg-[#00e67a] transition-all text-sm uppercase shadow-[0_0_20px_rgba(0,255,135,0.3)]">Valider</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Navigation Script & Setup -->
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const SOCKET_URL = 'http://localhost:3000/chat';
+        const token = localStorage.getItem('token');
+
+        // Debug alerts
+        console.log('Chat JS Loaded... Token:', token ? 'Present' : 'MISSING');
+        
+        if (!token) {
+            console.error('CRITICAL: Token is missing in localStorage');
+        }
+
+        // Restore missing functions
+        window.openChat = function(userId) {
+            console.log('Attemping to open chat with ID:', userId);
+            
+            if (!userId || userId === 'undefined' || userId === 'null') {
+                console.error("L'ID du joueur est invalide (" + userId + ")");
+                return;
+            }
+
+            const cleanId = String(userId).trim();
+            localStorage.setItem('active_chat_user_id', cleanId);
+            window.location.href = 'chat_detail.html';
+        };
+
+        window.toggleUserSearch = function(show = true) {
+            const modal = document.getElementById('userSearchModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.replace('opacity-0', 'opacity-100'), 10);
+                document.getElementById('userIdInput').focus();
+            } else {
+                modal.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        };
+
+        window.submitUserSearch = function() {
+            const val = document.getElementById('userIdInput').value.trim();
+            if (val) {
+                window.openChat(val);
+                window.toggleUserSearch(false);
+            }
+        };
+
+        window.startNewMessage = function() {
+            window.toggleUserSearch(true);
+        };
+
+        let socket;
+        let conversations = [];
+
+        async function fetchInbox() {
+            const list = document.getElementById('chatList');
+            if (!list.innerHTML || list.innerHTML.includes('No active')) {
+                list.innerHTML = '<p class="text-gray-500 p-4 font-black italic tracking-widest text-[10px] uppercase text-center opacity-30 animate-pulse">Chargement...</p>';
+            }
+            try {
+                const response = await fetch(`${API_URL}/chat/inbox?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                console.log('[Chat] Inbox API response:', data);
+                conversations = Array.isArray(data) ? data : [];
+                renderChatList();
+                fetchActiveUsers();
+            } catch (error) {
+                console.error('Failed to fetch inbox:', error);
+                list.innerHTML = '<p class="text-red-500 p-4 font-black italic tracking-widest text-[10px] uppercase text-center opacity-30">Serveur hors-ligne</p>';
+            }
+        }
+
+        // Auto-refresh inbox every 10 seconds
+        setInterval(fetchInbox, 10000);
+
+        async function fetchActiveUsers() {
+            try {
+                // Fetch random users for contact list simulation
+                const response = await fetch(`${API_URL}/users?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await response.json();
+                // Client-side filter as extra safety
+                const filtered = users.filter(u => u && u.role !== 'admin');
+                renderActiveUsers(filtered.slice(0, 8));
+            } catch (error) {
+                console.error('Failed to fetch users:', error);
+            }
+        }
+
+        function renderChatList() {
+            const list = document.getElementById('chatList');
+            console.log('[Chat] Rendering conversations:', conversations.length, conversations);
+
+            if (!conversations || conversations.length === 0) {
+                list.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-20 gap-4">
+                       <p class="text-gray-500 text-center uppercase font-black italic tracking-[0.3em] opacity-20 text-xs">No active conversations</p>
+                       <button onclick="window.startNewMessage()" class="text-[10px] font-black text-[#00ff87] border border-[#00ff87]/20 px-4 py-2 rounded-full hover:bg-[#00ff87]/10 transition-all uppercase tracking-widest">Démarrer une discussion</button>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = conversations.map((conv, idx) => {
+                // Defensive: handle both interlocutor object and direct fields
+                const user = conv.interlocutor || {};
+                
+                // Skip if admin role
+                if (user.role === 'admin') return '';
+
+                // Get ID from multiple possible locations
+                const uId = (user._id || user.id || conv._id || '').toString();
+                if (!uId) {
+                    console.warn('[Chat] Conv has no usable ID at index', idx, conv);
+                    return '';
+                }
+
+                // Get nickname from multiple possible locations
+                const nickname = user.nickname || user.username || user.name || 'Unknown Player';
+                
+                const rawDate = conv.lastMessageDate || conv.updatedAt || conv.createdAt;
+                const date = rawDate ? new Date(rawDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                const avatar = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${nickname}`;
+                const unread = conv.unreadCount || 0;
+                const lastMsg = conv.lastMessage || '...';
+                
+                return `
+                    <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" 
+                         onclick="window.openChat('${uId}')">
+                        ${unread > 0 ? '<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00ff87] rounded-r-lg"></div>' : ''}
+                        <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 ${user.isActive ? 'border-[#00ff87]' : 'border-transparent group-hover:border-white/20'}">
+                            <img src="${avatar}" alt="${nickname}" class="w-full h-full object-cover">
+                            <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full border-2 border-[#0a0b0f] ${user.isActive ? 'bg-[#00ff87]' : 'bg-gray-500'}"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate uppercase tracking-tighter italic">${nickname}</h3>
+                                <span class="text-[10px] font-semibold text-gray-500">${date}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 truncate ${unread > 0 ? 'text-white font-bold' : ''}">${lastMsg}</p>
+                        </div>
+                        ${unread > 0 ? `<div class="w-5 h-5 rounded-full bg-[#ff4654] text-[10px] font-black text-white flex items-center justify-center">${unread}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        function renderActiveUsers(users) {
+            const container = document.getElementById('activeFriends');
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-gray-600 text-[10px] font-black uppercase italic tracking-widest text-center py-4">Aucun joueur en ligne</p>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => {
+                if (!user) return '';
+                const uId = user._id || user.id;
+                if (!uId) return '';
+
+                const avatar = user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.nickname}`;
+                return `
+                    <div class="flex items-center gap-3 cursor-pointer group" onclick="window.openChat('${uId}')">
+                        <div class="relative w-10 h-10 rounded-full flex-shrink-0 border border-transparent group-hover:border-[#00ff87]/50 transition-all">
+                            <img src="${avatar}" class="w-full h-full rounded-full object-cover">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#12141c] ${user.isActive ? 'bg-[#00ff87]' : 'bg-gray-500'}"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-[#00ff87] transition-colors uppercase italic tracking-tighter">${user.nickname || 'Unknown'}</h4>
+                            <p class="text-[10px] text-gray-400 font-black truncate uppercase tracking-widest">${user.isActive ? 'Online' : 'Disponible'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function initSocket() {
+            if (!token) return;
+            socket = io(SOCKET_URL, {
+                auth: { token: `Bearer ${token}` }
+            });
+
+            socket.on('newPrivateMessage', (msg) => {
+                // Refresh inbox to show latest message and unread count
+                fetchInbox();
+            });
+
+            // 🎙️ VOICE ROOM EVENTS
+            socket.on('user-joined', (data) => {
+                console.log('[Voice] User joined:', data.userId);
+                setupPeerConnection(data.userId, true);
+                if (currentRoomId) updateRoomParticipants(currentRoomId);
+            });
+
+            socket.on('user-left', (data) => {
+                console.log('[Voice] User left:', data.userId);
+                removePeerConnection(data.userId);
+                if (currentRoomId) updateRoomParticipants(currentRoomId);
+            });
+
+            socket.on('voice-offer', async (data) => {
+                console.log('[Voice] Handling offer from:', data.from);
+                await handleVoiceOffer(data.from, data.offer);
+            });
+
+            socket.on('voice-answer', async (data) => {
+                console.log('[Voice] Handling answer from:', data.from);
+                await handleVoiceAnswer(data.from, data.answer);
+            });
+
+            socket.on('voice-ice-candidate', (data) => {
+                handleIceCandidate(data.from, data.candidate);
+            });
+
+            socket.on('connect_error', (err) => {
+                console.error('Socket connection error:', err.message);
+            });
+        }
+
+        // ─────────────────────────────────────────────
+        //         VOICE CHAT LOGIC (WebRTC Mesh)
+        // ─────────────────────────────────────────────
+        let localStream;
+        let peerConnections = {}; // userId -> RTCPeerConnection
+        let currentRoomId = null;
+        let isMuted = false;
+
+        async function joinVoiceRoom(roomId) {
+            if (currentRoomId === roomId) return;
+            
+            // UI Update
+            if (currentRoomId) leaveVoiceRoom();
+            currentRoomId = roomId;
+            document.querySelectorAll('.voice-room-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`room-${roomId}`).classList.add('active');
+            document.getElementById('voiceControlPanel').classList.remove('hidden');
+            document.getElementById('activeRoomName').innerText = `# ${roomId}`;
+
+            try {
+                // 1. Get Audio Stream
+                if (!localStream) {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                }
+
+                // 2. Join Socket Room
+                socket.emit('joinVoiceRoom', { roomId }, (res) => {
+                    if (res.status === 'ok') {
+                        console.log('[Voice] Joined room, peers:', res.participants);
+                        
+                        // Update Room UI
+                        updateRoomParticipants(roomId);
+
+                        // 3. Setup connections with existing participants
+                        res.participants.forEach(userId => {
+                            if (userId !== (me?._id || me?.id)) {
+                                setupPeerConnection(userId, true);
+                            }
+                        });
+                    }
+                });
+            } catch (err) {
+                console.error('[Voice] Media access error:', err);
+                alert('Veuillez autoriser le micro pour le chat vocal.');
+                leaveVoiceRoom();
+            }
+        }
+
+        function leaveVoiceRoom() {
+            if (!currentRoomId) return;
+            
+            socket.emit('leaveVoiceRoom');
+            
+            // Close all connections
+            Object.keys(peerConnections).forEach(userId => removePeerConnection(userId));
+            
+            currentRoomId = null;
+            document.querySelectorAll('.voice-room-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('voiceControlPanel').classList.add('hidden');
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            }
+            const btn = document.getElementById('muteBtn');
+            btn.innerHTML = isMuted 
+                ? '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>';
+        }
+
+        function setupPeerConnection(userId, createOffer) {
+            if (peerConnections[userId]) return;
+
+            const pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+
+            peerConnections[userId] = pc;
+
+            // Add local stream
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            // Handle remote stream
+            pc.ontrack = (event) => {
+                console.log(`[Voice] Remote track received from ${userId}`);
+                let audio = document.getElementById(`audio-${userId}`);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = `audio-${userId}`;
+                    document.body.appendChild(audio);
+                }
+                
+                audio.srcObject = event.streams[0];
+                audio.autoplay = true;
+                
+                // Brute force play for better browser support
+                audio.play().catch(e => {
+                    console.warn(`[Voice] Autoplay blocked for ${userId}, retrying...`);
+                    // Retry on any interaction
+                    document.addEventListener('click', () => audio.play(), { once: true });
+                });
+                
+                updateVoiceParticipantUI(userId, true);
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('voice-ice-candidate', { to: userId, candidate: event.candidate });
+                }
+            };
+
+            if (createOffer) {
+                pc.createOffer().then(offer => {
+                    return pc.setLocalDescription(offer);
+                }).then(() => {
+                    socket.emit('voice-offer', { to: userId, offer: pc.localDescription });
+                });
+            }
+        }
+
+        async function handleVoiceOffer(from, offer) {
+            const pc = setupPeerConnection(from, false); // false = we won't create offer, we respond
+            const pc_ref = peerConnections[from];
+            await pc_ref.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc_ref.createAnswer();
+            await pc_ref.setLocalDescription(answer);
+            socket.emit('voice-answer', { to: from, answer: pc_ref.localDescription });
+        }
+
+        async function handleVoiceAnswer(from, answer) {
+            const pc = peerConnections[from];
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            }
+        }
+
+        function handleIceCandidate(from, candidate) {
+            const pc = peerConnections[from];
+            if (pc) {
+                pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        }
+
+        function removePeerConnection(userId) {
+            if (peerConnections[userId]) {
+                peerConnections[userId].close();
+                delete peerConnections[userId];
+            }
+            const audio = document.getElementById(`audio-${userId}`);
+            if (audio) audio.remove();
+            
+            if (currentRoomId) updateRoomParticipants(currentRoomId);
+        }
+
+        async function updateRoomParticipants(roomId) {
+            socket.emit('getVoiceRoomUsers', { roomId }, (users) => {
+                const container = document.getElementById(`participants-${roomId}`);
+                const count = document.getElementById(`count-${roomId}`);
+                if (!container || !count) return;
+
+                count.innerText = users.length;
+                
+                // Show small indicators for participants
+                container.innerHTML = users.slice(0, 5).map(uId => `
+                    <div class="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden" title="${uId}">
+                        <div class="w-2 h-2 rounded-full bg-[#00ff87]"></div>
+                    </div>
+                `).join('') + (users.length > 5 ? `<span class="text-[8px] text-gray-500 self-center ml-1">+${users.length - 5}</span>` : '');
+            });
+        }
+
+        function updateVoiceParticipantUI(userId, inRoom) {
+            if (currentRoomId) updateRoomParticipants(currentRoomId);
+        }
+
+        let me = null;
+        async function getMe() {
+            try {
+                const res = await fetch(`${API_URL}/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                me = await res.json();
+            } catch (e) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getMe();
+            fetchInbox();
+            initSocket();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA — Missions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 135, 0.5); }
+
+        .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
+
+        .progress-bar-bg { background: rgba(255, 255, 255, 0.1); border-radius: 100px; overflow: hidden; height: 8px; }
+        .progress-bar-fill { height: 100%; border-radius: 100px; transition: width 1s ease-in-out; }
+
+        .scope-tab { transition: all 0.2s; }
+        .scope-tab.is-active { color: #fff !important; }
+
+        @keyframes claim-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(0,255,135,0.3); } 50% { box-shadow: 0 0 30px rgba(0,255,135,0.6); } }
+        .claim-ready { animation: claim-pulse 2s ease-in-out infinite; }
+
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%); background-size: 400% 100%; animation: skeleton-shimmer 1.5s infinite; border-radius: 12px; }
+        @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00ff87]/80 mb-2">Progress</p>
+                        <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight mb-1">Missions</h1>
+                        <p class="text-gray-400 text-sm max-w-xl">Complete daily and weekly challenges to earn XP, tokens, and climb the ranks. Individual quests and friend co-op missions available.</p>
+                    </div>
+                    <div id="stats-bar" class="flex items-center gap-3 flex-shrink-0"></div>
+                </div>
+
+                <!-- Scope Filter Tabs -->
+                <div class="flex items-center gap-2 mb-8">
+                    <button class="scope-tab is-active px-4 py-2 text-sm font-bold rounded-xl text-white transition-all" data-scope="all" style="background:#00ff87">All</button>
+                    <button class="scope-tab px-4 py-2 text-sm font-bold rounded-xl bg-white/10 text-gray-400 hover:bg-white/15 transition-all" data-scope="individual">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        Solo
+                    </button>
+                    <button class="scope-tab px-4 py-2 text-sm font-bold rounded-xl bg-white/10 text-gray-400 hover:bg-white/15 transition-all" data-scope="friends">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        Friends
+                    </button>
+                </div>
+
+                <!-- Daily Missions Section -->
+                <div id="daily-section" class="mb-10"></div>
+
+                <!-- Weekly Missions Section -->
+                <div id="weekly-section" class="mb-10"></div>
+
+                <!-- Special Missions Section -->
+                <div id="special-section" class="mb-10"></div>
+
+                <!-- Empty state -->
+                <div id="empty-state" class="hidden text-center py-20">
+                    <div class="w-20 h-20 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">No missions available</h3>
+                    <p class="text-gray-500 text-sm">Check back later for new challenges.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Claim success toast -->
+    <div id="claim-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        <div class="px-6 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl shadow-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <span id="claim-toast-text">Reward claimed!</span>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>

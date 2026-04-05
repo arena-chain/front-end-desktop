@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Recent Matches</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0f; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+
+        .win-glow { box-shadow: inset 4px 0 0 #00ff87; }
+        .loss-glow { box-shadow: inset 4px 0 0 #ff4654; }
+        .remake-glow { box-shadow: inset 4px 0 0 #6b7280; }
+
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-collapsible {
+            width: 90px; position: relative; z-index: 20;
+            overflow: visible !important; transition: width 0.3s ease;
+        }
+        .sidebar-collapsible:hover { width: 250px; }
+        .sidebar-collapsible .sidebar-brand-text,
+        .sidebar-collapsible .sidebar-section-title,
+        .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text,
+        .sidebar-collapsible:hover .sidebar-section-title,
+        .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn,
+        .sidebar-collapsible .game-select-btn {
+            position: relative; justify-content: center; align-items: center; width: 46px; height: 40px;
+            margin-left: auto; margin-right: auto; overflow: visible; z-index: 30;
+            padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease;
+        }
+        .sidebar-collapsible:hover .sidebar-menu-btn,
+        .sidebar-collapsible:hover .game-select-btn {
+            width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important;
+        }
+        .sidebar-collapsible .sidebar-label {
+            opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease;
+            position: absolute; left: 50px;
+        }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+
+        @keyframes skeleton-pulse { 0%,100%{opacity:.4} 50%{opacity:.15} }
+        .skeleton-pulse { animation: skeleton-pulse 1.5s ease-in-out infinite; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Match History</h1>
+                        <p id="subtitle" class="text-gray-400 text-sm">Review your past performance across Riot Games.</p>
+                    </div>
+                    <div id="riot-badge" class="hidden">
+                        <div class="glass-panel rounded-xl px-4 py-2.5 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-[#ff4654]/20 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#ff4654]" viewBox="0 0 24 24" fill="currentColor"><path d="M3.877 2L1 6.838v14.29h5.663V24h3.186l3.174-2.872h4.857L24 15.293V2H3.877zm1.59 2.116h16.417v10.12l-3.77 3.77h-5.654L9.275 21.17v-3.166H5.467V4.116z"/></svg>
+                            </div>
+                            <div>
+                                <p id="riot-name" class="text-sm font-bold text-white"></p>
+                                <p id="riot-region" class="text-[10px] text-gray-500 uppercase tracking-wider"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Filters -->
+                <div id="game-filters" class="flex items-center gap-3 mb-6"></div>
+
+                <!-- Match List -->
+                <div id="match-list" class="space-y-3">
+                    <!-- Populated by renderer.js -->
+                </div>
+
+                <!-- Load More -->
+                <div id="load-more-container" class="mt-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Match Detail Modal -->
+    <div id="match-detail-overlay"
+         class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
+        <div id="match-detail-card"
+             class="w-full max-w-3xl glass-panel rounded-2xl border border-white/10 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+            <div id="match-detail-content">
+                <!-- Populated by renderer.js -->
+            </div>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>
