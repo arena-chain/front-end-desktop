@@ -125,7 +125,9 @@ async function register(formData, role) {
         method: 'POST',
         body: JSON.stringify(formData),
     });
-    storeAuth(data.accessToken, data.refreshToken, data.user || null);
+    if (data.accessToken) {
+        storeAuth(data.accessToken, data.refreshToken, data.user || null);
+    }
     return data;
 }
 

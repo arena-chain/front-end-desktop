@@ -80,8 +80,9 @@ registerForm.addEventListener('submit', async (e) => {
             body.isVerified = false;
         }
 
-        const data = await register(body, role);
-        ipcRenderer.send('navigate-to', 'login');
+        await register(body, role);
+        localStorage.setItem('arena_pending_verify_email', email);
+        ipcRenderer.send('navigate-to', 'verify');
     } catch (err) {
         const msg = err.body?.message
             ? (Array.isArray(err.body.message) ? err.body.message.join('. ') : err.body.message)

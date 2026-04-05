@@ -1,6 +1,7 @@
 (function () {
     'use strict';
     const { apiRequest } = require('../../../shared/api');
+    const { connectMatchmaking, onMatchmaking, joinGameRoom, disconnectMatchmaking, clearListeners: clearMmListeners } = require('../../../shared/matchmaking-ws');
     const DD = 'https://ddragon.leagueoflegends.com/cdn/14.1.1/img';
     const DDRAGON_ICON = DD + '/profileicon/';
 
@@ -519,15 +520,68 @@
     function stopCountdown() { if (state.countdownInterval) { clearInterval(state.countdownInterval); state.countdownInterval = null; } }
 
     // ═══════════════════════════════════════════════════════
-    // POLLING
+    // WEBSOCKET MATCHMAKING EVENTS (replaces HTTP polling)
     // ═══════════════════════════════════════════════════════
 
-    function startPolling() { stopPolling(); state.pollInterval = setInterval(pollMatchState, 3000); }
-    function stopPolling() { if (state.pollInterval) { clearInterval(state.pollInterval); state.pollInterval = null; } }
+    let wsReady = false;
 
-    async function pollMatchState() {
+    function setupMatchmakingWs() {
+        if (wsReady) return;
+        wsReady = true;
+
+        onMatchmaking('mm:match-found', ({ game }) => {
+            if (!game) return;
+            state.gameId = game._id;
+            joinGameRoom(game._id);
+            stopTimer();
+            showQueueState('idle');
+            showMatchFound(game);
+        });
+
+        onMatchmaking('mm:player-response', ({ game }) => {
+            if (!game || game._id !== state.gameId) return;
+            showMatchFound(game);
+        });
+
+        onMatchmaking('mm:game-room-ready', ({ game }) => {
+            if (!game) return;
+            state.gameId = game._id;
+            stopCountdown(); hideOverlay();
+            navigateToGameRoom(game);
+        });
+
+        onMatchmaking('mm:match-cancelled', ({ gameId, reason }) => {
+            if (gameId && gameId !== state.gameId) return;
+            stopCountdown(); stopTimer();
+            showQueueState('idle');
+            showOverlayView('mm-cancelled');
+            showOverlay();
+            resetMatchState();
+        });
+
+        onMatchmaking('mm:match-completed', ({ eloUpdates, winningTeam }) => {
+            console.log('[mm-ws] match completed', winningTeam, eloUpdates);
+            try {
+                window.dispatchEvent(new CustomEvent('arenachain-sidebar-profile-sync'));
+            } catch (_) {}
+        });
+    }
+
+    async function ensureMmSocket() {
         try {
-            const ticketRes = await apiRequest('/matchmaking/my-active-ticket');
+            await connectMatchmaking();
+            setupMatchmakingWs();
+        } catch (e) {
+            console.warn('[mm-ws] connect failed, falling back to polling', e);
+            startPollingFallback();
+        }
+    }
+
+    function startPollingFallback() { stopPollingFallback(); state.pollInterval = setInterval(pollMatchStateFallback, 3000); }
+    function stopPollingFallback() { if (state.pollInterval) { clearInterval(state.pollInterval); state.pollInterval = null; } }
+
+    async function pollMatchStateFallback() {
+        try {
             const gameRes = await apiRequest('/matchmaking/my-active-game');
 
             if (gameRes.game) {
@@ -541,12 +595,12 @@
                     return;
                 }
                 if (game.status === 'ACCEPTED' && game.roomInfo) {
-                    stopPolling(); stopCountdown(); hideOverlay();
+                    stopPollingFallback(); stopCountdown(); hideOverlay();
                     navigateToGameRoom(game);
                     return;
                 }
                 if (game.status === 'CANCELLED' || game.status === 'EXPIRED') {
-                    stopPolling(); stopCountdown(); stopTimer();
+                    stopPollingFallback(); stopCountdown(); stopTimer();
                     showQueueState('idle');
                     showOverlayView('mm-cancelled');
                     showOverlay();
@@ -555,12 +609,13 @@
                 }
             }
 
+            const ticketRes = await apiRequest('/matchmaking/my-active-ticket');
             if (!ticketRes.ticket) {
-                stopPolling(); stopTimer();
+                stopPollingFallback(); stopTimer();
                 showQueueState('idle');
                 resetMatchState();
             }
-        } catch (err) { console.error('Polling error:', err); }
+        } catch (err) { console.error('Polling fallback error:', err); }
     }
 
     // ═══════════════════════════════════════════════════════
@@ -747,7 +802,7 @@
                 await window.showArenaAlert('Scheduled', 'Game scheduled successfully.');
             } else {
                 state.ticketId = ticket.id;
-                startPolling();
+                await ensureMmSocket();
                 stopScheduledWatch();
             }
         } catch (err) {
@@ -758,7 +813,7 @@
     }
 
     async function cancelQueue() {
-        stopPolling(); stopTimer();
+        stopPollingFallback(); stopTimer();
         showQueueState('idle');
         if (state.ticketId) {
             try { await apiRequest(`/matchmaking/queue/${state.ticketId}`, { method: 'DELETE' }); } catch {}
@@ -807,7 +862,8 @@
                     showQueueState('idle');
                     stopTimer();
                     showMatchFound(gameRes.game);
-                    startPolling();
+                    await ensureMmSocket();
+                    joinGameRoom(gameRes.game._id);
                     stopScheduledWatch();
                     return;
                 }
@@ -823,7 +879,7 @@
                 await fetchScheduledTickets();
                 showQueueState('searching');
                 startTimer();
-                startPolling();
+                await ensureMmSocket();
                 stopScheduledWatch();
             }
         } catch (err) { console.error('Scheduled watch error:', err); }
@@ -868,7 +924,8 @@
 
                 if (gameRes.game.status === 'PENDING_ACCEPTANCE') {
                     showMatchFound(gameRes.game);
-                    startPolling();
+                    await ensureMmSocket();
+                    joinGameRoom(gameRes.game._id);
                     return;
                 }
                 if (gameRes.game.status === 'ACCEPTED' && gameRes.game.roomInfo) {
@@ -892,7 +949,7 @@
 
                 showQueueState('searching');
                 startTimer();
-                startPolling();
+                await ensureMmSocket();
                 return;
             }
         } catch {}

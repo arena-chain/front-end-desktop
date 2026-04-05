@@ -897,6 +897,12 @@
   .max-w-\[240px\] {
     max-width: 240px;
   }
+  .max-w-\[320px\] {
+    max-width: 320px;
+  }
+  .max-w-\[460px\] {
+    max-width: 460px;
+  }
   .max-w-\[500px\] {
     max-width: 500px;
   }
@@ -3839,6 +3845,11 @@
   .disabled\:opacity-40 {
     &:disabled {
       opacity: 40%;
+    }
+  }
+  .disabled\:opacity-50 {
+    &:disabled {
+      opacity: 50%;
     }
   }
   .sm\:block {
