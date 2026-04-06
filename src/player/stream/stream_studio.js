@@ -1,7 +1,7 @@
 const { ipcRenderer } = require('electron');
 const { requireAuth, getUser } = require('../../../shared/api');
 const {
-    BASE_URL,
+    getBaseUrl,
     getMyChannel,
     createChannel,
     updateChannel,
@@ -349,7 +349,7 @@ async function pickDesktopSource() {
 function getShareUrl() {
     const channelId = state.channel?._id || '';
     if (!channelId) return '';
-    return `${BASE_URL}/watch/${channelId}`;
+    return `${getBaseUrl()}/watch/${channelId}`;
 }
 
 async function createElectronScreenStream() {

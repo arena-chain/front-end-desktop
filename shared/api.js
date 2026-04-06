@@ -1,7 +1,46 @@
 const { ipcRenderer } = require('electron');
 
-const _storedUrl = localStorage.getItem('arena_base_url') || 'http://localhost:3000';
-const BASE_URL = _storedUrl.replace(/\/api\/?$/, '').replace(/\/$/, '') + '/api';
+/**
+ * Default backend origin when `localStorage.arena_base_url` is unset.
+ * Dev override: localStorage.setItem('arena_base_url', 'http://localhost:3000')
+ */
+const DEFAULT_API_ORIGIN = 'https://arena-chain-api.onrender.com';
+
+function normalizeApiOrigin(raw) {
+    if (!raw || typeof raw !== 'string') return DEFAULT_API_ORIGIN;
+    let s = raw.trim();
+    if (!s) return DEFAULT_API_ORIGIN;
+    s = s.replace(/\/api\/?$/i, '');
+    s = s.replace(/\/+$/, '');
+    return s || DEFAULT_API_ORIGIN;
+}
+
+function getArenaBaseOrigin() {
+    try {
+        const stored = localStorage.getItem('arena_base_url');
+        if (stored) return normalizeApiOrigin(stored);
+    } catch (_) {
+        /* ignore */
+    }
+    return DEFAULT_API_ORIGIN;
+}
+
+/**
+ * Persist server root (e.g. https://arena-chain-api.onrender.com). No /api suffix.
+ */
+function setArenaBaseUrl(raw) {
+    const normalized = normalizeApiOrigin(raw);
+    try {
+        localStorage.setItem('arena_base_url', normalized);
+    } catch (_) {
+        /* ignore */
+    }
+    return normalized;
+}
+
+function getBaseUrl() {
+    return `${getArenaBaseOrigin()}/api`;
+}
 
 const TOKEN_KEYS = {
     access: 'arena_access_token',
@@ -48,7 +87,8 @@ async function refreshAccessToken() {
     const rt = getRefreshToken();
     if (!rt) throw new Error('No refresh token available');
 
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: rt }),
@@ -70,13 +110,14 @@ async function apiRequest(endpoint, options = {}) {
     const token = getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    let res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+    const base = getBaseUrl();
+    let res = await fetch(`${base}${endpoint}`, { ...options, headers });
 
     if (res.status === 401 && token) {
         try {
             const newToken = await refreshAccessToken();
             headers['Authorization'] = `Bearer ${newToken}`;
-            res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+            res = await fetch(`${base}${endpoint}`, { ...options, headers });
         } catch {
             clearAuth();
             ipcRenderer.send('navigate-to', 'login');
@@ -86,7 +127,10 @@ async function apiRequest(endpoint, options = {}) {
 
     if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
-        const err = new Error(errBody.message || `Request failed (${res.status})`);
+        const m = errBody.message;
+        const text =
+            Array.isArray(m) ? m.join(', ') : typeof m === 'string' ? m : '';
+        const err = new Error(text || `Request failed (${res.status})`);
         err.status = res.status;
         err.body = errBody;
         throw err;
@@ -144,8 +188,19 @@ function requireAuth() {
     return true;
 }
 
+try {
+    if (typeof localStorage !== 'undefined') {
+        console.info('[Arena] API requests go to:', getBaseUrl(), '(set arena_base_url in localStorage to override)');
+    }
+} catch (_) {
+    /* non-renderer context */
+}
+
 module.exports = {
-    BASE_URL,
+    DEFAULT_API_ORIGIN,
+    getBaseUrl,
+    getArenaBaseOrigin,
+    setArenaBaseUrl,
     apiRequest,
     login,
     register,

@@ -1,6 +1,4 @@
-const { BASE_URL, getAccessToken } = require('./api');
-
-const ROOT_URL = BASE_URL.replace(/\/api\/?$/, '');
+const { getArenaBaseOrigin, getAccessToken } = require('./api');
 
 let socketLoaderPromise = null;
 let mmSocket = null;
@@ -15,9 +13,10 @@ function ensureSocketIoClient() {
         return socketLoaderPromise;
     }
 
+    const root = getArenaBaseOrigin();
     socketLoaderPromise = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `${ROOT_URL}/socket.io/socket.io.js`;
+        script.src = `${root}/socket.io/socket.io.js`;
         script.onload = () =>
             window.io ? resolve(window.io) : reject(new Error('Socket.IO failed'));
         script.onerror = () => reject(new Error('Unable to load Socket.IO'));
@@ -49,8 +48,9 @@ async function _doConnect(token) {
     }
 
     const io = await ensureSocketIoClient();
+    const root = getArenaBaseOrigin();
 
-    mmSocket = io(`${ROOT_URL}/matchmaking`, {
+    mmSocket = io(`${root}/matchmaking`, {
         auth: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,

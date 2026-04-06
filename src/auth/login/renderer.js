@@ -112,9 +112,12 @@ loginForm.addEventListener('submit', async (e) => {
         ipcRenderer.send('login-success', { role });
     } catch (err) {
         console.error('Login error:', err);
-        const msg = err.status === 401
-            ? 'Invalid email or password.'
-            : err.message || 'Something went wrong. Please try again.';
+        const fallback =
+            err.status === 401 ? 'Invalid email or password.' : 'Something went wrong. Please try again.';
+        const msg =
+            err.message && !String(err.message).startsWith('Request failed')
+                ? err.message
+                : fallback;
         showError(msg);
         setLoading(false); // Ensure loading is cleared on error
     } finally {

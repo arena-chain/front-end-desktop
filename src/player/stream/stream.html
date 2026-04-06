@@ -99,7 +99,7 @@
 
     <script>
         const { getUser } = require('../../../shared/api');
-        const { getChannelMessages, createLiveSocket, getIceServers, BASE_URL, ROOT_URL } = require('../../../shared/creator');
+        const { getChannelMessages, createLiveSocket, getIceServers, getBaseUrl, getServerOrigin } = require('../../../shared/creator');
 
         const params = new URLSearchParams(window.location.search);
         const channelId = params.get('channelId');
@@ -159,8 +159,8 @@
                 return;
             }
             const [channel, streams] = await Promise.all([
-                fetch(`${BASE_URL}/channel/${channelId}`).then((r) => r.json()),
-                fetch(`${BASE_URL}/stream/channel/${channelId}`).then((r) => r.json()),
+                fetch(`${getBaseUrl()}/channel/${channelId}`).then((r) => r.json()),
+                fetch(`${getBaseUrl()}/stream/channel/${channelId}`).then((r) => r.json()),
             ]);
             const liveStream = (streams || []).find((item) => item.isLive) || (streams || [])[0] || null;
             setMeta(channel, liveStream);
@@ -288,7 +288,7 @@
         });
 
         copyWatchLink.addEventListener('click', async () => {
-            const url = `${ROOT_URL}/watch/${channelId}`;
+            const url = `${getServerOrigin()}/watch/${channelId}`;
             try {
                 await navigator.clipboard.writeText(url);
                 copyWatchLink.textContent = 'Copied';

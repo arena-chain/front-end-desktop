@@ -1,6 +1,4 @@
-const { BASE_URL, getAccessToken, getUser } = require('./api');
-
-const ROOT_URL = BASE_URL.replace(/\/api\/?$/, '');
+const { getBaseUrl, getArenaBaseOrigin, getAccessToken, getUser } = require('./api');
 
 function authHeaders() {
     const token = getAccessToken();
@@ -20,7 +18,7 @@ async function parseResponse(response, fallbackMessage) {
 }
 
 async function getMyChannel() {
-    const response = await fetch(`${BASE_URL}/channel/my`, {
+    const response = await fetch(`${getBaseUrl()}/channel/my`, {
         headers: authHeaders(),
     });
 
@@ -29,7 +27,7 @@ async function getMyChannel() {
 }
 
 async function createChannel(payload) {
-    const response = await fetch(`${BASE_URL}/channel`, {
+    const response = await fetch(`${getBaseUrl()}/channel`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -38,7 +36,7 @@ async function createChannel(payload) {
 }
 
 async function updateChannel(id, payload) {
-    const response = await fetch(`${BASE_URL}/channel/${id}`, {
+    const response = await fetch(`${getBaseUrl()}/channel/${id}`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -47,14 +45,14 @@ async function updateChannel(id, payload) {
 }
 
 async function getMyStreams() {
-    const response = await fetch(`${BASE_URL}/stream/my`, {
+    const response = await fetch(`${getBaseUrl()}/stream/my`, {
         headers: authHeaders(),
     });
     return parseResponse(response, 'Failed to load streams');
 }
 
 async function createStream(payload) {
-    const response = await fetch(`${BASE_URL}/stream`, {
+    const response = await fetch(`${getBaseUrl()}/stream`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -63,7 +61,7 @@ async function createStream(payload) {
 }
 
 async function updateStream(id, payload) {
-    const response = await fetch(`${BASE_URL}/stream/${id}`, {
+    const response = await fetch(`${getBaseUrl()}/stream/${id}`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -72,7 +70,7 @@ async function updateStream(id, payload) {
 }
 
 async function startStream(id) {
-    const response = await fetch(`${BASE_URL}/stream/${id}/start`, {
+    const response = await fetch(`${getBaseUrl()}/stream/${id}/start`, {
         method: 'PATCH',
         headers: authHeaders(),
     });
@@ -80,7 +78,7 @@ async function startStream(id) {
 }
 
 async function endStream(id) {
-    const response = await fetch(`${BASE_URL}/stream/${id}/end`, {
+    const response = await fetch(`${getBaseUrl()}/stream/${id}/end`, {
         method: 'PATCH',
         headers: authHeaders(),
     });
@@ -88,7 +86,7 @@ async function endStream(id) {
 }
 
 async function getLiveStreams() {
-    const response = await fetch(`${BASE_URL}/stream/live`, {
+    const response = await fetch(`${getBaseUrl()}/stream/live`, {
         cache: 'no-store',
         headers: {
             'Content-Type': 'application/json',
@@ -99,7 +97,7 @@ async function getLiveStreams() {
 }
 
 async function getChannelMessages(channelId, limit = 50) {
-    const response = await fetch(`${BASE_URL}/chat/channel/${channelId}?limit=${limit}`, {
+    const response = await fetch(`${getBaseUrl()}/chat/channel/${channelId}?limit=${limit}`, {
         headers: {
             'Content-Type': 'application/json',
         },
@@ -115,10 +113,11 @@ function ensureSocketIoClient() {
         return Promise.resolve(window.io);
     }
 
+    const root = getArenaBaseOrigin();
     if (!socketLoaderPromise) {
         socketLoaderPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = `${ROOT_URL}/socket.io/socket.io.js`;
+            script.src = `${root}/socket.io/socket.io.js`;
             script.onload = () => window.io ? resolve(window.io) : reject(new Error('Socket.IO client failed to load'));
             script.onerror = () => reject(new Error('Unable to load Socket.IO client'));
             document.head.appendChild(script);
@@ -130,7 +129,7 @@ function ensureSocketIoClient() {
 
 async function createLiveSocket() {
     const io = await ensureSocketIoClient();
-    return io(ROOT_URL, {
+    return io(getArenaBaseOrigin(), {
         auth: { token: getAccessToken() },
         transports: ['websocket', 'polling'],
     });
@@ -138,7 +137,7 @@ async function createLiveSocket() {
 
 async function getIceServers() {
     if (!rtcConfigPromise) {
-        rtcConfigPromise = fetch(`${BASE_URL}/stream/rtc-config`, {
+        rtcConfigPromise = fetch(`${getBaseUrl()}/stream/rtc-config`, {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -180,8 +179,8 @@ function buildChannelPayload(draft) {
 }
 
 module.exports = {
-    BASE_URL,
-    ROOT_URL,
+    getBaseUrl,
+    getServerOrigin: getArenaBaseOrigin,
     getMyChannel,
     createChannel,
     updateChannel,
