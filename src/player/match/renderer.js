@@ -1035,6 +1035,18 @@
     // ═══════════════════════════════════════════════════════
 
     function init() {
+        const backDash = $('mm-back-dashboard');
+        if (backDash) {
+            backDash.addEventListener('click', () => {
+                try {
+                    const { href } = require('../components/nav-config');
+                    window.location.href = href('dashboard');
+                } catch {
+                    window.location.href = '../dashboard/dashboard.html';
+                }
+            });
+        }
+
         // Root buttons
         $('mm-choose-now').addEventListener('click', openNowFlow);
         $('mm-choose-schedule').addEventListener('click', openSchedFlow);

@@ -25,9 +25,9 @@ const loaderScript = `
             const fs = require('fs');
             const path = require('path');
             try {
-                const leftNav = fs.readFileSync(path.join(__dirname, '_common/left_side_navbar.html'), 'utf8');
-                const topNav = fs.readFileSync(path.join(__dirname, '_common/top_navbar.html'), 'utf8');
-                const rightNav = fs.readFileSync(path.join(__dirname, '_common/right_navbar.html'), 'utf8');
+                const leftNav = fs.readFileSync(path.join(__dirname, 'src/player/components/sidebar.html'), 'utf8');
+                const topNav = fs.readFileSync(path.join(__dirname, 'src/player/components/topbar.html'), 'utf8');
+                const rightNav = fs.readFileSync(path.join(__dirname, 'src/player/components/right-rail.html'), 'utf8');
                 
                 document.getElementById('left-sidebar-container').innerHTML = leftNav;
                 document.getElementById('top-navbar-container').innerHTML = topNav;

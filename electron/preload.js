@@ -12,6 +12,13 @@ const api = {
     getRoleHomes: () => payload.getRoleHomes(),
     getDesktopSources: () => ipcRenderer.invoke('desktop-sources'),
     versions: process.versions,
+    launchConduit: () => ipcRenderer.invoke('launch-conduit'),
+    getConduitCode: () => ipcRenderer.invoke('get-conduit-code'),
+    stopConduit: () => ipcRenderer.invoke('stop-conduit'),
+    onConduitCode: (cb) => ipcRenderer.on('conduit-code', (_, code) => cb(code)),
+    onConduitStopped: (cb) => ipcRenderer.on('conduit-stopped', () => cb()),
+    onConduitError: (cb) => ipcRenderer.on('conduit-error', (_, err) => cb(err)),
+    onMobilePaired: (cb) => ipcRenderer.on('mobile-paired', () => cb()),
 };
 
 if (typeof window !== 'undefined') {

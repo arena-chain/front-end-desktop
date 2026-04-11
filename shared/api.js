@@ -1,10 +1,36 @@
 const { ipcRenderer } = require('electron');
+const fs = require('fs');
+const path = require('path');
 
 /**
- * Default backend origin when `localStorage.arena_base_url` is unset.
- * Dev override: localStorage.setItem('arena_base_url', 'http://localhost:3000')
+ * Default when no file and no localStorage override.
+ * 127.0.0.1 avoids some Windows "localhost" → IPv6 resolution issues.
  */
-const DEFAULT_API_ORIGIN = 'https://arena-chain-api.onrender.com';
+const DEFAULT_API_ORIGIN = 'http://127.0.0.1:3000';
+
+/**
+ * Optional file next to package.json (project root): { "apiOrigin": "http://127.0.0.1:3000" }
+ * Highest priority — edit this file so the app always hits your machine without localStorage.
+ */
+function loadApiOriginFromFile() {
+    try {
+        const configPath = path.join(__dirname, '..', 'arena-api.json');
+        if (!fs.existsSync(configPath)) return null;
+        const raw = fs.readFileSync(configPath, 'utf8');
+        const j = JSON.parse(raw);
+        const o = j.apiOrigin || j.baseUrl || j.apiURL;
+        if (o && typeof o === 'string') return normalizeApiOrigin(o);
+    } catch (e) {
+        console.warn('[Arena] arena-api.json ignored:', e.message || e);
+    }
+    return null;
+}
+
+let _cachedFileOrigin = undefined;
+function getFileOriginCached() {
+    if (_cachedFileOrigin === undefined) _cachedFileOrigin = loadApiOriginFromFile();
+    return _cachedFileOrigin;
+}
 
 function normalizeApiOrigin(raw) {
     if (!raw || typeof raw !== 'string') return DEFAULT_API_ORIGIN;
@@ -16,6 +42,8 @@ function normalizeApiOrigin(raw) {
 }
 
 function getArenaBaseOrigin() {
+    const fromFile = getFileOriginCached();
+    if (fromFile) return fromFile;
     try {
         const stored = localStorage.getItem('arena_base_url');
         if (stored) return normalizeApiOrigin(stored);
@@ -26,7 +54,7 @@ function getArenaBaseOrigin() {
 }
 
 /**
- * Persist server root (e.g. https://arena-chain-api.onrender.com). No /api suffix.
+ * Persist server root (e.g. http://localhost:3000 or your deployed host). No /api suffix.
  */
 function setArenaBaseUrl(raw) {
     const normalized = normalizeApiOrigin(raw);
@@ -111,13 +139,28 @@ async function apiRequest(endpoint, options = {}) {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const base = getBaseUrl();
-    let res = await fetch(`${base}${endpoint}`, { ...options, headers });
+    const url = `${base}${endpoint}`;
+    let res;
+    try {
+        res = await fetch(url, { ...options, headers });
+    } catch (e) {
+        const reason = e && e.message ? e.message : String(e);
+        const hint =
+            'Check: (1) Backend running on port 3000 (`npm run start:dev` in backend-nest1). ' +
+            '(2) `arena-api.json` apiOrigin in front-end-desktop. ' +
+            '(3) DevTools Console for [Arena] API base log. ' +
+            'Clear wrong host: localStorage.removeItem("arena_base_url")';
+        const err = new Error(`Cannot reach API at ${url} — ${reason}. ${hint}`);
+        err.networkError = true;
+        err.cause = e;
+        throw err;
+    }
 
     if (res.status === 401 && token) {
         try {
             const newToken = await refreshAccessToken();
             headers['Authorization'] = `Bearer ${newToken}`;
-            res = await fetch(`${base}${endpoint}`, { ...options, headers });
+            res = await fetch(url, { ...options, headers });
         } catch {
             clearAuth();
             ipcRenderer.send('navigate-to', 'login');
@@ -190,7 +233,12 @@ function requireAuth() {
 
 try {
     if (typeof localStorage !== 'undefined') {
-        console.info('[Arena] API requests go to:', getBaseUrl(), '(set arena_base_url in localStorage to override)');
+        const fileO = getFileOriginCached();
+        console.info(
+            '[Arena] API base:',
+            getBaseUrl(),
+            fileO ? '(from arena-api.json)' : '(no arena-api.json — using localStorage or default)',
+        );
     }
 } catch (_) {
     /* non-renderer context */

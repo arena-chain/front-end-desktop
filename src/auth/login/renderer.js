@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const QRCode = require('qrcode');
-const { login, getPrimaryRole } = require('../../../shared/api');
+const { login, getPrimaryRole, getBaseUrl, getArenaBaseOrigin } = require('../../../shared/api');
 
 // Generate QR Code
 const generateQRCode = async () => {
@@ -111,7 +111,14 @@ loginForm.addEventListener('submit', async (e) => {
         
         ipcRenderer.send('login-success', { role });
     } catch (err) {
-        console.error('Login error:', err);
+        console.error('Login error:', err, '| API:', getBaseUrl(), '| origin:', getArenaBaseOrigin());
+        if (err.networkError) {
+            showError(
+                `Cannot reach the API at ${getArenaBaseOrigin()}. Start the Nest backend (port 3000), check arena-api.json, or run: localStorage.removeItem("arena_base_url") then reload.`
+            );
+            setLoading(false);
+            return;
+        }
         const fallback =
             err.status === 401 ? 'Invalid email or password.' : 'Something went wrong. Please try again.';
         const msg =

@@ -13,6 +13,7 @@ const ROUTES = {
     'training-result': 'src/player/training/result.html',
     'player-channel': 'src/player/channel/channel_dashboard.html',
     'stream-studio': 'src/player/stream/stream_studio.html',
+    'player-example': 'src/player/pages/example.html',
 };
 
 const ROLE_HOME = {

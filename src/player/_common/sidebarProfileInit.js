@@ -1,6 +1,6 @@
 /**
  * Loads Arena level/XP from GET /me/level and player stats from GET /player/me
- * into the left sidebar profile card (see left_side_navbar.html).
+ * into the left sidebar profile card (see components/sidebar.html).
  */
 const path = require('path');
 const { apiRequest, getUser } = require(path.join(__dirname, '../../../shared/api'));

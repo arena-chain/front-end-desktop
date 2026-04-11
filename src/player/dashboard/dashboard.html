@@ -1007,6 +1007,9 @@
                             <h1 class="text-3xl font-black text-white">LEAGUE OF LEGENDS</h1>
                             <p class="text-sm text-gray-500">5v5 MOBA - Strategic Team Combat</p>
                         </div>
+                        <button id="gainAccessControlBtn" class="ml-auto px-5 py-2 border border-[#00ff87]/50 text-[#00ff87] font-bold text-xs rounded-xl hover:bg-[#00ff87]/10 transition-all uppercase tracking-wider flex items-center gap-2">
+                            ⚡ Gain Access Control
+                        </button>
                     </div>
                 </div>
 
@@ -1405,9 +1408,6 @@
             const tabContents = document.querySelectorAll('.tab-content');
             const gameButtons = document.querySelectorAll('.game-select-btn');
             const menuButtons = document.querySelectorAll('.nav-menu-btn');
-            const gamesToggle = document.getElementById('games-toggle');
-            const gamesToggleIcon = document.getElementById('games-toggle-icon');
-            const gamesDropdown = document.getElementById('games-dropdown');
             let currentView = 'overview';
 
             function hideAllContent() {
@@ -1453,55 +1453,43 @@
                 });
             });
 
-            // Left nav menu buttons
-            menuButtons.forEach(btn => {
-                btn.addEventListener('click', function () {
+            function goOverviewFromShell() {
+                menuButtons.forEach(b => { b.classList.remove('active'); b.classList.add('text-gray-400'); });
+                const play = document.getElementById('nav-play');
+                if (play) { play.classList.add('active'); play.classList.remove('text-gray-400'); }
+                deselectAllGames();
+                resetTopNavLinks();
+                if (history.replaceState) {
+                    try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+                }
+                showContent('content-overview');
+                currentView = 'overview';
+            }
+
+            function goLeagueFromShell() {
+                deselectAllGames();
+                resetTopNavLinks();
+                menuButtons.forEach(b => { b.classList.remove('active'); b.classList.add('text-gray-400'); });
+                showContent('content-league');
+                currentView = 'league';
+            }
+
+            window.addEventListener('arena-shell-nav-play', goOverviewFromShell);
+            window.addEventListener('arena-shell-league-tab', goLeagueFromShell);
+
+            const recentBtn = document.getElementById('nav-recent-matches');
+            if (recentBtn) {
+                recentBtn.addEventListener('click', function () {
                     menuButtons.forEach(b => {
                         b.classList.remove('active');
                         b.classList.add('text-gray-400');
                     });
                     this.classList.add('active');
                     this.classList.remove('text-gray-400');
-
-                    if (this.id === 'nav-play') {
-                        deselectAllGames();
-                        resetTopNavLinks();
-                        if (history.replaceState) {
-                            try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
-                        }
-                        showContent('content-overview');
-                        currentView = 'overview';
-                    }
-
-                    if (this.id === 'nav-recent-matches') {
-                        deselectAllGames();
-                        resetTopNavLinks();
-                        showContent('content-overview');
-                        currentView = 'overview';
-                    }
-
-                });
-            });
-
-            // League standings from top navbar
-            const leagueLink = document.getElementById('nav-league-standings');
-            if (leagueLink) {
-                leagueLink.addEventListener('click', function (e) {
-                    e.preventDefault();
                     deselectAllGames();
                     resetTopNavLinks();
-                    menuButtons.forEach(b => { b.classList.remove('active'); b.classList.add('text-gray-400'); });
-                    showContent('content-league');
-                    currentView = 'league';
-                });
-            }
-
-            // Games dropdown collapse/expand
-            if (gamesToggle && gamesDropdown && gamesToggleIcon) {
-                gamesToggle.addEventListener('click', function () {
-                    const isOpen = !gamesDropdown.classList.contains('hidden');
-                    gamesDropdown.classList.toggle('hidden', isOpen);
-                    gamesToggleIcon.classList.toggle('rotate-180', !isOpen);
+                    showContent('content-overview');
+                    currentView = 'overview';
                 });
             }
 
@@ -1565,8 +1553,17 @@
                 showContent('content-friends-activities');
             }
 
+            function openLeagueFromHash() {
+                if (window.location.hash !== '#league') return;
+                goLeagueFromShell();
+            }
+
             openFriendsFromHash();
-            window.addEventListener('hashchange', openFriendsFromHash);
+            openLeagueFromHash();
+            window.addEventListener('hashchange', function () {
+                openFriendsFromHash();
+                openLeagueFromHash();
+            });
 
             (function initRightRailToggle() {
                 var host = document.getElementById('right-rail-host');
@@ -1589,73 +1586,6 @@
                     sync();
                 });
                 sync();
-            })();
-
-            (function initTopNavbarExtras() {
-                const notifToggle = document.getElementById('notif-toggle');
-                const notifDropdown = document.getElementById('notif-dropdown');
-                const notifBadge = document.getElementById('notif-badge');
-                const markRead = document.getElementById('notif-mark-read');
-                const upgradeBtn = document.getElementById('btn-upgrade');
-                const upgradeModal = document.getElementById('upgrade-modal');
-                const upgradeModalClose = document.getElementById('upgrade-modal-close');
-                const upgradeCancel = document.getElementById('upgrade-cancel');
-                const upgradeConfirm = document.getElementById('upgrade-confirm');
-                const upgradeCurrentBadge = document.getElementById('upgrade-current-badge');
-
-                if (notifToggle && notifDropdown) {
-                    notifToggle.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        const willOpen = notifDropdown.classList.contains('hidden');
-                        if (willOpen) {
-                            notifDropdown.classList.remove('hidden');
-                            notifToggle.setAttribute('aria-expanded', 'true');
-                        } else {
-                            notifDropdown.classList.add('hidden');
-                            notifToggle.setAttribute('aria-expanded', 'false');
-                        }
-                    });
-                    document.addEventListener('click', function () {
-                        notifDropdown.classList.add('hidden');
-                        notifToggle.setAttribute('aria-expanded', 'false');
-                    });
-                    notifDropdown.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                    });
-                }
-
-                if (markRead && notifBadge) {
-                    markRead.addEventListener('click', function () {
-                        document.querySelectorAll('.notif-item').forEach(function (el) {
-                            el.classList.remove('border-[#00ff87]');
-                            el.classList.add('border-transparent');
-                        });
-                        notifBadge.classList.add('hidden');
-                    });
-                }
-
-                function closeUpgrade() {
-                    if (upgradeModal) upgradeModal.classList.add('hidden');
-                }
-
-                if (upgradeBtn && upgradeModal) {
-                    upgradeBtn.addEventListener('click', function () {
-                        upgradeModal.classList.remove('hidden');
-                    });
-                    if (upgradeModalClose) upgradeModalClose.addEventListener('click', closeUpgrade);
-                    if (upgradeCancel) upgradeCancel.addEventListener('click', closeUpgrade);
-                    upgradeModal.addEventListener('click', function (e) {
-                        if (e.target === upgradeModal) closeUpgrade();
-                    });
-                    if (upgradeConfirm && upgradeCurrentBadge) {
-                        upgradeConfirm.addEventListener('click', function () {
-                            upgradeCurrentBadge.textContent = 'ARENA PLUS';
-                            upgradeCurrentBadge.style.background = 'linear-gradient(135deg, #00ff87, #22d3ee)';
-                            upgradeCurrentBadge.style.color = '#0a0b0f';
-                            closeUpgrade();
-                        });
-                    }
-                }
             })();
 
             (function initFriendsDmPanel() {
@@ -3410,6 +3340,177 @@
         };
 
         window._mmOrigShowContent = true;
+    })();
+    </script>
+
+    <!-- ========== LEAGUE ACCESS CONTROL MODAL ========== -->
+    <div id="leagueAccessModal" class="fixed inset-0 z-[9997] hidden">
+        <div class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+        <div class="relative w-full h-full flex items-center justify-center p-6">
+            <div class="glass-panel rounded-3xl border border-[#00ff87]/30 w-full max-w-[440px] p-8 relative">
+
+                <button id="closeLeagueModal" class="absolute top-4 right-5 text-gray-500 hover:text-white transition-colors text-xl leading-none">✕</button>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-black text-white uppercase tracking-wider mb-1">League Remote Control</h2>
+                    <p class="text-xs text-gray-500">Control League of Legends from your phone through ArenaChain</p>
+                </div>
+
+                <div class="mb-6 flex flex-col gap-3">
+                    <div class="flex gap-3 items-start">
+                        <span class="bg-[#00ff87]/15 text-[#00ff87] rounded-full min-w-[24px] h-6 flex items-center justify-center text-xs font-black">1</span>
+                        <span class="text-gray-400 text-sm leading-relaxed">Make sure League of Legends is open and you are on the home screen</span>
+                    </div>
+                    <div class="flex gap-3 items-start">
+                        <span class="bg-[#00ff87]/15 text-[#00ff87] rounded-full min-w-[24px] h-6 flex items-center justify-center text-xs font-black">2</span>
+                        <span class="text-gray-400 text-sm leading-relaxed">Click Generate Code, then enter the code in the ArenaChain mobile app</span>
+                    </div>
+                </div>
+
+                <button id="generateConduitCode" class="w-full py-3 bg-[#00ff87] hover:bg-[#00e67a] text-[#0a0b0f] font-black text-sm rounded-xl transition-all mb-5 uppercase tracking-wider">
+                    ⚡ Generate Code
+                </button>
+
+                <div id="conduitSpinner" class="hidden text-center py-3 text-gray-500 text-sm">
+                    <svg class="animate-spin h-5 w-5 mx-auto mb-2 text-[#00ff87]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Waiting for League of Legends...
+                </div>
+
+                <div id="conduitCodeDisplay" class="hidden text-center p-5 bg-[#00ff87]/5 border border-[#00ff87]/15 rounded-2xl mb-4">
+                    <div class="text-gray-500 text-[10px] uppercase tracking-[2px] mb-3 font-bold">Your Pairing Code</div>
+                    <div id="conduitCodeValue" class="text-[#00ff87] text-5xl font-black tracking-[16px] font-mono"></div>
+                    <div class="text-gray-500 text-xs mt-3">Enter this code in the ArenaChain mobile app</div>
+                </div>
+
+                <div id="conduitStatusText" class="text-center text-sm text-gray-500 min-h-[20px]"></div>
+
+                <div id="conduitAllowDeny" class="hidden mt-5">
+                    <div class="text-center text-[#00ff87] text-sm font-bold mb-4">📱 Mobile device connected!</div>
+                    <div class="flex gap-3">
+                        <button id="conduitAllowBtn" class="flex-1 py-3 bg-[#00ff87] hover:bg-[#00e67a] text-[#0a0b0f] font-black text-sm rounded-xl transition-all">Allow Access</button>
+                        <button id="conduitDenyBtn" class="flex-1 py-3 border-2 border-[#ff4654] text-[#ff4654] font-bold text-sm rounded-xl hover:bg-[#ff4654]/10 transition-all">Deny</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- League Access Control Logic -->
+    <script>
+    (function() {
+        const gainBtn = document.getElementById('gainAccessControlBtn');
+        const modal = document.getElementById('leagueAccessModal');
+        const closeBtn = document.getElementById('closeLeagueModal');
+        const generateBtn = document.getElementById('generateConduitCode');
+        const spinner = document.getElementById('conduitSpinner');
+        const codeDisplay = document.getElementById('conduitCodeDisplay');
+        const codeValue = document.getElementById('conduitCodeValue');
+        const statusText = document.getElementById('conduitStatusText');
+        const allowDeny = document.getElementById('conduitAllowDeny');
+        const allowBtn = document.getElementById('conduitAllowBtn');
+        const denyBtn = document.getElementById('conduitDenyBtn');
+
+        function resetModal() {
+            generateBtn.disabled = false;
+            generateBtn.textContent = '⚡ Generate Code';
+            spinner.classList.add('hidden');
+            codeDisplay.classList.add('hidden');
+            allowDeny.classList.add('hidden');
+            statusText.textContent = '';
+            statusText.style.color = '';
+            statusText.className = 'text-center text-sm text-gray-500 min-h-[20px]';
+            codeValue.textContent = '';
+        }
+
+        if (gainBtn) {
+            gainBtn.addEventListener('click', () => {
+                resetModal();
+                modal.classList.remove('hidden');
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                window.electronApp.stopConduit();
+                resetModal();
+            });
+        }
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target === modal.querySelector('.absolute')) {
+                    modal.classList.add('hidden');
+                    window.electronApp.stopConduit();
+                    resetModal();
+                }
+            });
+        }
+
+        if (generateBtn) {
+            generateBtn.addEventListener('click', async () => {
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Launching...';
+                spinner.classList.remove('hidden');
+                codeDisplay.classList.add('hidden');
+                allowDeny.classList.add('hidden');
+                statusText.textContent = '';
+                const res = await window.electronApp.launchConduit();
+                if (res && res.success === false) {
+                    spinner.classList.add('hidden');
+                    statusText.textContent = res.error || 'Could not start Conduit.';
+                    statusText.className = 'text-center text-sm text-[#ff4654] font-bold min-h-[20px]';
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = '⚡ Try Again';
+                }
+            });
+        }
+
+        window.electronApp.onConduitCode((code) => {
+            spinner.classList.add('hidden');
+            codeDisplay.classList.remove('hidden');
+            codeValue.textContent = code;
+            generateBtn.textContent = 'Code Active';
+            statusText.textContent = 'Waiting for mobile connection...';
+            statusText.className = 'text-center text-sm text-gray-500 min-h-[20px]';
+        });
+
+        window.electronApp.onMobilePaired(() => {
+            statusText.textContent = '';
+            allowDeny.classList.remove('hidden');
+        });
+
+        if (allowBtn) {
+            allowBtn.addEventListener('click', () => {
+                allowDeny.classList.add('hidden');
+                statusText.textContent = '✅ Mobile app is now controlling League';
+                statusText.className = 'text-center text-sm text-[#00ff87] font-bold min-h-[20px]';
+            });
+        }
+
+        if (denyBtn) {
+            denyBtn.addEventListener('click', () => {
+                window.electronApp.stopConduit();
+                allowDeny.classList.add('hidden');
+                statusText.textContent = 'Access denied.';
+                statusText.className = 'text-center text-sm text-[#ff4654] font-bold min-h-[20px]';
+                setTimeout(resetModal, 2000);
+            });
+        }
+
+        window.electronApp.onConduitStopped(() => {
+            resetModal();
+            statusText.textContent = 'Connection lost. Try again.';
+        });
+
+        window.electronApp.onConduitError((err) => {
+            spinner.classList.add('hidden');
+            statusText.textContent = 'Error: ' + err;
+            statusText.className = 'text-center text-sm text-[#ff4654] font-bold min-h-[20px]';
+            generateBtn.disabled = false;
+            generateBtn.textContent = '⚡ Try Again';
+        });
     })();
     </script>
     <script src="./renderer.js"></script>
