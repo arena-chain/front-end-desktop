@@ -70,7 +70,8 @@ function startRift() {
         env: {
             ...process.env,
             RIFT_JWT_SECRET: 'local-dev-mimic-secret',
-            PORT: '3000',
+            // Must not use 3000 — NestJS API uses 3000 (/api/...). Rift default in repo is 51001.
+            PORT: '51001',
         },
     });
 
@@ -181,7 +182,7 @@ function launchConduit() {
         conduitLaunchTimeout = setTimeout(() => {
             if (launchPhase === 'pending') {
                 failLaunch(
-                    'Timed out waiting for a pairing code. Open League of Legends so Mimic can connect, and ensure Rift is running (port 3000).',
+                    'Timed out waiting for a pairing code. Open League of Legends so Mimic can connect, and ensure Rift is running (port 51001).',
                 );
             }
         }, 120000);
