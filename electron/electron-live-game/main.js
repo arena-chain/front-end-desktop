@@ -141,6 +141,16 @@ async function pollTick() {
                 team: p.team,
                 position: p.position ?? '',
                 isLocalPlayer: p.summonerName === localName,
+                isDead: p.isDead ?? false,
+                respawnTimer: p.respawnTimer ?? 0,
+                items: Array.isArray(p.items)
+                    ? p.items.map((item) => ({
+                          itemID: item.itemID ?? item.id ?? 0,
+                          displayName: item.displayName ?? item.name ?? '',
+                          price: item.price ?? 0,
+                          slot: item.slot ?? 0,
+                      }))
+                    : [],
             }));
 
         const orderTeam = teamSummary(orderTeamPlayers);
