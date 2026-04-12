@@ -127,6 +127,25 @@ async function pollTick() {
         const localPlayerData =
             allPlayers.find((p) => p && p.summonerName === localName) || allPlayers[0] || {};
 
+        const orderTeamPlayers = allPlayers.filter((p) => p && p.team === 'ORDER');
+        const chaosTeamPlayers = allPlayers.filter((p) => p && p.team === 'CHAOS');
+
+        const teamSummary = (teamPlayers) =>
+            teamPlayers.map((p) => ({
+                summonerName: p.summonerName,
+                championName: p.championName,
+                kills: p.scores?.kills ?? 0,
+                deaths: p.scores?.deaths ?? 0,
+                assists: p.scores?.assists ?? 0,
+                creepScore: p.scores?.creepScore ?? 0,
+                team: p.team,
+                position: p.position ?? '',
+                isLocalPlayer: p.summonerName === localName,
+            }));
+
+        const orderTeam = teamSummary(orderTeamPlayers);
+        const chaosTeam = teamSummary(chaosTeamPlayers);
+
         console.log('[LiveGame] localPlayerData scores:', JSON.stringify(localPlayerData?.scores));
         console.log('[LiveGame] activePlayer gold:', activePlayer?.currentGold);
 
@@ -158,6 +177,8 @@ async function pollTick() {
             gameData,
             localPlayerName: localName,
             newEvents,
+            orderTeam,
+            chaosTeam,
         });
     } catch (_err) {
         if (isPolling && hadSuccessfulFetch) {
