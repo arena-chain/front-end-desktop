@@ -3,8 +3,48 @@ const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { ROOT, resolveRoute, resolveRoleHome } = require('./routes');
+const { registerLiveGameIpc } = require('./electron-live-game/main');
+
+registerLiveGameIpc(ipcMain);
 
 let win;
+
+/** Forward gameflow phase string to dashboard (preload: onGameflowPhase). */
+function forwardGameflowPhaseToRenderer(phase) {
+    if (!win || phase == null) return;
+    const p = String(phase)
+        .replace(/^"|"$/g, '')
+        .trim();
+    if (!p) return;
+    try {
+        if (win.webContents.isDestroyed()) return;
+    } catch {
+        return;
+    }
+    win.webContents.send('gameflow-phase-update', p);
+}
+
+/** NestJS live-game namespace → dashboard gameflow (start/stop Live Client polling). */
+function connectNestLiveGameSocket() {
+    const baseUrl = process.env.NEST_LIVE_GAME_URL || 'http://127.0.0.1:3000';
+    try {
+        const { io } = require('socket.io-client');
+        const nestSocket = io(`${baseUrl}/live-game`, {
+            transports: ['websocket'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+        });
+        nestSocket.on('connect', () => console.log('[live-game] Socket.io connected:', baseUrl));
+        nestSocket.on('game-started', () => forwardGameflowPhaseToRenderer('InProgress'));
+        nestSocket.on('game-ended', () => forwardGameflowPhaseToRenderer('EndOfGame'));
+        nestSocket.on('connect_error', (err) =>
+            console.warn('[live-game] Socket.io:', err?.message || err),
+        );
+    } catch (e) {
+        console.error('[live-game] socket.io-client failed:', e);
+    }
+}
+
 let riftProcess = null;
 let conduitProcess = null;
 let currentPairingCode = null;
@@ -76,10 +116,11 @@ function startRift() {
     });
 
     riftProcess.stdout.on('data', (data) => {
-        const text = data.toString().trim();
+        const raw = data.toString();
+        const text = raw.trim();
         console.log('[Rift]', text);
 
-        if (text.includes('[+] Peer connected to') && currentPairingCode) {
+        if (raw.includes('[+] Peer connected to') && currentPairingCode) {
             if (win) win.webContents.send('mobile-paired');
         }
     });
@@ -279,6 +320,7 @@ function navigateTo(routeName) {
 app.whenReady().then(() => {
     startRift();
     createWindow();
+    connectNestLiveGameSocket();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();

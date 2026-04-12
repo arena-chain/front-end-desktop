@@ -3504,6 +3504,10 @@
             statusText.textContent = 'Connection lost. Try again.';
         });
 
+        window.electronApp.onGameflowPhase((phase) => {
+            window.reportGameflowPhaseForLivePolling(phase);
+        });
+
         window.electronApp.onConduitError((err) => {
             spinner.classList.add('hidden');
             statusText.textContent = 'Error: ' + err;
@@ -3511,6 +3515,15 @@
             generateBtn.disabled = false;
             generateBtn.textContent = '⚡ Try Again';
         });
+
+        // When Rift/Conduit delivers LCU gameflow phase (e.g. from your WebSocket tunnel), forward it here:
+        //   window.reportGameflowPhaseForLivePolling('InProgress');
+        // Internally uses ipcRenderer.send('start-live-polling' | 'stop-live-polling') on the main process.
+        window.reportGameflowPhaseForLivePolling = function (phase) {
+            if (window.electronApp && typeof window.electronApp.reportGameflowPhaseForLivePolling === 'function') {
+                window.electronApp.reportGameflowPhaseForLivePolling(phase);
+            }
+        };
     })();
     </script>
     <script src="./renderer.js"></script>
