@@ -33,8 +33,16 @@ function esc(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function avatar(name) {
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || 'user')}`;
+/** When user has no custom avatar, match profile page fallback (ui-avatars). */
+function fallbackAvatarUrl(nickname) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname || 'U')}&background=00ff87&color=0a0b0f&bold=true&size=128`;
+}
+
+function userAvatarSrc(row) {
+    const nick = row.nickname || 'User';
+    const url = row.avatar && String(row.avatar).trim();
+    if (url) return esc(url);
+    return fallbackAvatarUrl(nick);
 }
 
 function friendFromDoc(doc) {
@@ -45,6 +53,7 @@ function friendFromDoc(doc) {
         userId: other?._id || other,
         nickname: other?.nickname || 'Unknown',
         email: other?.email || '',
+        avatar: other?.avatar || '',
         status: doc.status,
         createdAt: doc.createdAt,
     };
@@ -57,6 +66,7 @@ function pendingFromDoc(doc) {
         userId: sender?._id || sender,
         nickname: sender?.nickname || 'Unknown',
         email: sender?.email || '',
+        avatar: sender?.avatar || '',
         createdAt: doc.createdAt,
     };
 }
@@ -68,6 +78,7 @@ function sentFromDoc(doc) {
         userId: recipient?._id || recipient,
         nickname: recipient?.nickname || 'Unknown',
         email: recipient?.email || '',
+        avatar: recipient?.avatar || '',
         createdAt: doc.createdAt,
     };
 }
@@ -79,6 +90,7 @@ function blockedFromDoc(doc) {
         userId: blocked?._id || blocked,
         nickname: blocked?.nickname || 'Unknown',
         email: blocked?.email || '',
+        avatar: blocked?.avatar || '',
     };
 }
 
@@ -292,7 +304,8 @@ function renderFriendsList(container) {
     }
     container.innerHTML = state.friends.map(f => `
         <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-[#00ff87]/20 transition-all cursor-pointer" data-profile-id="${f.userId}">
-            <img src="${avatar(f.nickname)}" class="w-12 h-12 rounded-full bg-white/5" alt="">
+            <img src="${userAvatarSrc(f)}" class="w-12 h-12 rounded-full bg-white/5 object-cover" alt=""
+                onerror="this.onerror=null;this.src='${fallbackAvatarUrl(f.nickname)}'">
             <div class="flex-1 min-w-0">
                 <p class="text-white font-bold text-sm truncate">${esc(f.nickname)}</p>
                 <p class="text-gray-500 text-xs truncate">${esc(f.email)}</p>
@@ -314,7 +327,8 @@ function renderPendingList(container) {
     }
     container.innerHTML = state.pending.map(f => `
         <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-[#00ff87]/20 transition-all">
-            <img src="${avatar(f.nickname)}" class="w-12 h-12 rounded-full bg-white/5" alt="">
+            <img src="${userAvatarSrc(f)}" class="w-12 h-12 rounded-full bg-white/5 object-cover" alt=""
+                onerror="this.onerror=null;this.src='${fallbackAvatarUrl(f.nickname)}'">
             <div class="flex-1 min-w-0">
                 <p class="text-white font-bold text-sm truncate">${esc(f.nickname)}</p>
                 <p class="text-gray-500 text-xs">${timeAgo(f.createdAt)}</p>
@@ -335,7 +349,8 @@ function renderSentList(container) {
     }
     container.innerHTML = state.sent.map(f => `
         <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-[#00ff87]/20 transition-all">
-            <img src="${avatar(f.nickname)}" class="w-12 h-12 rounded-full bg-white/5" alt="">
+            <img src="${userAvatarSrc(f)}" class="w-12 h-12 rounded-full bg-white/5 object-cover" alt=""
+                onerror="this.onerror=null;this.src='${fallbackAvatarUrl(f.nickname)}'">
             <div class="flex-1 min-w-0">
                 <p class="text-white font-bold text-sm truncate">${esc(f.nickname)}</p>
                 <p class="text-gray-500 text-xs">Sent ${timeAgo(f.createdAt)}</p>
@@ -352,7 +367,8 @@ function renderBlockedList(container) {
     }
     container.innerHTML = state.blocked.map(f => `
         <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-white/10 transition-all">
-            <img src="${avatar(f.nickname)}" class="w-12 h-12 rounded-full bg-white/5 opacity-50" alt="">
+            <img src="${userAvatarSrc(f)}" class="w-12 h-12 rounded-full bg-white/5 opacity-50 object-cover" alt=""
+                onerror="this.onerror=null;this.src='${fallbackAvatarUrl(f.nickname)}'">
             <div class="flex-1 min-w-0">
                 <p class="text-gray-400 font-bold text-sm truncate">${esc(f.nickname)}</p>
                 <p class="text-gray-600 text-xs truncate">${esc(f.email)}</p>
@@ -406,24 +422,26 @@ function renderSearchResults() {
         return;
     }
 
-    const friendIds = new Set(state.friends.map(f => f.userId));
-    const pendingIds = new Set(state.pending.map(f => f.userId));
-    const sentIds = new Set(state.sent.map(f => f.userId));
+    const friendIds = new Set(state.friends.map(f => String(f.userId)));
+    const pendingIds = new Set(state.pending.map(f => String(f.userId)));
+    const sentIds = new Set(state.sent.map(f => String(f.userId)));
 
     container.innerHTML = state.searchResults.map(u => {
+        const uid = u._id != null ? String(u._id) : '';
         let actionHtml = '';
-        if (friendIds.has(u._id)) {
+        if (friendIds.has(uid)) {
             actionHtml = '<span class="px-3 py-1.5 text-[10px] font-bold text-[#00ff87]">FRIENDS</span>';
-        } else if (sentIds.has(u._id)) {
+        } else if (sentIds.has(uid)) {
             actionHtml = '<span class="px-3 py-1.5 text-[10px] font-bold text-yellow-400">PENDING</span>';
-        } else if (pendingIds.has(u._id)) {
+        } else if (pendingIds.has(uid)) {
             actionHtml = '<span class="px-3 py-1.5 text-[10px] font-bold text-yellow-400">WANTS TO ADD YOU</span>';
         } else {
             actionHtml = `<button data-action="add" data-id="${u._id}" class="search-action-btn px-4 py-1.5 text-[10px] font-bold rounded-lg bg-[#00ff87]/20 text-[#00ff87] border border-[#00ff87]/30 hover:bg-[#00ff87]/30 transition-all">ADD FRIEND</button>`;
         }
         return `
             <div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all cursor-pointer" data-profile-id="${u._id}">
-                <img src="${avatar(u.nickname)}" class="w-9 h-9 rounded-full bg-white/5" alt="">
+                <img src="${userAvatarSrc(u)}" class="w-9 h-9 rounded-full bg-white/5 object-cover" alt=""
+                    onerror="this.onerror=null;this.src='${fallbackAvatarUrl(u.nickname)}'">
                 <div class="flex-1 min-w-0">
                     <p class="text-white font-semibold text-sm truncate">${esc(u.nickname)}</p>
                     <p class="text-gray-500 text-[11px] truncate">${esc(u.email)}</p>

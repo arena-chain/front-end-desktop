@@ -1,4 +1,4 @@
-const { getBaseUrl, getArenaBaseOrigin, getAccessToken, getUser } = require('./api');
+const { getBaseUrl, getArenaBaseOrigin, getAccessToken, getUser, apiRequest } = require('./api');
 
 function authHeaders() {
     const token = getAccessToken();
@@ -11,37 +11,41 @@ function authHeaders() {
 async function parseResponse(response, fallbackMessage) {
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || fallbackMessage || 'Request failed');
+        const m = error.message;
+        const text = Array.isArray(m) ? m.join(', ') : typeof m === 'string' ? m : '';
+        throw new Error(text || fallbackMessage || 'Request failed');
     }
 
-    return response.json();
+    const raw = await response.text();
+    if (!raw || !raw.trim()) return null;
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return raw;
+    }
 }
 
 async function getMyChannel() {
-    const response = await fetch(`${getBaseUrl()}/channel/my`, {
-        headers: authHeaders(),
-    });
-
-    if (response.status === 404) return null;
-    return parseResponse(response, 'Failed to load your channel');
+    try {
+        return await apiRequest('/channel/my');
+    } catch (e) {
+        if (e.status === 404) return null;
+        throw e;
+    }
 }
 
 async function createChannel(payload) {
-    const response = await fetch(`${getBaseUrl()}/channel`, {
+    return apiRequest('/channel', {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify(payload),
     });
-    return parseResponse(response, 'Failed to create channel');
 }
 
 async function updateChannel(id, payload) {
-    const response = await fetch(`${getBaseUrl()}/channel/${id}`, {
+    return apiRequest(`/channel/${id}`, {
         method: 'PATCH',
-        headers: authHeaders(),
         body: JSON.stringify(payload),
     });
-    return parseResponse(response, 'Failed to update channel');
 }
 
 async function getMyStreams() {
@@ -167,15 +171,30 @@ async function getIceServers() {
     return rtcConfigPromise;
 }
 
+function splitList(s) {
+    if (!s || !String(s).trim()) return [];
+    return String(s)
+        .split(/[,，]/)
+        .map((x) => x.trim())
+        .filter(Boolean);
+}
+
 function buildChannelPayload(draft) {
     const user = getUser();
-    return {
-        name: draft.channelName || `${user?.nickname || 'Arena'} Live`,
-        description: draft.description || 'Live channel created from desktop studio.',
-        categories: [draft.category, ...(draft.tags || '').split(',')]
-            .map((item) => item && item.trim())
-            .filter(Boolean),
+    const name = (draft.channelName || `${user?.nickname || 'Arena'} Live`).trim();
+    const description = (draft.description || 'Live channel created from desktop studio.').trim();
+    const categories = [...new Set([...splitList(draft.category), ...splitList(draft.tags)])];
+
+    const payload = {
+        name,
+        description,
     };
+    if (categories.length) payload.categories = categories;
+
+    const avatar = draft.avatar && String(draft.avatar).trim();
+    if (avatar) payload.avatarUrl = avatar;
+
+    return payload;
 }
 
 module.exports = {

@@ -40,6 +40,13 @@ function wireTopNavAnchors() {
 
     const chat = document.getElementById('nav-chat-link');
     if (chat) chat.setAttribute('href', href('chat'));
+
+    const settingsBtn = document.getElementById('btn-settings');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            navigateIfDifferent(href('settings'));
+        });
+    }
 }
 
 function navigateIfDifferent(targetHref) {

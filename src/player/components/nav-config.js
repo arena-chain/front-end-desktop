@@ -18,6 +18,7 @@ const PLAYER_PAGES = {
     rewards: 'rewards/rewards.html',
     market: 'market/market.html',
     profile: 'profile/profile.html',
+    settings: 'settings/settings.html',
     news: 'news/news.html',
     missions: 'missions/missions.html',
     friends: 'freinds/freinds.html',

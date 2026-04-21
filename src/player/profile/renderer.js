@@ -1,13 +1,15 @@
 const { ipcRenderer } = require('electron');
-const { requireAuth, apiRequest, logout, getUser } = require('../../../shared/api');
-const { connectPresence, getFriends, onPresence } = require('../../../shared/presence');
+const { requireAuth, apiRequest, logout, getUser, updateProfile } = require('../../../shared/api');
 
 if (!requireAuth()) throw new Error('Not authenticated');
 
 const currentUser = getUser();
 const params = new URLSearchParams(window.location.search);
 const targetUserId = params.get('userId') || currentUser?.id;
-const isOwnProfile = targetUserId === currentUser?.id;
+const isOwnProfile =
+    targetUserId != null &&
+    currentUser?.id != null &&
+    String(targetUserId) === String(currentUser.id);
 
 function esc(s) {
     if (!s) return '';
@@ -34,6 +36,15 @@ const GAME_ICONS = {
     cs2: { letter: 'CS', color: '#f59e0b' },
     fortnite: { letter: 'FN', color: '#a855f7' },
 };
+
+/** Same styles/URL pattern as Flutter `PlayerProfileScreen._generateRandomAvatar`. */
+const DICEBEAR_STYLES = ['avataaars', 'bottts', 'pixel-art', 'lorelei', 'adventurer'];
+
+function generateRandomDicebearAvatarUrl() {
+    const style = DICEBEAR_STYLES[Math.floor(Math.random() * DICEBEAR_STYLES.length)];
+    const seed = String(Math.floor(Math.random() * 100000));
+    return `https://api.dicebear.com/7.x/${style}/png?seed=${seed}`;
+}
 
 function avatarUrl(name, bg) {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'U')}&background=${bg || '00ff87'}&color=0a0b0f&bold=true&size=128`;
@@ -65,7 +76,7 @@ async function loadProfile() {
 
         let userInfo = playerProfile?.userId;
         if (!userInfo || typeof userInfo === 'string') {
-            userInfo = { nickname: 'Unknown Player', email: '', region: 'EUROPE', country: '' };
+            userInfo = { nickname: '', email: '', region: 'EUROPE', country: '' };
         }
 
         renderProfile(userInfo, playerProfile, ranks || [], friendshipStatus);
@@ -102,12 +113,19 @@ function showLoading() {
 
 function renderProfile(user, profile, ranks, friendshipStatus) {
     const container = document.getElementById('profile-content');
-    const nickname = user.nickname || 'Unknown';
+    const riotLinked = profile?.riotLinkStatus === 'verified';
+    const riotDisplayName =
+        riotLinked && profile?.riotGameName
+            ? profile.riotTagLine
+                ? `${profile.riotGameName}#${profile.riotTagLine}`
+                : profile.riotGameName
+            : '';
+    const nickname =
+        (user.nickname && String(user.nickname).trim()) || riotDisplayName || 'Unknown Player';
     const primaryRank = pickPrimaryArenaRank(ranks);
     const tier = primaryRank?.tier || 'Unranked';
     const elo = primaryRank?.elo ?? 1000;
     const tc = tierGradient(tier);
-    const riotLinked = profile?.riotLinkStatus === 'verified';
 
     const friendStatus = friendshipStatus?.status || 'NONE';
     let friendActionHtml = '';
@@ -231,15 +249,25 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
         </a>
     ` : '';
 
+    const avatarShuffleOverlay = isOwnProfile ? `
+                <button type="button" id="profile-shuffle-avatar" title="New random avatar"
+                    class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-0.5 bg-black/60 text-white text-[9px] font-black uppercase tracking-wide opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>Shuffle</span>
+                </button>` : '';
+
     container.innerHTML = `
         <!-- Header -->
         <div class="flex items-start gap-6">
-            <div class="relative">
-                <div class="w-24 h-24 rounded-2xl overflow-hidden" style="box-shadow: 0 0 0 3px ${tc.text}, 0 0 20px ${tc.text}40">
-                    <img src="${user.avatar || avatarUrl(nickname)}" alt="" class="w-full h-full object-cover"
+            <div class="relative shrink-0">
+                <div class="w-24 h-24 rounded-2xl overflow-hidden relative group" style="box-shadow: 0 0 0 3px ${tc.text}, 0 0 20px ${tc.text}40">
+                    <img id="profile-avatar-img" src="${user.avatar || avatarUrl(nickname)}" alt="" class="w-full h-full object-cover"
                          onerror="this.src='${avatarUrl(nickname)}'">
+                    ${avatarShuffleOverlay}
                 </div>
-                ${profile?.isPro ? '<span class="absolute -top-2 -right-2 px-2 py-0.5 bg-[#ffd700] text-[#1a0a00] text-[9px] font-black rounded">PRO</span>' : ''}
+                ${profile?.isPro ? '<span class="absolute -top-2 -right-2 px-2 py-0.5 bg-[#ffd700] text-[#1a0a00] text-[9px] font-black rounded z-20">PRO</span>' : ''}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-3 flex-wrap">
@@ -247,7 +275,6 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded border" style="color: ${tc.text}; border-color: ${tc.text}40; background: ${tc.bg}20">${esc(tier.toUpperCase())}</span>
                     <span class="px-2 py-0.5 text-[10px] font-bold text-gray-400 bg-white/5 rounded">${regionFlag}</span>
                 </div>
-                <p class="text-sm text-gray-500 mt-1">${esc(user.email || '')}</p>
                 ${riotHtml}
                 <div class="mt-3 flex items-center gap-3 flex-wrap">${friendActionHtml}${friendsBtnHtml}${recentMatchesBtnHtml}</div>
             </div>
@@ -268,6 +295,29 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
                 addBtn.outerHTML = '<span class="px-4 py-2 text-xs font-bold text-yellow-400 bg-yellow-400/10 rounded-xl border border-yellow-400/20">REQUEST SENT</span>';
             } catch (err) {
                 alert(err.message || 'Failed to send request');
+            }
+        });
+    }
+
+    const shuffleAvatarBtn = document.getElementById('profile-shuffle-avatar');
+    if (shuffleAvatarBtn) {
+        shuffleAvatarBtn.addEventListener('click', async (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            shuffleAvatarBtn.disabled = true;
+            try {
+                const avatarUrlNext = generateRandomDicebearAvatarUrl();
+                await updateProfile({ avatar: avatarUrlNext });
+                try {
+                    window.dispatchEvent(new CustomEvent('arenachain-sidebar-profile-sync'));
+                } catch (_) {
+                    /* ignore */
+                }
+                await loadProfile();
+            } catch (err) {
+                alert(err.message || 'Could not update avatar');
+            } finally {
+                shuffleAvatarBtn.disabled = false;
             }
         });
     }

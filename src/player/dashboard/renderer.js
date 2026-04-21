@@ -11,10 +11,18 @@ const user = getUser();
 if (user) {
     const nickname = user.nickname || 'Player';
     const encodedName = encodeURIComponent(nickname);
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodedName}&background=00ff87&color=0a0b0f&bold=true`;
+    const customAvatar = user.avatar && String(user.avatar).trim();
 
     const sidebarAvatar = document.getElementById('sidebar-avatar');
     const sidebarNickname = document.getElementById('sidebar-nickname');
-    if (sidebarAvatar) sidebarAvatar.src = `https://ui-avatars.com/api/?name=${encodedName}&background=00ff87&color=0a0b0f&bold=true`;
+    if (sidebarAvatar) {
+        sidebarAvatar.onerror = function () {
+            this.onerror = null;
+            this.src = fallbackAvatar;
+        };
+        sidebarAvatar.src = customAvatar || fallbackAvatar;
+    }
     if (sidebarNickname) sidebarNickname.textContent = nickname;
 
     // Valorant leaderboard entry

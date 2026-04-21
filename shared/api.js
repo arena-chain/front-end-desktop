@@ -179,7 +179,13 @@ async function apiRequest(endpoint, options = {}) {
         throw err;
     }
 
-    return res.json();
+    const raw = await res.text();
+    if (!raw || !raw.trim()) return null;
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return raw;
+    }
 }
 
 function getPrimaryRole(roles) {
@@ -198,6 +204,47 @@ async function login(email, password) {
     });
     storeAuth(data.accessToken, data.refreshToken, data.user);
     return data;
+}
+
+/**
+ * Merge PATCH /auth/profile user payload into stored session user (keeps id, role, profile, etc.).
+ * Backend returns { message, user } with Mongo _id on user.
+ */
+function mergeSessionUserFromApi(apiUser) {
+    if (!apiUser || typeof apiUser !== 'object') return getUser();
+    const prev = getUser() || {};
+    const id = apiUser.id != null ? apiUser.id : apiUser._id;
+    const merged = {
+        ...prev,
+        id: id != null ? String(id) : prev.id,
+        nickname: apiUser.nickname != null ? apiUser.nickname : prev.nickname,
+        email: apiUser.email != null ? apiUser.email : prev.email,
+        avatar: apiUser.avatar != null ? apiUser.avatar : prev.avatar,
+        country: apiUser.country != null ? apiUser.country : prev.country,
+        role: apiUser.role != null ? apiUser.role : prev.role,
+        profile: apiUser.profile !== undefined ? apiUser.profile : prev.profile,
+        isEmailVerified:
+            apiUser.isEmailVerified != null ? apiUser.isEmailVerified : prev.isEmailVerified,
+    };
+    storeAuth(getAccessToken(), getRefreshToken(), merged);
+    return merged;
+}
+
+/**
+ * Update current account (same contract as Flutter AuthApi.updateProfile).
+ * @param {{ nickname?: string; region?: string; avatar?: string }} patch
+ */
+async function updateProfile(patch) {
+    const body = {};
+    if (patch.nickname != null) body.nickname = patch.nickname;
+    if (patch.region != null) body.region = patch.region;
+    if (patch.avatar != null) body.avatar = patch.avatar;
+    const data = await apiRequest('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+    const apiUser = data && data.user != null ? data.user : data;
+    return mergeSessionUserFromApi(apiUser);
 }
 
 async function register(formData, role) {
@@ -260,4 +307,6 @@ module.exports = {
     getPrimaryRole,
     clearAuth,
     storeAuth,
+    updateProfile,
+    mergeSessionUserFromApi,
 };

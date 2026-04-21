@@ -3,7 +3,7 @@
  * into the left sidebar profile card (see components/sidebar.html).
  */
 const path = require('path');
-const { apiRequest, getUser } = require(path.join(__dirname, '../../../shared/api'));
+const { apiRequest, getUser, mergeSessionUserFromApi } = require(path.join(__dirname, '../../../shared/api'));
 
 function fmtNum(n) {
     if (n == null || Number.isNaN(Number(n))) return '—';
@@ -49,19 +49,34 @@ function setRankBadge(el, rank) {
     }
 }
 
+function sidebarAvatarFallbackUrl(u) {
+    const name = encodeURIComponent((u && u.nickname) || (u && u.email) || 'Player');
+    return `https://ui-avatars.com/api/?name=${name}&background=00ff87&color=0a0b0f&bold=true`;
+}
+
 async function refreshSidebarProfile() {
+    try {
+        const remote = await apiRequest('/auth/profile');
+        if (remote && typeof remote === 'object') {
+            mergeSessionUserFromApi(remote);
+        }
+    } catch (e) {
+        console.warn('[sidebar] /auth/profile sync skipped', e.message || e);
+    }
+
     const user = getUser();
     const nickEl = document.getElementById('sidebar-nickname');
     if (nickEl && user?.nickname) nickEl.textContent = user.nickname;
 
     const avatarEl = document.getElementById('sidebar-avatar');
     if (avatarEl && user) {
-        const name = encodeURIComponent(user.nickname || user.email || 'Player');
-        if (user.avatar) {
-            avatarEl.src = user.avatar;
-        } else {
-            avatarEl.src = `https://ui-avatars.com/api/?name=${name}&background=00ff87&color=0a0b0f&bold=true`;
-        }
+        const fallback = sidebarAvatarFallbackUrl(user);
+        const url = (user.avatar && String(user.avatar).trim()) || fallback;
+        avatarEl.onerror = function onAvatarErr() {
+            this.onerror = null;
+            this.src = fallback;
+        };
+        avatarEl.src = url;
     }
 
     try {
