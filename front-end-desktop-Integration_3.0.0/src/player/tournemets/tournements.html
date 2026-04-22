@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Tournaments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 scrollbar-hide" id="scroll-container">
+                
+                <!-- Hero Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#00ff87]">Arena Chain Tournament Hub</p>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-tight">Tournaments</h1>
+                    </div>
+                    <button id="btn-open-create" class="flex items-center gap-3 px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white/60 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#00ff87] hover:text-black hover:border-transparent transition-all shadow-xl group">
+                        <i data-lucide="plus" class="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"></i>
+                        Organize Tournament
+                    </button>
+                </div>
+
+                <!-- Featured Section -->
+                <section class="relative overflow-hidden rounded-[2.5rem] bg-[#12141c] border border-white/5">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#00ff87]/5 via-transparent to-red-500/5"></div>
+                    <div class="relative px-8 py-10 flex flex-wrap items-center justify-between gap-10">
+                        <div class="max-w-xl space-y-6">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#00ff87]">Highlighted Event</p>
+                            <h2 id="featured-title" class="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Waiting for data</h2>
+                            <p id="featured-copy" class="text-sm leading-7 text-gray-400">
+                                Browse active, upcoming and completed tournaments, inspect brackets and participants, track live standings, and manage registration for your managed team.
+                            </p>
+                            <button id="featured-entry" class="px-8 py-3 rounded-2xl bg-[#00ff87] hover:scale-105 text-black text-[11px] font-black uppercase tracking-widest transition-all">
+                                Open Featured Tournament
+                            </button>
+                        </div>
+
+                        <div class="w-full max-w-sm space-y-4">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Total</p>
+                                    <p id="summary-total" class="text-2xl font-black text-white mt-1">0</p>
+                                </div>
+                                <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest text-red-400">Live</p>
+                                    <p id="summary-live" class="text-2xl font-black text-red-500 mt-1">0</p>
+                                </div>
+                                <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest text-[#00ff87]">Upcoming</p>
+                                    <p id="summary-upcoming" class="text-2xl font-black text-[#00ff87] mt-1">0</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-black/30 border border-white/10 rounded-2xl p-5 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span id="featured-status" class="text-[9px] font-black uppercase tracking-widest text-[#00ff87]">READY</span>
+                                    <span id="featured-prize" class="text-[9px] font-black text-[#00ff87] uppercase">$0 PRIZE</span>
+                                </div>
+                                <p class="text-sm font-bold text-white uppercase tracking-tight">Strategy Node Activated</p>
+                                <p class="text-[10px] text-gray-500">Global tournament status synchronized.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Filter & Search Bar -->
+                <section class="flex flex-col md:flex-row gap-4 items-center justify-between pt-4 border-t border-white/5">
+                    <div id="bucket-filters" class="flex items-center gap-2 bg-[#0d0d0d] border border-white/5 rounded-xl p-1"></div>
+                    <div class="relative w-full md:w-80 group">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[#00ff87] transition-colors"></i>
+                        <input id="search-input" type="text" placeholder="Search tournaments..." class="w-full bg-[#12141c] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#00ff87]/50 transition-all">
+                    </div>
+                </section>
+
+                <!-- Grid -->
+                <section id="tournaments-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20"></section>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden col-span-full py-32 text-center bg-[#12141c] border border-white/5 rounded-[2.5rem]">
+                    <i data-lucide="trophy" class="w-12 h-12 text-[#00ff87] opacity-20 mx-auto mb-4"></i>
+                    <h2 class="text-2xl font-black uppercase tracking-tight text-white/40">No tournaments found</h2>
+                    <p class="mt-3 text-sm text-gray-500">Adjust your filters or try again later.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Tournament Modal -->
+    <div id="create-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="create-modal-overlay"></div>
+        <div class="relative w-full max-w-xl bg-[#141419] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col animate-slide-up">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-white/5">
+                <div class="w-8"></div>
+                <h2 class="text-xl font-black text-white uppercase tracking-tight">Create Tournament</h2>
+                <button id="btn-close-create" class="text-white/40 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="p-8 space-y-6 overflow-y-auto max-h-[80vh] scrollbar-hide">
+                <!-- Name -->
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-white/40 uppercase tracking-widest">Tournament Name</label>
+                    <input id="form-name" type="text" placeholder="Enter tournament name..." class="w-full h-12 bg-white/[0.03] border border-white/5 rounded-xl px-4 text-sm font-bold text-white outline-none focus:border-[#00ff87]/50">
+                </div>
+
+                <!-- Game -->
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-white/40 uppercase tracking-widest">Select Game</label>
+                    <div class="relative">
+                        <select id="form-game" class="w-full h-12 bg-white/[0.03] border border-white/5 rounded-xl px-4 text-sm font-bold text-white outline-none focus:border-[#00ff87]/50 appearance-none">
+                            <option value="" disabled selected>Loading games...</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Region -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-white/40 uppercase tracking-widest">Region</label>
+                        <select id="form-region" class="w-full h-12 bg-white/[0.03] border border-white/5 rounded-xl px-4 text-sm font-bold text-white outline-none focus:border-[#00ff88]/50 appearance-none">
+                            <option value="GLOBAL">Global</option>
+                            <option value="EUROPE">Europe</option>
+                            <option value="NORTH_AMERICA">North America</option>
+                            <option value="ASIA">Asia</option>
+                        </select>
+                    </div>
+                    <!-- Start Date -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-white/40 uppercase tracking-widest">Start Date</label>
+                        <input id="form-date" type="date" class="w-full h-12 bg-white/[0.03] border border-white/5 rounded-xl px-4 text-sm font-bold text-white outline-none focus:border-[#00ff87]/50">
+                    </div>
+                </div>
+
+                <!-- Game Mode -->
+                <div class="space-y-3">
+                    <label class="block text-[10px] font-black text-white/40 uppercase tracking-widest">Game Mode</label>
+                    <div class="grid grid-cols-5 gap-2" id="game-mode-selector">
+                        <button data-mode="SOLO" class="mode-btn h-12 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase transition-all">1v1</button>
+                        <button data-mode="DUO" class="mode-btn h-12 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase transition-all">2v2</button>
+                        <button data-mode="TRIO" class="mode-btn h-12 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase transition-all">3v3</button>
+                        <button data-mode="SQUAD" class="mode-btn h-12 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase transition-all">4v4</button>
+                        <button data-mode="PRO" class="mode-btn h-12 rounded-xl bg-[#00ff88] text-black text-[10px] font-black uppercase transition-all">5v5</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-white/5 flex items-center justify-end gap-6">
+                <button id="btn-cancel-create" class="text-[11px] font-black text-white/40 uppercase tracking-widest hover:text-white">Cancel</button>
+                <button id="btn-submit-create" class="px-10 py-3.5 rounded-xl bg-[#00ff88] text-black text-[11px] font-black uppercase tracking-[0.2em] shadow-lg hover:scale-105 active:scale-95 transition-all">
+                    Create Tournament
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden element for JS compatibility -->
+    <div id="player-name" class="hidden"></div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>

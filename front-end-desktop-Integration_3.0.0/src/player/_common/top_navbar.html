@@ -1,0 +1,280 @@
+<!-- Top Navigation Bar -->
+<style>
+    .top-navbar-scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .top-navbar-scrollbar-hide::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+</style>
+<header class="relative z-40 w-full border-b border-white/5 bg-[#12141c]">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
+        <nav
+            class="top-navbar-scrollbar-hide flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap"
+            aria-label="Main sections"
+        >
+            <a
+                id="nav-league-standings"
+                href="#"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-white"
+            >
+                League Standings
+            </a>
+            <a
+                id="nav-page-events"
+                href="../events/events.html"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-white"
+            >
+                Events
+            </a>
+            <a
+                id="nav-page-tournaments"
+                href="../tournemets/tournements.html"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-white"
+            >
+                Tournaments
+            </a>
+            <a
+                id="nav-rewards"
+                href="../rewards/rewards.html"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-white"
+            >
+                Rewards
+            </a>
+            <a
+                id="nav-page-market"
+                href="../market/market.html"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-white"
+            >
+                Market
+            </a>
+            <a
+                id="nav-page-trading"
+                href="../market/trading.html"
+                class="rounded-xl px-6 py-3 text-sm font-bold uppercase tracking-wide text-gray-500 transition-all hover:text-[#00ff87]"
+            >
+                Trading
+            </a>
+        </nav>
+
+        <div class="flex w-full items-center justify-end gap-2 sm:gap-3 lg:w-auto">
+            <div class="relative">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    class="w-32 rounded-lg border border-white/5 bg-[#1a1c26] px-4 py-2 pl-10 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-[#00ff87] sm:w-44 md:w-56 lg:w-64"
+                />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                </svg>
+            </div>
+
+            <button
+                type="button"
+                id="btn-upgrade"
+                class="neon-orange-glow shrink-0 whitespace-nowrap rounded-lg bg-[#ff7800] px-4 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-[#e66d00]"
+            >
+                Upgrade
+            </button>
+
+            <div class="relative">
+                <button
+                    type="button"
+                    id="notif-toggle"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    class="relative flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a1c26] transition-all hover:bg-white/10"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                    </svg>
+                    <span
+                        id="notif-badge"
+                        class="absolute -right-1 -top-1 hidden min-w-[1.25rem] rounded-full bg-[#ff4654] px-1 text-[10px] font-bold leading-5 text-white"
+                    >
+                        0
+                    </span>
+                </button>
+
+                <div
+                    id="notif-dropdown"
+                    class="absolute right-0 z-[60] mt-2 hidden w-[min(100vw-2rem,24rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#161822] shadow-2xl shadow-black/50"
+                >
+                    <div class="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-4 py-3">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                Notifications
+                            </p>
+                            <p id="notif-unread-copy" class="mt-1 text-[11px] font-semibold text-[#00ff87]">
+                                Realtime alerts
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button
+                                type="button"
+                                id="notif-mark-read"
+                                title="Mark all read"
+                                class="rounded-lg p-1.5 text-xs text-gray-500 transition-colors hover:bg-white/10 hover:text-[#00ff87]"
+                            >
+                                Read
+                            </button>
+                            <button
+                                type="button"
+                                id="notif-clear-all"
+                                title="Clear all"
+                                class="rounded-lg p-1.5 text-xs text-gray-500 transition-colors hover:bg-white/10 hover:text-red-300"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="notif-list" class="max-h-96 overflow-y-auto">
+                        <div
+                            id="notif-empty"
+                            class="flex flex-col items-center justify-center px-4 py-10 text-center"
+                        >
+                            <p class="text-xs font-bold text-gray-500">All caught up.</p>
+                        </div>
+                    </div>
+
+                    <div id="notif-archived-label" class="hidden border-t border-white/5 px-4 py-2">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600">
+                            Older notifications archived
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2 border-t border-white/5 bg-[#11131a] px-4 py-3">
+                        <a
+                            id="notif-open-history"
+                            href="../profile/notifications_history.html"
+                            class="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-[11px] font-black uppercase tracking-wide text-white transition hover:bg-white/10"
+                        >
+                            View History
+                        </a>
+                        <a
+                            id="notif-open-settings"
+                            href="../profile/notifications_settings.html"
+                            class="flex-1 rounded-xl border border-[#00ff87]/20 bg-[#00ff87]/10 px-3 py-2 text-center text-[11px] font-black uppercase tracking-wide text-[#00ff87] transition hover:bg-[#00ff87]/15"
+                        >
+                            Preferences
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a1c26] transition-all hover:bg-white/10"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div
+    id="upgrade-modal"
+    class="top-navbar-scrollbar-hide fixed inset-0 z-[10000] hidden overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+>
+    <div class="flex min-h-full items-center justify-center">
+        <div class="relative my-8 w-full max-w-md rounded-2xl border border-white/10 bg-[#12141c] p-6 shadow-2xl">
+            <button
+                type="button"
+                id="upgrade-modal-close"
+                class="absolute right-4 top-4 p-1 text-gray-500 hover:text-white"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+            <h2 class="mb-1 text-xl font-black text-white">Upgrade status</h2>
+            <p class="mb-6 text-sm text-gray-400">
+                Boost your profile tier for queue priority, custom badge, and extra mission slots.
+            </p>
+            <div class="mb-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">Current</p>
+                <div class="flex items-center gap-3">
+                    <span
+                        id="upgrade-current-badge"
+                        class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-black"
+                        style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a0a00;"
+                    >
+                        GOLD
+                    </span>
+                    <span class="text-sm text-gray-400">Standard queues and 2 mission slots</span>
+                </div>
+            </div>
+            <div class="mb-6 rounded-xl border border-[#00ff87]/30 bg-[#00ff87]/5 p-4">
+                <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#00ff87]">Arena Plus</p>
+                <ul class="list-inside list-disc space-y-1.5 text-sm text-gray-300">
+                    <li>Priority matchmaking</li>
+                    <li>Animated nameplate and border</li>
+                    <li>One extra mission slot and weekly bonus XP</li>
+                </ul>
+                <p class="mt-3 text-xs text-gray-500">
+                    Demo: clicking confirm updates your displayed tier locally.
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    type="button"
+                    id="upgrade-confirm"
+                    class="flex-1 rounded-xl bg-[#00ff87] py-3 text-sm font-black uppercase tracking-wide text-[#0a0b0f] transition-colors hover:bg-[#00e67a]"
+                >
+                    Confirm upgrade
+                </button>
+                <button
+                    type="button"
+                    id="upgrade-cancel"
+                    class="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-gray-300 transition-colors hover:bg-white/5"
+                >
+                    Later
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

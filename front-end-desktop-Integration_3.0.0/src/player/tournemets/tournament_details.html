@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Tournament Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.68);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 scrollbar-hide">
+                <div class="mx-auto max-w-7xl space-y-8">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <a href="./tournements.html" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-white/10">
+                            Back to Tournaments
+                        </a>
+                        <p class="text-sm text-gray-500">Signed in as <span id="player-name" class="font-black text-white">Arena Player</span></p>
+                    </div>
+
+                    <section class="glass-panel rounded-[2.5rem] overflow-hidden">
+                        <div class="bg-gradient-to-r from-[#0f1118] via-[#141419] to-[#0f1118] px-8 py-10">
+                            <div class="flex flex-wrap items-start justify-between gap-8">
+                                <div class="max-w-4xl">
+                                    <p id="tournament-game" class="text-[10px] font-black uppercase tracking-[0.2em] text-[#00ff87]">Esports</p>
+                                    <h1 id="tournament-title" class="mt-4 text-5xl font-black uppercase tracking-tighter text-white">Tournament</h1>
+                                    <p id="tournament-description" class="mt-4 max-w-3xl text-sm leading-7 text-gray-400">
+                                        Tournament overview will be published soon.
+                                    </p>
+                                    <div class="mt-6 flex flex-wrap items-center gap-3">
+                                        <span id="tournament-status" class="inline-flex rounded-xl border border-white/10 bg-white/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/60">Loading</span>
+                                    </div>
+                                </div>
+                                <div class="w-full max-w-sm space-y-4">
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div class="rounded-3xl border border-white/5 bg-white/[0.03] px-4 py-5 text-center">
+                                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Prize</p>
+                                            <p id="summary-prize" class="mt-3 text-xl font-black text-[#00ff87]">$0</p>
+                                        </div>
+                                        <div class="rounded-3xl border border-white/5 bg-white/[0.03] px-4 py-5 text-center">
+                                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Start</p>
+                                            <p id="summary-start" class="mt-3 text-sm font-black text-white">TBA</p>
+                                        </div>
+                                        <div class="rounded-3xl border border-white/5 bg-white/[0.03] px-4 py-5 text-center">
+                                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Teams</p>
+                                            <p id="summary-teams" class="mt-3 text-sm font-black text-white">0/0</p>
+                                        </div>
+                                    </div>
+                                    <button id="registration-button" type="button" class="w-full rounded-2xl bg-[#00ff87] px-4 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#0a0b0f] transition hover:bg-[#00e67a]">
+                                        Register Team
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_320px]">
+                        <div class="space-y-8">
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <div class="mb-6 flex items-center justify-between gap-4">
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-white">Live Standings</h2>
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Live scores and ranking</p>
+                                </div>
+                                <div class="overflow-hidden rounded-3xl border border-white/5">
+                                    <table class="w-full">
+                                        <thead class="bg-white/[0.03]">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">#</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Team</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">P</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">W</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">L</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Pts</th>
+                                                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">GD</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="standings-body"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <div class="mb-6 flex items-center justify-between gap-4">
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-white">Bracket</h2>
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Participants and rounds</p>
+                                </div>
+                                <div id="bracket-rounds" class="flex gap-6 overflow-x-auto pb-2 scrollbar-hide"></div>
+                            </section>
+
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <div class="mb-6 flex items-center justify-between gap-4">
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-white">Results</h2>
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Finished and live matches</p>
+                                </div>
+                                <div id="results-list" class="space-y-4"></div>
+                            </section>
+
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <div class="mb-6 flex items-center justify-between gap-4">
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-white">Participants</h2>
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Registered teams</p>
+                                </div>
+                                <div id="participants-grid" class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4"></div>
+                            </section>
+                        </div>
+
+                        <aside class="space-y-8">
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <h2 class="text-xl font-black uppercase tracking-tight text-white">Info</h2>
+                                <div class="mt-6 space-y-4">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Organizer</p>
+                                        <p id="sidebar-organizer" class="mt-2 text-sm font-bold text-white">Arena Chain</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Format</p>
+                                        <p id="sidebar-format" class="mt-2 text-sm font-bold text-white">Single Elimination</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Window</p>
+                                        <p id="sidebar-window" class="mt-2 text-sm font-bold text-white">TBA</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Live tracking</p>
+                                        <p id="sidebar-live" class="mt-2 text-sm font-bold text-[#00ff87]">Waiting for kickoff</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <h2 class="text-xl font-black uppercase tracking-tight text-white">Rules</h2>
+                                <ul id="rules-list" class="mt-6 space-y-3"></ul>
+                            </section>
+
+                            <section class="glass-panel rounded-[2.5rem] p-8">
+                                <h2 class="text-xl font-black uppercase tracking-tight text-white">Rewards</h2>
+                                <div id="prize-list" class="mt-6 space-y-3"></div>
+                            </section>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="./tournament_details.js"></script>
+</body>
+</html>

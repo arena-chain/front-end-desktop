@@ -1,0 +1,80 @@
+<!-- Right Sidebar - Currently Playing, Friends & DMs -->
+<style>
+    .right-rail-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .right-rail-scrollbar-hide::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+    #dm-popup-overlay:not(.hidden) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+</style>
+<aside class="flex flex-col flex-1 min-h-0 w-full bg-[#12141c]">
+
+    <!-- Friends + conversation -->
+    <div class="flex-1 flex flex-col min-h-0 bg-[#12141c]">
+        <div class="px-5 pt-4 pb-2 flex-shrink-0 bg-[#12141c]">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Connected</h3>
+            <p class="text-[11px] text-gray-600 mt-0.5">Click a friend to view their profile</p>
+        </div>
+
+        <div class="right-rail-scrollbar-hide flex-1 overflow-y-auto px-5 pb-3 min-h-0 bg-[#12141c]">
+            <div class="space-y-2" id="friends-connected-list">
+                <!-- Populated by rightSidebarInit.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat + Party -->
+    <div class="p-4 border-t border-white/5 flex-shrink-0 bg-[#12141c] space-y-2">
+        <a href="../chat/chat.html"
+            class="w-full py-3 bg-[#1a1c26] hover:bg-white/10 text-gray-300 hover:text-white font-bold rounded-xl transition-all uppercase tracking-wide text-sm flex items-center justify-center gap-2 border border-white/5 hover:border-white/15">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M8 12h.01M12 12h.01M16 12h.01M3 12c0 4.418 4.03 8 9 8a9.863 9.863 0 0 0 4.255-.949L21 20l-1.395-3.72A7.962 7.962 0 0 0 21 12c0-4.418-4.03-8-9-8s-9 3.582-9 8z" />
+            </svg>
+            CHAT
+        </a>
+        <button type="button"
+            class="w-full py-3 bg-[#00ff87] hover:bg-[#00e67a] text-[#0a0b0f] font-black rounded-xl transition-all neon-green-glow uppercase tracking-wide text-sm flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            CREATE PARTY
+        </button>
+    </div>
+</aside>
+
+
+<!-- Messages popup (fixed overlay; opens when a friend row is clicked) -->
+<div id="dm-popup-overlay"
+    class="fixed inset-0 z-[10020] hidden p-4 bg-black/70 backdrop-blur-sm overflow-y-auto right-rail-scrollbar-hide"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dm-friend-name">
+    <div id="dm-popup-card"
+        class="w-full max-w-lg rounded-2xl border border-white/10 bg-[#12141c] shadow-2xl flex flex-col max-h-[min(85vh,560px)] min-h-0 overflow-hidden my-auto">
+        <div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-white/10">
+            <div class="min-w-0">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Conversation</p>
+                <p id="dm-friend-name" class="text-lg font-bold text-white truncate">—</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Message history with this friend</p>
+            </div>
+            <button type="button" id="dm-close"
+                class="flex-shrink-0 p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close messages">✕</button>
+        </div>
+        <div id="dm-messages"
+            class="right-rail-scrollbar-hide flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 text-[13px] min-h-[200px]">
+        </div>
+        <div class="px-4 py-3 border-t border-white/10 bg-[#0d0f16]/80">
+            <p class="text-[10px] text-gray-600 text-center">Demo — connect your chat API to send messages</p>
+        </div>
+    </div>
+</div>

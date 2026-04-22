@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - NFT Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .rarity-glow-RARE { box-shadow: 0 0 40px rgba(59, 130, 246, 0.2); }
+        .rarity-glow-EPIC { box-shadow: 0 0 50px rgba(139, 92, 246, 0.25); }
+        .rarity-glow-LEGENDARY { box-shadow: 0 0 60px rgba(245, 158, 11, 0.3); }
+        .rarity-glow-MYTHIC { box-shadow: 0 0 70px rgba(239, 68, 68, 0.4); }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scrollbar-hide" id="scroll-container">
+                <button onclick="history.back()" class="flex items-center gap-2 text-gray-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest mb-8 group">
+                    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i> Back to Marketplace
+                </button>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+                    <!-- Left: Preview -->
+                    <div class="space-y-6">
+                        <div id="nft-preview-container" class="relative aspect-square rounded-[3rem] bg-[#12141c] border border-white/5 flex items-center justify-center overflow-hidden">
+                            <div id="rarity-gradient" class="absolute inset-0 opacity-20"></div>
+                            <img id="nft-image" src="" class="relative z-10 w-3/4 h-3/4 object-contain drop-shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                            <div id="nft-rarity-badge" class="absolute top-8 left-8 flex items-center gap-2 px-4 py-2 rounded-2xl backdrop-blur-xl border border-white/10 text-[10px] font-black uppercase tracking-[0.2em]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Metadata -->
+                    <div class="space-y-10">
+                        <div class="space-y-2">
+                            <p id="nft-collection" class="text-[10px] font-black uppercase tracking-[0.3em] text-[#00ff87]">Arena Genesis Collection</p>
+                            <h1 id="nft-name" class="text-5xl font-black uppercase tracking-tighter italic leading-none">NFT Name</h1>
+                            <div class="flex items-center gap-4 mt-4">
+                                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-[10px] font-black">C</div>
+                                    <span class="text-xs font-bold text-gray-400">Owner: <span id="nft-owner" class="text-white">@System</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-8 bg-[#12141c] border border-white/5 rounded-[2rem] space-y-6">
+                            <div class="flex items-center justify-between">
+                                <p class="text-[11px] font-black uppercase tracking-widest text-gray-500">Current Price</p>
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="gem" class="w-5 h-5 text-[#00ff87]"></i>
+                                    <span id="nft-price" class="text-3xl font-black text-white">0 AC</span>
+                                </div>
+                            </div>
+                            <button id="buy-btn" class="w-full py-5 rounded-2xl bg-[#00ff87] text-black text-xs font-black uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(0,255,135,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+                                Purchase Asset
+                            </button>
+                        </div>
+
+                        <!-- Attributes Grid -->
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Properties & Stats</h3>
+                            <div id="attributes-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Description</h3>
+                            <p id="nft-desc" class="text-gray-400 text-sm leading-relaxed">No description provided.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Provenance / History -->
+                <section class="mt-20 pt-10 border-t border-white/5 space-y-8">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="history" class="w-5 h-5 text-[#00ff87]"></i>
+                        <h2 class="text-2xl font-black uppercase tracking-tight italic">Provenance</h2>
+                    </div>
+                    <div id="provenance-list" class="space-y-4"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="./nftDetailsRenderer.js"></script>
+</body>
+</html>

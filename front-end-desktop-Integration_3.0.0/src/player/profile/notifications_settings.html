@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Preferences - Arena Chain</title>
+    <meta name="description" content="Manage your Arena Chain notification preferences." />
+    <link rel="stylesheet" href="../../output.css" />
+    <script src="../_common/loadComponents.js"></script>
+    <script src="../_common/notification.js"></script>
+</head>
+<body class="m-0 h-screen overflow-hidden bg-[#0a0c0f] text-white antialiased">
+    <div class="flex h-full w-full min-w-0 overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8 lg:px-10">
+                <div class="mx-auto flex max-w-5xl flex-col gap-8">
+                    <div class="flex flex-wrap items-end justify-between gap-4">
+                        <div>
+                            <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00ff87]">
+                                Notifications Module
+                            </p>
+                            <h1 class="mt-2 text-3xl font-black uppercase tracking-tight text-white">
+                                Preferences
+                            </h1>
+                            <p class="mt-2 max-w-2xl text-sm text-gray-400">
+                                Control which events trigger in-app alerts and which ones also reach your inbox.
+                            </p>
+                        </div>
+
+                        <a
+                            href="./notifications_history.html"
+                            class="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-wide text-white transition hover:bg-white/10"
+                        >
+                            View History
+                        </a>
+                    </div>
+
+                    <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                        <section class="overflow-hidden rounded-2xl border border-white/5 bg-[#111318]">
+                            <div class="border-b border-white/5 bg-white/[0.02] px-6 py-5">
+                                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-white">
+                                    In-App Notifications
+                                </h2>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    These notifications appear in the desktop bell, toast alerts, and live panel.
+                                </p>
+                            </div>
+                            <div id="inapp-toggles" class="divide-y divide-white/5"></div>
+                        </section>
+
+                        <section class="overflow-hidden rounded-2xl border border-white/5 bg-[#111318]">
+                            <div class="border-b border-white/5 bg-white/[0.02] px-6 py-5">
+                                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-white">
+                                    Delivery Notes
+                                </h2>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Realtime desktop alerts are driven by socket events with polling fallback.
+                                </p>
+                            </div>
+                            <div class="space-y-4 px-6 py-5 text-sm text-gray-300">
+                                <div class="rounded-2xl border border-[#00ff87]/15 bg-[#00ff87]/5 p-4">
+                                    <p class="text-xs font-black uppercase tracking-[0.18em] text-[#00ff87]">
+                                        Desktop Adaptation
+                                    </p>
+                                    <p class="mt-2 leading-6 text-gray-300">
+                                        Browser push from the web source is adapted here as desktop-native alerts plus
+                                        the in-app notifications panel.
+                                    </p>
+                                </div>
+                                <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                                    <p class="text-xs font-black uppercase tracking-[0.18em] text-white">
+                                        Security Alerts
+                                    </p>
+                                    <p class="mt-2 leading-6 text-gray-400">
+                                        Login warnings and password changes remain permanently enabled.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="overflow-hidden rounded-2xl border border-white/5 bg-[#111318]">
+                        <div class="border-b border-white/5 bg-white/[0.02] px-6 py-5">
+                            <h2 class="text-sm font-black uppercase tracking-[0.2em] text-white">
+                                Email Preferences
+                            </h2>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Choose which notifications are mirrored to email.
+                            </p>
+                        </div>
+                        <div id="email-toggles" class="divide-y divide-white/5"></div>
+                    </section>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <p id="save-status" class="hidden text-sm font-semibold text-[#00ff87]">
+                            Preferences saved successfully.
+                        </p>
+
+                        <button
+                            id="save-prefs-btn"
+                            type="button"
+                            class="rounded-xl bg-[#00ff87] px-8 py-3 text-sm font-black uppercase tracking-wide text-[#0a0b0f] transition-colors hover:bg-[#00e67a] disabled:opacity-50"
+                        >
+                            Save Preferences
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function () {
+            const nodeRequire = typeof require === 'function' ? require : null;
+            try {
+                const sharedApi = nodeRequire ? nodeRequire('../../../shared/api') : null;
+                if (sharedApi && typeof sharedApi.requireAuth === 'function' && !sharedApi.requireAuth()) {
+                    return;
+                }
+            } catch (error) {
+                console.warn('notifications_settings auth bootstrap failed.', error);
+            }
+
+            const IN_APP_FIELDS = [
+                { key: 'matches', label: 'Matches', desc: 'Match invites, results, and queue events.' },
+                { key: 'leagues', label: 'Leagues', desc: 'Bracket changes and standings updates.' },
+                { key: 'social', label: 'Social', desc: 'Friend requests, follows, and mentions.' },
+                { key: 'achievements', label: 'Achievements', desc: 'Badge unlocks, level-ups, and mission completions.' },
+                { key: 'streams', label: 'Streams', desc: 'Live stream starts from channels you follow.' },
+                { key: 'pushEnabled', label: 'Desktop Alerts', desc: 'System notifications while the app stays open.' },
+            ];
+
+            const EMAIL_FIELDS = [
+                { key: 'emailEnabled', label: 'Email Notifications', desc: 'Master switch for all email alerts.' },
+                { key: 'emailMatches', label: 'Match Emails', desc: 'Queue and match lifecycle reminders.' },
+                { key: 'emailLeagues', label: 'League Emails', desc: 'Bracket movement and schedule updates.' },
+                { key: 'emailSocial', label: 'Social Emails', desc: 'Followers, requests, and mentions.' },
+                { key: 'emailAchievements', label: 'Achievement Emails', desc: 'Rewards, badges, and progression.' },
+                { key: 'emailStreams', label: 'Stream Emails', desc: 'Stream start alerts from followed creators.' },
+            ];
+
+            let preferences = {};
+
+            function createToggleRow(field, value, onChange) {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-white/[0.02]';
+                row.innerHTML = `
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold uppercase tracking-wide text-white">${field.label}</p>
+                        <p class="mt-1 text-xs text-gray-500">${field.desc || ''}</p>
+                    </div>
+                    <button
+                        type="button"
+                        class="toggle-btn relative h-6 w-12 rounded-full transition-all duration-300 ${value ? 'bg-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.3)]' : 'bg-white/10'}"
+                        data-key="${field.key}"
+                        data-active="${value ? 'true' : 'false'}"
+                        aria-label="Toggle ${field.label}"
+                    >
+                        <span class="absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all duration-300 ${value ? 'left-7' : 'left-1'}"></span>
+                    </button>
+                `;
+
+                row.querySelector('.toggle-btn').addEventListener('click', function () {
+                    const isActive = this.dataset.active === 'true';
+                    const nextValue = !isActive;
+                    this.dataset.active = String(nextValue);
+                    this.className =
+                        'toggle-btn relative h-6 w-12 rounded-full transition-all duration-300 ' +
+                        (nextValue
+                            ? 'bg-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.3)]'
+                            : 'bg-white/10');
+
+                    const knob = this.querySelector('span');
+                    knob.className =
+                        'absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all duration-300 ' +
+                        (nextValue ? 'left-7' : 'left-1');
+
+                    onChange(field.key, nextValue);
+                });
+
+                return row;
+            }
+
+            function renderToggleGroup(containerId, fields) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                container.innerHTML = '';
+                fields.forEach((field) => {
+                    const value = preferences[field.key] !== undefined ? preferences[field.key] : true;
+                    container.appendChild(
+                        createToggleRow(field, value, (key, nextValue) => {
+                            preferences[key] = nextValue;
+                        }),
+                    );
+                });
+            }
+
+            async function init() {
+                try {
+                    preferences = await NotificationService.getPreferences();
+                } catch (error) {
+                    console.warn('Unable to load notification preferences, using defaults.', error);
+                    preferences = {
+                        matches: true,
+                        leagues: true,
+                        social: true,
+                        achievements: true,
+                        streams: true,
+                        pushEnabled: true,
+                        emailEnabled: true,
+                        emailMatches: true,
+                        emailLeagues: true,
+                        emailSocial: false,
+                        emailAchievements: true,
+                        emailStreams: false,
+                    };
+                }
+
+                renderToggleGroup('inapp-toggles', IN_APP_FIELDS);
+                renderToggleGroup('email-toggles', EMAIL_FIELDS);
+            }
+
+            document.getElementById('save-prefs-btn').addEventListener('click', async () => {
+                const button = document.getElementById('save-prefs-btn');
+                const status = document.getElementById('save-status');
+
+                button.disabled = true;
+                button.textContent = 'Saving...';
+
+                try {
+                    preferences = await NotificationService.savePreferences(preferences);
+                    status.classList.remove('hidden');
+                    setTimeout(() => status.classList.add('hidden'), 2500);
+                } catch (error) {
+                    console.error('Unable to save preferences:', error);
+                    window.alert('Failed to save preferences. Please try again.');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Save Preferences';
+                }
+            });
+
+            void init();
+        })();
+    </script>
+</body>
+</html>

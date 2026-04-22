@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Avatar Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.05); border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { height: 12px; width: 12px; border-radius: 50%; background: #00ff87; cursor: pointer; -webkit-appearance: none; appearance: none; margin-top: -4px; box-shadow: 0 0 10px rgba(0,255,135,0.4); }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            
+            <div class="flex-1 flex overflow-hidden">
+                <!-- Sidebar: Controls -->
+                <aside class="w-[22rem] border-r border-white/5 bg-[#111214] overflow-y-auto p-6 space-y-8 scrollbar-hide">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
+                            <i data-lucide="wand-2" class="w-4 h-4 text-[#00ff87]"></i> Character Creator
+                        </h2>
+                        <button onclick="location.reload()" class="text-gray-500 hover:text-white transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                    </div>
+
+                    <!-- Gender & View -->
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Identity & View</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="gender-male" class="gender-btn active h-11 rounded-xl bg-[#00ff87] text-black text-[10px] font-black uppercase transition-all">Male</button>
+                            <button id="gender-female" class="gender-btn h-11 rounded-xl bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase transition-all">Female</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="view-btn h-10 rounded-xl bg-white/10 text-white text-[9px] font-black uppercase border border-white/10">Front</button>
+                            <button class="view-btn h-10 rounded-xl bg-white/5 text-gray-500 text-[9px] font-black uppercase border border-white/5">Side</button>
+                            <button class="view-btn h-10 rounded-xl bg-white/5 text-gray-500 text-[9px] font-black uppercase border border-white/5">Back</button>
+                        </div>
+                    </div>
+
+                    <!-- Layer Uploads -->
+                    <div class="space-y-3 border-t border-white/5 pt-6">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Layer Configuration</p>
+                        <div class="grid grid-cols-1 gap-3" id="layers-list">
+                            <!-- Base -->
+                            <div class="rounded-xl border border-white/5 bg-black/25 p-3 space-y-3">
+                                <div class="flex justify-between items-center"><span class="text-[9px] font-black uppercase text-gray-400">Base Model</span> <i data-lucide="check-circle-2" class="w-3 h-3 text-[#00ff87] hidden" id="check-base"></i></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="document.getElementById('input-base').click()" class="h-9 rounded-lg bg-white/10 text-[9px] font-black uppercase hover:bg-white/20 transition-all">Upload</button>
+                                    <button onclick="clearLayer('base')" class="h-9 rounded-lg border border-white/5 text-[9px] font-black uppercase text-gray-600 hover:text-white">Clear</button>
+                                </div>
+                                <input type="file" id="input-base" class="hidden" onchange="previewLayer('base', this)">
+                            </div>
+                            <!-- Outfit -->
+                            <div class="rounded-xl border border-white/5 bg-black/25 p-3 space-y-3">
+                                <div class="flex justify-between items-center"><span class="text-[9px] font-black uppercase text-gray-400">Tactical Outfit</span> <i data-lucide="check-circle-2" class="w-3 h-3 text-[#00ff87] hidden" id="check-outfit"></i></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="document.getElementById('input-outfit').click()" class="h-9 rounded-lg bg-white/10 text-[9px] font-black uppercase">Upload</button>
+                                    <button onclick="clearLayer('outfit')" class="h-9 rounded-lg border border-white/5 text-[9px] font-black uppercase text-gray-600">Clear</button>
+                                </div>
+                                <input type="file" id="input-outfit" class="hidden" onchange="previewLayer('outfit', this)">
+                            </div>
+                            <!-- Hair -->
+                            <div class="rounded-xl border border-white/5 bg-black/25 p-3 space-y-3">
+                                <div class="flex justify-between items-center"><span class="text-[9px] font-black uppercase text-gray-400">Head Gear / Hair</span> <i data-lucide="check-circle-2" class="w-3 h-3 text-[#00ff87] hidden" id="check-hair"></i></div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="document.getElementById('input-hair').click()" class="h-9 rounded-lg bg-white/10 text-[9px] font-black uppercase">Upload</button>
+                                    <button onclick="clearLayer('hair')" class="h-9 rounded-lg border border-white/5 text-[9px] font-black uppercase text-gray-600">Clear</button>
+                                </div>
+                                <input type="file" id="input-hair" class="hidden" onchange="previewLayer('hair', this)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Morph Stats -->
+                    <div class="space-y-6 border-t border-white/5 pt-6">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Performance Morphing</p>
+                        <div class="space-y-5">
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-gray-400">Power</span> <span class="text-[#00ff87]" id="val-power">84</span></div>
+                                <input type="range" id="slider-power" min="0" max="100" value="84" oninput="updateStat('power', this.value)">
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-gray-400">Agility</span> <span class="text-[#00ff87]" id="val-agility">76</span></div>
+                                <input type="range" id="slider-agility" min="0" max="100" value="76" oninput="updateStat('agility', this.value)">
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black uppercase"><span class="text-gray-400">Focus</span> <span class="text-[#00ff87]" id="val-focus">88</span></div>
+                                <input type="range" id="slider-focus" min="0" max="100" value="88" oninput="updateStat('focus', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Center: Real-time Canvas -->
+                <div class="flex-1 bg-[#05070a] relative flex flex-col items-center justify-center p-12 overflow-hidden">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,135,0.03),transparent_70%)]"></div>
+                    
+                    <div class="relative w-full max-w-xl aspect-square flex items-center justify-center">
+                        <!-- Composite Layers -->
+                        <div id="canvas-container" class="relative w-full h-full flex items-center justify-center">
+                            <img id="preview-base" src="" class="absolute inset-0 w-full h-full object-contain pointer-events-none transition-opacity duration-300 opacity-0">
+                            <img id="preview-outfit" src="" class="absolute inset-0 w-full h-full object-contain pointer-events-none transition-opacity duration-300 opacity-0">
+                            <img id="preview-hair" src="" class="absolute inset-0 w-full h-full object-contain pointer-events-none transition-opacity duration-300 opacity-0">
+                            
+                            <!-- Default Placeholder -->
+                            <div id="canvas-empty" class="text-center space-y-4">
+                                <div class="w-32 h-32 rounded-full border-2 border-dashed border-white/5 flex items-center justify-center mx-auto">
+                                    <i data-lucide="user" class="w-12 h-12 text-white/5"></i>
+                                </div>
+                                <p class="text-[10px] font-black text-white/10 uppercase tracking-widest">Waiting for character assets...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Rarity HUD -->
+                        <div class="absolute top-0 right-0 p-6">
+                            <div id="rarity-badge" class="bg-zinc-500/10 border border-zinc-500/20 text-zinc-400 px-6 py-3 rounded-2xl flex items-center gap-3 backdrop-blur-xl">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                <span class="text-xs font-black uppercase tracking-[0.2em]">Common Asset</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Bar -->
+                    <div class="absolute bottom-10 left-10 right-10 flex items-center justify-between gap-10 p-8 glass-panel rounded-[2.5rem] border-white/10 shadow-2xl z-50">
+                        <div class="flex-1 space-y-1">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#00ff87] opacity-60">Designation Code</p>
+                            <input type="text" id="nft-name-input" placeholder="Type character name..." class="bg-transparent border-none text-2xl font-black uppercase italic tracking-tighter text-white outline-none w-full placeholder:text-white/20 focus:placeholder:text-white/5 relative z-[60]">
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <button onclick="window.location.href='./market.html'" class="text-[11px] font-black uppercase tracking-widest text-gray-500 hover:text-white">Cancel</button>
+                            <button id="mint-btn" class="px-12 py-4 rounded-2xl bg-[#00ff87] text-black text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(0,255,135,0.2)] hover:scale-105 active:scale-95 transition-all">
+                                Deploy Draft
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./studioRenderer.js"></script>
+</body>
+</html>

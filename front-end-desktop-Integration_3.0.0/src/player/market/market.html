@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - NFT Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .rarity-glow-RARE { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
+        .rarity-glow-EPIC { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+        .rarity-glow-LEGENDARY { box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
+        .rarity-glow-MYTHIC { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 space-y-10 scrollbar-hide" id="scroll-container">
+                
+                <!-- Top Header & Wallet -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#00ff87]">Global NFT Network</p>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-tight">Marketplace</h1>
+                    </div>
+                    
+                    <!-- Wallet Simulation -->
+                    <div id="wallet-status" class="flex items-center gap-4 bg-[#12141c] border border-white/5 rounded-2xl p-2 pr-6">
+                        <div class="w-12 h-12 rounded-xl bg-[#00ff87]/10 flex items-center justify-center text-[#00ff87]">
+                            <i data-lucide="wallet"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-1">Blockchain Connected</p>
+                            <p id="wallet-address" class="text-xs font-black text-white font-mono">0x71C...4e21</p>
+                        </div>
+                        <div class="ml-4 h-8 w-px bg-white/5"></div>
+                        <div class="ml-4 flex items-center gap-2">
+                            <i data-lucide="gem" class="w-4 h-4 text-[#00ff87]"></i>
+                            <span id="wallet-balance" class="text-sm font-black text-white">2,500 AC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Section (Web Style) -->
+                <section id="hero-section" class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-violet-900/20 via-[#12141c] to-blue-900/20 border border-white/5">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,255,135,0.05),transparent)]"></div>
+                    <div class="relative px-8 py-12 flex flex-wrap items-center justify-between gap-10">
+                        <div class="max-w-xl space-y-6">
+                            <h2 class="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-none">
+                                Discover & <span class="text-[#00ff87]">Collect</span><br>Ultra Rare NFTs
+                            </h2>
+                            <p class="text-sm leading-7 text-gray-400">
+                                Trade unique gaming avatars, secure exclusive blockchain assets, and manage your portfolio on the most advanced decentralized marketplace.
+                            </p>
+                            <div class="flex items-center gap-4">
+                                <button onclick="window.location.href='./studio.html'" class="px-8 py-3.5 rounded-2xl bg-[#00ff87] hover:scale-105 text-black text-[11px] font-black uppercase tracking-widest transition-all">
+                                    Explore Market
+                                </button>
+                                <button onclick="window.location.href='./studio.html'" class="px-8 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-black uppercase tracking-widest transition-all">
+                                    Creator Lab
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Featured NFT Card -->
+                        <div id="featured-card" class="hidden lg:flex shrink-0 w-64 h-80 rounded-[2rem] bg-black/40 border border-white/10 p-6 flex-col items-center justify-center relative group">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=mythic" class="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(0,255,135,0.2)] group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/20 text-[9px] font-black uppercase tracking-widest">
+                                <i data-lucide="sparkles" class="w-3 h-3 animate-pulse"></i> MYTHIC
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Tabs & Search -->
+                <section class="flex flex-col md:flex-row gap-6 items-center justify-between pt-4 border-t border-white/5">
+                    <div class="flex items-center gap-2 bg-[#0d0d0d] border border-white/5 rounded-xl p-1">
+                        <button id="tab-marketplace" onclick="switchTab('marketplace')" class="px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all bg-white/10 text-white shadow-lg">
+                            <i data-lucide="store" class="inline w-3.5 h-3.5 mr-2"></i> Marketplace
+                        </button>
+                        <button id="tab-my-nfts" onclick="switchTab('my-nfts')" class="px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-gray-500 hover:text-white hover:bg-white/5">
+                            <i data-lucide="gem" class="inline w-3.5 h-3.5 mr-2"></i> My Collection
+                        </button>
+                        <button id="tab-creator" onclick="switchTab('creator')" class="px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-gray-500 hover:text-[#00ff87] hover:bg-[#00ff87]/5">
+                            <i data-lucide="wand-2" class="inline w-3.5 h-3.5 mr-2"></i> Creator Lab
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-full md:w-64 group">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[#00ff87] transition-colors"></i>
+                            <input id="search-input" type="text" placeholder="Search assets..." class="w-full bg-[#12141c] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-xs text-white placeholder-gray-500 outline-none focus:border-[#00ff87]/50 transition-all">
+                        </div>
+                        <select id="filter-rarity" class="bg-[#12141c] border border-white/10 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-widest text-white outline-none">
+                            <option value="ALL">All Rarities</option>
+                            <option value="COMMON">Common</option>
+                            <option value="RARE">Rare</option>
+                            <option value="EPIC">Epic</option>
+                            <option value="LEGENDARY">Legendary</option>
+                            <option value="MYTHIC">Mythic</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Main Content Area -->
+                <div id="grid-container">
+                    <div id="nft-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <!-- Items will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Creator Lab Section (Hidden by default) -->
+                <div id="creator-section" class="hidden space-y-8 animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-panel rounded-[2rem] p-10 space-y-6 border-[#00ff87]/10 hover:border-[#00ff87]/30 transition-all cursor-pointer group">
+                            <div class="w-16 h-16 rounded-2xl bg-[#00ff87]/10 flex items-center justify-center text-[#00ff87] group-hover:scale-110 transition-transform">
+                                <i data-lucide="wand-2" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-2xl font-black uppercase italic">Avatar Studio</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">Design your own 3D character with custom layers, traits, and stats. Deploy directly to the Arena Chain.</p>
+                            <button onclick="window.location.href='./studio.html'" class="px-8 py-3 rounded-xl bg-[#00ff87] text-black text-[10px] font-black uppercase tracking-widest">Open Studio</button>
+                        </div>
+                        <div class="glass-panel rounded-[2rem] p-10 space-y-6 border-blue-500/10 hover:border-blue-500/30 transition-all cursor-pointer group">
+                            <div class="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                                <i data-lucide="plus" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-2xl font-black uppercase italic">Manual Mint</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">Upload custom artwork and define your own blockchain metadata, supply, and rarity tiers.</p>
+                            <button onclick="window.location.href='./studio.html'" class="px-8 py-3 rounded-xl bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest">Create NFT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <section id="history-section" class="space-y-6 pt-10 border-t border-white/5">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="clock" class="w-5 h-5 text-[#00ff87]"></i>
+                        <h2 class="text-xl font-black uppercase tracking-tight">Recent Transactions</h2>
+                    </div>
+                    <div id="history-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <!-- History items will be injected here -->
+                    </div>
+                </section>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden py-32 text-center bg-[#12141c] border border-white/5 rounded-[2.5rem]">
+                    <i data-lucide="package-search" class="w-12 h-12 text-gray-600 mx-auto mb-4"></i>
+                    <h2 class="text-xl font-black uppercase text-white/40">No assets found</h2>
+                    <p class="text-gray-500 text-sm mt-2">Try adjusting your filters or search query.</p>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-root" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="modal-overlay"></div>
+        <div id="modal-content" class="relative w-full max-w-md bg-[#141419] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in"></div>
+    </div>
+
+    <script src="./marketRenderer.js"></script>
+</body>
+</html>
