@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 const { requireAuth, apiRequest, logout, getUser, updateProfile } = require('../../../shared/api');
+const { connectPresence, getFriends, onPresence } = require('../../../shared/presence');
 
 if (!requireAuth()) throw new Error('Not authenticated');
 
@@ -275,6 +276,7 @@ function renderProfile(user, profile, ranks, friendshipStatus) {
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded border" style="color: ${tc.text}; border-color: ${tc.text}40; background: ${tc.bg}20">${esc(tier.toUpperCase())}</span>
                     <span class="px-2 py-0.5 text-[10px] font-bold text-gray-400 bg-white/5 rounded">${regionFlag}</span>
                 </div>
+                <p class="text-sm text-gray-500 mt-1">${esc(user.email || '')}</p>
                 ${riotHtml}
                 <div class="mt-3 flex items-center gap-3 flex-wrap">${friendActionHtml}${friendsBtnHtml}${recentMatchesBtnHtml}</div>
             </div>

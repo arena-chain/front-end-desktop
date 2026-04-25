@@ -21,28 +21,40 @@
 
         .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
 
-        .chat-bubble { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .chat-bubble-self { background: rgba(0, 255, 135, 0.05); border: 1px solid rgba(0, 255, 135, 0.2); }
+        .chat-bubble { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); }
+        .chat-bubble-self { background: linear-gradient(135deg, rgba(0, 255, 135, 0.15) 0%, rgba(0, 180, 255, 0.15) 100%); border: 1px solid rgba(0, 255, 135, 0.3); }
 
-        .neon-green-glow { box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2); }
-        .green-accent { background: #00ff87; }
+        .neon-green-glow { box-shadow: 0 0 25px rgba(0, 255, 135, 0.3); }
+        .green-accent { background: linear-gradient(135deg, #00ff87 0%, #00d4ff 100%); }
         
         .status-dot-online { border: 3px solid #12141c; background: #00ff87; }
 
         .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
 
-        /* Sidebar styles from common */
-        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; height: 100%; }
-        .sidebar-collapsible:hover { width: 250px; }
-        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
-        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
-        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
-        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
-        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
         .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+
+        /* Emoji Picker & Dropdown */
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 180px; background: #12141c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 6px; }
+        .dropdown-menu.active { display: block; }
+        .dropdown-item { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #9ca3af; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .dropdown-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .dropdown-item.danger { color: #ff4654; }
+        .dropdown-item.danger:hover { background: rgba(255, 70, 84, 0.1); }
+
+        .emoji-picker { display: none; position: absolute; bottom: 80px; right: 20px; width: 280px; height: 320px; background: #12141c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; }
+        .emoji-picker.active { display: flex; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px; overflow-y: auto; flex: 1; }
+        .emoji-item { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .emoji-item:hover { background: rgba(255, 255, 255, 0.05); transform: scale(1.1); }
+        
+        .message-context-menu { display: none; position: fixed; background: #1a1c23; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 140px; padding: 4px; }
+        .message-context-menu.active { display: block; }
+
+        .chat-bubble { cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .chat-bubble:active { transform: scale(0.98); opacity: 0.8; }
     </style>
     <script src="../_common/loadComponents.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
 <body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
@@ -56,6 +68,8 @@
             
             <common-navbar src="top_navbar.html"></common-navbar>
 
+            <audio id="remoteAudio" autoplay></audio>
+
             <!-- CHAT DETAIL CONTAINER -->
             <div class="flex-1 flex overflow-hidden p-6 lg:p-10 gap-6 justify-center">
 
@@ -68,128 +82,62 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <div class="relative w-12 h-12 rounded-full border border-white/10">
-                                <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full" alt="User">
-                                <span class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-full status-dot-online"></span>
+                                <img id="headerAvatar" src="https://ui-avatars.com/api/?name=User&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full" alt="User">
+                                <span id="headerStatus" class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-full border-3 border-[#12141c] bg-gray-500"></span>
                             </div>
                             <div>
-                                <h2 class="text-lg font-bold text-white leading-tight">TenZify</h2>
-                                <p class="text-xs text-[#00ff87] font-semibold tracking-wide uppercase">Online</p>
+                                <h2 id="headerNickname" class="text-lg font-bold text-white leading-tight">Chargement...</h2>
+                                <p id="headerStatusLabel" class="text-xs text-gray-500 font-semibold tracking-wide uppercase italic">Hors-ligne</p>
                             </div>
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex items-center gap-2">
-                            <button class="px-4 py-2 border border-[#00ff87]/30 text-[#00ff87] bg-[#00ff87]/10 hover:bg-[#00ff87]/20 font-bold text-sm rounded-xl transition-all flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Invite to Lobby
-                            </button>
-                            <div class="w-px h-6 bg-white/10 mx-2"></div>
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                            </button>
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                        <div class="flex items-center gap-2 relative">
+                            <button id="headerMenuBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                             </button>
+                            <!-- Dropdown Menu -->
+                            <div id="headerDropdown" class="dropdown-menu">
+                                <div class="dropdown-item danger" onclick="clearConversation()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Effacer historique
+                                </div>
+                                <div class="dropdown-item" onclick="window.location.href='chat.html'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    Quitter le chat
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Messages Area -->
-                    <div class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col" id="chatContainer">
-                        
-                        <div class="text-center my-4">
-                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Yesterday</span>
+                    <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
+                        <div class="flex items-center justify-center h-full opacity-20">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
                         </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">10:42 PM</span>
-                                </div>
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Yo, are we running ranked tonight?
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Self Message -->
-                        <div class="flex items-end gap-3 max-w-[80%] self-end flex-row-reverse">
-                            <div class="flex flex-col gap-1 items-end">
-                                <div class="chat-bubble-self rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] text-white shadow-sm">
-                                    Yeah give me 10 mins. Just finishing some food.
-                                </div>
-                                <span class="text-[10px] text-gray-500 mr-1">10:44 PM</span>
-                            </div>
-                        </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">10:45 PM</span>
-                                </div>
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Bet. I'll warm up in deathmatch.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-center my-4">
-                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Today</span>
-                        </div>
-
-                        <!-- Game Invite View -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start w-full max-w-sm">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">2h ago</span>
-                                </div>
-                                <!-- Match Invite Invite -->
-                                <div class="bg-[#1a1d27] border border-[#00ff87]/30 rounded-2xl w-full p-4 hover:border-[#00ff87] transition-colors cursor-pointer shadow-[0_0_15px_rgba(0,255,135,0.05)]">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <div class="w-8 h-8 rounded bg-[#ff4654] flex items-center justify-center font-black text-white text-xs">V</div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-white leading-tight">Valorant Lobby</h4>
-                                            <p class="text-xs text-gray-400">Competitive • 2/5 Players</p>
-                                        </div>
-                                    </div>
-                                    <button class="w-full py-2 bg-[#00ff87] text-black text-xs font-bold rounded-lg hover:bg-[#00e67a] transition-all">JOIN LOBBY</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <div class="w-8 h-8 flex-shrink-0 mb-1"></div> <!-- Spacer since same user -->
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Thanks for the raid earlier bro, means a lot! 🤘
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
                     <!-- Chat Input Area -->
-                    <div class="p-6 pt-4 border-t border-white/5 bg-black/20">
+                    <div class="p-6 pt-4 border-t border-white/5 bg-black/20 relative">
+                        <div id="emojiPicker" class="emoji-picker hidden">
+                            <div class="bg-black/40 px-3 py-2 border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Choisissez un emoji</div>
+                            <div id="emojiGrid" class="emoji-grid">
+                                <!-- Emojis added by JS -->
+                            </div>
+                        </div>
+
                         <div class="relative flex items-center bg-[#0a0b0f] rounded-2xl p-2 border border-white/10 focus-within:border-[#00ff87]/50 transition-colors shadow-inner">
                             <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                             </button>
                             
-                            <input type="text" placeholder="Message TenZify..." class="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-gray-500 py-3 px-3" />
+                            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-gray-500 py-3 px-3" />
                             
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
+                            <button id="emojiBtn" class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </button>
-
-                            <button class="w-12 h-12 flex items-center justify-center green-accent hover:bg-[#00e67a] text-black rounded-xl transition-all shadow-[0_0_15px_rgba(0,255,135,0.4)] flex-shrink-0 ml-2">
+ 
+                            <button id="sendBtn" class="w-12 h-12 flex items-center justify-center green-accent hover:bg-[#00e67a] text-black rounded-xl transition-all shadow-[0_0_15px_rgba(0,255,135,0.4)] flex-shrink-0 ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                             </button>
                         </div>
@@ -201,14 +149,405 @@
         </main>
     </div>
 
+    <!-- Message Context Menu -->
+    <div id="msgContextMenu" class="message-context-menu">
+        <div class="dropdown-item" onclick="copyActiveMessage()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012-2v-8a2 2 0 01-2-2h-8a2 2 0 01-2 2v8a2 2 0 012 2z" /></svg>
+            Copier message
+        </div>
+        <div id="deleteMsgItem" class="dropdown-item danger" onclick="deleteActiveMessage()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            Effacer
+        </div>
+    </div>
+
     <!-- Navigation Script & Setup -->
     <script>
-        setTimeout(() => {
-            const chatContainer = document.getElementById('chatContainer');
-            if (chatContainer) {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+        const API_URL = 'http://localhost:3000/api';
+        const SOCKET_URL = 'http://localhost:3000/chat';
+        const token = localStorage.getItem('token');
+        let interlocutorId = localStorage.getItem('active_chat_user_id');
+        let realinterlocutorId = ''; // We will store the resolved MongoDB ID here
+        
+        // Safety check
+        if (!interlocutorId || interlocutorId === 'undefined' || interlocutorId === '[object Object]') {
+            alert("Erreur : Session de chat invalide. Retour à la liste.");
+            window.location.href = 'chat.html';
+        }
+        let socket;
+        let messages = [];
+        let currentUserId = '';
+        let interlocutorName = 'Joueur';
+
+        async function fetchHistory() {
+            if (!interlocutorId) return;
+            try {
+                // Get current user ID (Standard NestJS route is /auth/profile)
+                const meRes = await fetch(`${API_URL}/auth/profile?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const meData = await meRes.json();
+                currentUserId = meData.id || meData._id;
+
+                // Resolve Interlocutor ID (if nickname)
+                if (interlocutorId.length === 24) {
+                    realinterlocutorId = interlocutorId;
+                }
+
+                // Get Interlocutor info (Backend route is /users/:id)
+                try {
+                    let userData = null;
+                    if (interlocutorId.length === 24) {
+                        const userRes = await fetch(`${API_URL}/users/${interlocutorId}?_v=${Date.now()}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        userData = await userRes.json();
+                    } else {
+                        // If it's a nickname (not 24 chars), search it
+                        const searchRes = await fetch(`${API_URL}/users/search?q=${interlocutorId}&_v=${Date.now()}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const results = await searchRes.json();
+                        if (results && results.length > 0) {
+                            userData = results[0];
+                            realinterlocutorId = userData._id || userData.id;
+                        }
+                    }
+                    
+                    if (userData && (userData.nickname || userData.username)) {
+                        interlocutorName = userData.nickname || userData.username;
+                        document.getElementById('headerNickname').innerText = interlocutorName;
+                        document.getElementById('headerAvatar').src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${interlocutorName}`;
+                        document.getElementById('headerStatus').classList.remove('bg-gray-500');
+                        document.getElementById('headerStatus').classList.add('bg-[#00ff87]', 'animate-pulse');
+                        document.getElementById('headerStatusLabel').innerText = 'En ligne';
+                        document.getElementById('headerStatusLabel').classList.replace('text-gray-500', 'text-[#00ff87]');
+                        document.getElementById('messageInput').placeholder = `Message ${interlocutorName}...`;
+                    }
+                } catch (e) {
+                    console.warn('Could not fetch interlocutor details, relying on history');
+                }
+
+                if (!realinterlocutorId) {
+                   console.error("Could not resolve real user ID for history");
+                   return;
+                }
+
+                // Mark as read
+                fetch(`${API_URL}/chat/read/${realinterlocutorId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Get messages
+                const response = await fetch(`${API_URL}/chat/conversation/${realinterlocutorId}?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                messages = await response.json();
+                
+                renderMessages();
+            } catch (error) {
+                console.error('Failed to fetch history:', error);
             }
-        }, 150);
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chatContainer');
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full opacity-20 gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <p class="text-[10px] font-black uppercase tracking-[0.4em]">Début de la discussion</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map((msg, index) => {
+                const isSelf = msg.senderId === currentUserId;
+                const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.senderNickname}`;
+                const msgId = msg._id || msg.id;
+
+                if (isSelf) {
+                    return `
+                        <div id="msg-${msgId}" class="chat-bubble-container flex items-end gap-3 max-w-[80%] self-end flex-row-reverse animate-in slide-in-from-right-4 duration-300">
+                            <div class="flex flex-col gap-1 items-end relative group">
+                                <div class="chat-bubble-self rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] text-white shadow-lg relative"
+                                     onmousedown="startLongPress(event, '${msgId}', true, \`${msg.message.replace(/`/g, '\\`')}\`)" 
+                                     onmouseup="endLongPress()" 
+                                     onmouseleave="endLongPress()"
+                                     ontouchstart="startLongPress(event, '${msgId}', true, \`${msg.message.replace(/`/g, '\\`')}\`)"
+                                     ontouchend="endLongPress()">
+                                    ${msg.message}
+                                </div>
+                                <span class="text-[10px] text-gray-500 mr-1 font-bold uppercase tracking-widest">${time}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div id="msg-${msgId}" class="flex items-end gap-3 max-w-[80%] animate-in slide-in-from-left-4 duration-300">
+                            <img src="${avatar}" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1 shadow-md">
+                            <div class="flex flex-col gap-1 items-start">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs font-black text-white italic">${msg.senderNickname}</span>
+                                    <span class="text-[10px] text-gray-600 font-bold">${time}</span>
+                                </div>
+                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-lg relative"
+                                     onmousedown="startLongPress(event, '${msgId}', false, \`${msg.message.replace(/`/g, '\\`')}\`)" 
+                                     onmouseup="endLongPress()" 
+                                     onmouseleave="endLongPress()"
+                                     ontouchstart="startLongPress(event, '${msgId}', false, \`${msg.message.replace(/`/g, '\\`')}\`)"
+                                     ontouchend="endLongPress()">
+                                    ${msg.message}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            // TEST COMMAND (works without socket)
+            if (content === '/test') {
+                input.value = '';
+                setTimeout(() => {
+                    const testMsg = {
+                        senderId: realinterlocutorId,
+                        senderNickname: interlocutorName,
+                        message: "Message de test reçu ! 🚀",
+                        createdAt: new Date().toISOString()
+                    };
+                    messages.push(testMsg);
+                    renderMessages();
+                }, 500);
+                return;
+            }
+
+            if (!realinterlocutorId) {
+                alert("Erreur : ID utilisateur non résolu.");
+                return;
+            }
+
+            // If socket is ready, use it (real-time)
+            if (socket && socket.connected) {
+                socket.emit('sendPrivateMessage', {
+                    receiverId: realinterlocutorId,
+                    message: content
+                }, (response) => {
+                    console.log('Message sent response:', response);
+                    if (response && response.status === 'ok') {
+                        input.value = '';
+                        if (response.data) {
+                            messages.push(response.data);
+                            renderMessages();
+                        } else {
+                            fetchHistory();
+                        }
+                    } else {
+                        const errorMsg = response ? response.message : 'Délai dépassé';
+                        alert("Erreur envoi : " + errorMsg);
+                    }
+                });
+            } else {
+                // Fallback to REST API if socket not connected
+                console.warn('Socket not connected, using REST fallback');
+                try {
+                    const res = await fetch(`${API_URL}/chat/send`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ receiverId: realinterlocutorId, message: content })
+                    });
+                    if (res.ok) {
+                        input.value = '';
+                        await fetchHistory();
+                    } else {
+                        alert("Connexion en cours... Réessaie dans 1 seconde.");
+                        // Retry socket connection
+                        initSocket();
+                    }
+                } catch(e) {
+                    alert("Connexion perdue. Recharge la page.");
+                }
+            }
+        }
+
+        function initSocket() {
+            if (!token) return;
+            console.log('Connecting to Chat Socket from Detail...');
+            socket = io(SOCKET_URL, {
+                auth: { token: `Bearer ${token}` }
+            });
+
+            socket.on('newPrivateMessage', (msg) => {
+                console.log('Received message in detail:', msg);
+                if (msg.senderId === realinterlocutorId || msg.receiverId === realinterlocutorId) {
+                    messages.push(msg);
+                    renderMessages();
+                }
+            });
+
+            socket.on('messageDeleted', (data) => {
+                console.log('Message deleted by other party:', data.messageId);
+                messages = messages.filter(m => (m._id || m.id) !== data.messageId);
+                renderMessages();
+            });
+
+            socket.on('conversationDeleted', (data) => {
+                console.log('Conversation deleted by other party:', data.interlocutorId);
+                if (data.interlocutorId === realinterlocutorId || data.interlocutorId === currentUserId) {
+                    messages = [];
+                    renderMessages();
+                }
+            });
+
+            socket.on('connect_error', (err) => console.error('Socket error in detail:', err.message));
+        }
+
+        // ── ACTIONS ──
+        let longPressTimer;
+        let activeMsgId = null;
+        let activeMsgContent = "";
+        let isLongPressing = false;
+
+        window.startLongPress = function(e, msgId, isSelf, content) {
+            activeMsgId = msgId;
+            activeMsgContent = content;
+            isLongPressing = false;
+            longPressTimer = setTimeout(() => {
+                isLongPressing = true;
+                showMsgContextMenu(e, isSelf);
+            }, 600); // Slightly more time for clarity
+        };
+
+        window.endLongPress = function() {
+            clearTimeout(longPressTimer);
+            // If it was a long press, we don't do anything here, the menu stays
+        }
+
+        function showMsgContextMenu(e, isSelf) {
+            const menu = document.getElementById('msgContextMenu');
+            const deleteItem = document.getElementById('deleteMsgItem');
+            
+            // Only show delete option for own messages
+            deleteItem.style.display = isSelf ? 'flex' : 'none';
+            
+            // Position menu near touch or cursor
+            let x = (e.clientX || (e.touches ? e.touches[0].clientX : 0)) + 10;
+            let y = (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - 20;
+            
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.classList.add('active');
+            
+            // Provide haptic feedback if mobile, or subtle visual shake
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        window.copyActiveMessage = function() {
+            navigator.clipboard.writeText(activeMsgContent).then(() => {
+                // Subtle feedback if needed
+                document.getElementById('msgContextMenu').classList.remove('active');
+            });
+        };
+
+        window.deleteActiveMessage = function() {
+            if (!confirm('Effacer ce message ?')) return;
+            if (activeMsgId && socket && socket.connected) {
+                socket.emit('deleteMessage', { messageId: activeMsgId, receiverId: realinterlocutorId }, (res) => {
+                    if (res && res.status === 'ok') {
+                        messages = messages.filter(m => (m._id || m.id) !== activeMsgId);
+                        renderMessages();
+                    }
+                });
+            }
+            document.getElementById('msgContextMenu').classList.remove('active');
+        };
+
+        window.clearConversation = function() {
+            if (!confirm('Effacer tout l\'historique avec ce joueur ?')) return;
+            if (socket && socket.connected) {
+                socket.emit('deleteConversation', { interlocutorId: realinterlocutorId }, (res) => {
+                    if (res && res.status === 'ok') {
+                        messages = [];
+                        renderMessages();
+                    }
+                });
+            }
+        };
+
+        // ── UI LOGIC ──
+        const emojiList = ['😀', '😂', '😍', '😎', '🎮', '🔥', '✨', '👋', '👍', '❤️', '😱', '🤔', '🤣', '💀', '💯', '🚀', '🌟', '💥', '🍀', '🍕', '🎉', '💪', '🙏', '🏆', '👑', '💎', '🎯', '⚽'];
+
+        function setupEmojiPicker() {
+            const grid = document.getElementById('emojiGrid');
+            const btn = document.getElementById('emojiBtn');
+            const picker = document.getElementById('emojiPicker');
+            const input = document.getElementById('messageInput');
+
+            emojiList.forEach(emoji => {
+                const el = document.createElement('div');
+                el.className = 'emoji-item';
+                el.innerText = emoji;
+                el.onclick = () => {
+                    input.value += emoji;
+                    input.focus();
+                };
+                grid.appendChild(el);
+            });
+
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                picker.classList.toggle('hidden');
+                picker.classList.toggle('active');
+            };
+
+            document.addEventListener('click', () => {
+                picker.classList.add('hidden');
+                picker.classList.remove('active');
+            });
+            picker.onclick = (e) => e.stopPropagation();
+        }
+
+        const menuBtn = document.getElementById('headerMenuBtn');
+        const dropdown = document.getElementById('headerDropdown');
+        if (menuBtn) {
+            menuBtn.onclick = (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            };
+        }
+        document.addEventListener('mousedown', (e) => {
+            const menu = document.getElementById('msgContextMenu');
+            if (menu && !menu.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+            if (dropdown && !dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHistory();
+            initSocket();
+            setupEmojiPicker();
+        });
     </script>
 </body>
 </html>
