@@ -366,6 +366,34 @@ ipcMain.handle('open-external-link', async (event, url) => {
     }
 });
 
+function getSteamIdString(steamClient) {
+    try {
+        const steamIdObj = steamClient.localplayer.getSteamId();
+
+        // steamworks.js v0.3.0: SteamId object has a steamId64 bigint property
+        if (steamIdObj && steamIdObj.steamId64 !== undefined) {
+            return steamIdObj.steamId64.toString();
+        }
+
+        // Fallback: try direct toString()
+        if (steamIdObj && typeof steamIdObj.toString === 'function') {
+            const s = steamIdObj.toString();
+            if (s && s !== '[object Object]') return s;
+        }
+
+        // Fallback: try bit64id or rawId properties (other versions)
+        if (steamIdObj && steamIdObj.bit64id !== undefined) {
+            return steamIdObj.bit64id.toString();
+        }
+
+        console.error('[Steam] getSteamId() returned unexpected structure:', JSON.stringify(steamIdObj));
+        return '';
+    } catch (e) {
+        console.error('[Steam] Failed to extract SteamID string:', e.message);
+        return '';
+    }
+}
+
 // ──────────────────────────────────────────────────────────
 // STEAMWORKS IPC HANDLERS
 // ──────────────────────────────────────────────────────────
@@ -402,7 +430,7 @@ ipcMain.handle('steam-get-status', async () => {
     try {
         return {
             initialized: true,
-            steamId: steamClient.localplayer.getSteamId().toString(),
+            steamId: getSteamIdString(steamClient),
             personaName: steamClient.localplayer.getName(),
             appId: currentAppId
         };
@@ -430,8 +458,11 @@ ipcMain.handle('steam-create-lobby', async (event, { gameId, mode }) => {
         lobby.setData('mode', mode);
         console.log(`[Steam] Metadata set: matchId=${gameId}, mode=${mode}`);
         
-        const hostId = steamClient.localplayer.getSteamId().toString();
-        console.log(`[Steam] My SteamID (Host): ${hostId}`);
+        const hostId = getSteamIdString(steamClient);
+        console.log(`[Steam] getSteamIdString result: "${hostId}" (length: ${hostId.length})`);
+        if (!hostId || hostId.length !== 17) {
+            console.error(`[Steam] WARNING: hostId "${hostId}" does not look like a valid SteamID64!`);
+        }
         
         return { 
             success: true, 
