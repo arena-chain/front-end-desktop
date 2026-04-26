@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0b0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 135, 0.3);
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+        
+        /* Online Status Dots */
+        .status-dot-online { border: 3px solid #0a0b0f; background: #00ff87; }
+        .status-dot-ingame { border: 3px solid #0a0b0f; background: #a855f7; }
+        .status-dot-offline { border: 3px solid #0a0b0f; background: #6b7280; }
+
+        /* Sidebar styles from common */
+        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
+        .sidebar-collapsible:hover { width: 250px; }
+        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
+        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
+        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- CHAT DASHBOARD CONTENT -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                
+                <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Messages</h1>
+                        <p class="text-gray-400 text-sm">Chat with friends, strategize with your squad, and coordinate matches.</p>
+                    </div>
+                    
+                    <button class="px-6 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl hover:bg-[#00e67a] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,135,0.4)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        NEW MESSAGE
+                    </button>
+                </div>
+
+                <!-- Main Layout Container -->
+                <div class="flex flex-col lg:flex-row gap-8 min-h-0">
+                    
+                    <!-- Left Column: Search & Chat List -->
+                    <div class="flex-1 flex flex-col min-h-0 bg-[#12141c]/50 border border-white/5 rounded-3xl p-6">
+                        
+                        <!-- Search Bar -->
+                        <div class="relative w-full mb-6">
+                            <input type="text" placeholder="Search conversations..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl py-3 pl-11 pr-4 text-sm outline-none focus:border-[#00ff87] transition-all focus:bg-white/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+
+                        <!-- Chat List -->
+                        <div class="flex-1 overflow-y-auto space-y-2 pr-2">
+                            
+                            <!-- Unread Message / Group -->
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" onclick="window.location.href='chat_detail.html'">
+                                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00ff87] rounded-r-lg"></div>
+                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-lg flex-shrink-0 shadow-lg relative">
+                                    V
+                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-ingame"></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h3 class="font-bold text-white text-base truncate">Valorant 5-Stack Squad</h3>
+                                        <span class="text-[10px] font-bold text-[#00ff87]">JUST NOW</span>
+                                    </div>
+                                    <p class="text-sm text-gray-300 truncate font-medium"><span class="text-[#00ff87]">Kuian:</span> guys are we running it down mid or what? 🤣</p>
+                                </div>
+                                <div class="w-5 h-5 rounded-full bg-[#ff4654] text-[10px] font-black text-white flex items-center justify-center">3</div>
+                            </div>
+
+                            <!-- Individual Chat (Online) -->
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="window.location.href='chat_detail.html'">
+                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#00ff87]">
+                                    <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" alt="TenZify" class="w-full h-full object-cover">
+                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-online"></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate">TenZify</h3>
+                                        <span class="text-[10px] font-semibold text-gray-500">2h ago</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 truncate">Thanks for the raid earlier bro, means a lot! 🤘</p>
+                                </div>
+                            </div>
+
+                            <!-- Individual Chat (In-Game) -->
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="window.location.href='chat_detail.html'">
+                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all">
+                                    <img src="https://ui-avatars.com/api/?name=Faker&background=ff4654&color=fff&size=64" alt="Faker" class="w-full h-full object-cover">
+                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-ingame"></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate">Faker Clone</h3>
+                                        <span class="text-[10px] font-semibold text-gray-500">Yesterday</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 truncate">I'll queue up in 5 mins after this match</p>
+                                </div>
+                            </div>
+
+                            <!-- Individual Chat (Offline) -->
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group opacity-70 hover:opacity-100" onclick="window.location.href='chat_detail.html'">
+                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all filter grayscale">
+                                    <img src="https://ui-avatars.com/api/?name=S1mple&background=facc15&color=fff&size=64" alt="S1mple" class="w-full h-full object-cover text-black">
+                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-offline"></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h3 class="font-bold text-gray-400 group-hover:text-white transition-colors text-base truncate">S1mple</h3>
+                                        <span class="text-[10px] font-semibold text-gray-600">May 14</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 truncate">GGs wp</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Active Friends Sidebar -->
+                    <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 h-full">
+                        
+                        <!-- Active Now -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse"></span>
+                                Active Now (4)
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="relative w-10 h-10 rounded-full flex-shrink-0 border border-[#00ff87]">
+                                        <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full">
+                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full status-dot-online border-2 border-[#12141c]"></span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-[#00ff87] transition-colors">TenZify</h4>
+                                        <p class="text-[10px] text-gray-400 font-semibold truncate uppercase">Online</p>
+                                    </div>
+                                    <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg></button>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="relative w-10 h-10 rounded-full flex-shrink-0 border border-transparent">
+                                        <img src="https://ui-avatars.com/api/?name=Faker&background=ff4654&color=fff&size=64" class="w-full h-full rounded-full">
+                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full status-dot-ingame border-2 border-[#12141c]"></span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-white transition-colors">Faker Clone</h4>
+                                        <p class="text-[10px] text-[#a855f7] font-bold truncate uppercase flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            In Match (CS2)
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- More active friends... -->
+                            </div>
+                        </div>
+
+                        <!-- Suggestions -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Suggested Friends</h3>
+                            <button class="w-full py-4 rounded-xl border border-dashed border-white/20 text-gray-400 hover:text-white hover:border-[#00ff87] transition-all text-sm font-bold flex flex-col items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                                Sync Contacts or Steam
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Navigation Script & Setup -->
+    <script>
+    </script>
+</body>
+</html>

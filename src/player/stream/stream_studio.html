@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Stream Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: auto;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.72);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+
+        .sidebar-collapsible {
+            width: 90px;
+            position: relative;
+            z-index: 20;
+            overflow: visible !important;
+            transition: width 0.3s ease;
+            height: 100%;
+        }
+
+        .sidebar-collapsible:hover { width: 250px; }
+
+        .sidebar-collapsible .sidebar-brand-text,
+        .sidebar-collapsible .sidebar-section-title,
+        .sidebar-collapsible .sidebar-profile-text {
+            display: none;
+        }
+
+        .sidebar-collapsible:hover .sidebar-brand-text,
+        .sidebar-collapsible:hover .sidebar-section-title,
+        .sidebar-collapsible:hover .sidebar-profile-text {
+            display: block;
+        }
+
+        .sidebar-scroll-area {
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .sidebar-collapsible .sidebar-menu-btn,
+        .sidebar-collapsible .game-select-btn {
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            width: 46px;
+            height: 40px;
+            margin-left: auto;
+            margin-right: auto;
+            overflow: visible;
+            z-index: 30;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            transition: all 0.22s ease;
+        }
+
+        .sidebar-collapsible:hover .sidebar-menu-btn,
+        .sidebar-collapsible:hover .game-select-btn {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }
+
+        .sidebar-collapsible .sidebar-label {
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            position: absolute;
+            left: 50px;
+        }
+
+        .sidebar-collapsible:hover .sidebar-label {
+            opacity: 1;
+        }
+
+        .pulse-live {
+            animation: pulseLive 1.4s infinite;
+        }
+
+        @keyframes pulseLive {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 70, 84, 0.65);
+            }
+
+            70% {
+                box-shadow: 0 0 0 12px rgba(255, 70, 84, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 70, 84, 0);
+            }
+        }
+
+        .source-btn.active {
+            background: rgba(0, 255, 135, 0.14);
+            border-color: rgba(0, 255, 135, 0.35);
+            color: #00ff87;
+        }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased min-h-screen overflow-auto m-0">
+    <div class="flex w-full min-w-0 min-h-screen overflow-visible">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-visible relative">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 flex overflow-visible p-6 gap-6 items-start">
+                <section class="flex-1 min-w-0 flex flex-col gap-6">
+                    <div
+                        class="glass-panel rounded-[28px] p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-[#00ff87] mb-2">Desktop
+                                Stream Studio</p>
+                            <h1 id="studio-title" class="text-3xl font-black">Untitled desktop live</h1>
+                            <div class="flex flex-wrap items-center gap-3 mt-3 text-sm text-gray-400">
+                                <span id="studio-channel">Arena Creator Hub</span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-white/25"></span>
+                                <span id="studio-category">General</span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-white/25"></span>
+                                <span id="live-duration">00:00:00</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span id="studio-live-badge"
+                                class="px-3 py-1 rounded-full bg-white/10 text-gray-300 text-[11px] font-black tracking-[0.2em]">OFFLINE</span>
+                            <button id="back-to-channel"
+                                class="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10">Channel
+                                Settings</button>
+                            <button id="copy-share-link"
+                                class="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10">Copy
+                                Share Link</button>
+                            <button id="go-live-btn"
+                                class="px-5 py-3 rounded-2xl bg-[#ff4654] text-white text-sm font-black uppercase tracking-[0.18em] hover:bg-[#f03c4b]">Go
+                                Live</button>
+                            <button id="end-live-btn"
+                                class="px-5 py-3 rounded-2xl bg-[#12141c] border border-white/10 text-sm font-bold hover:bg-white/5">End
+                                Live</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-[24px] p-4 flex flex-wrap items-center gap-3">
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mr-2">Live
+                            Source</span>
+                        <button id="source-screen"
+                            class="source-btn px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10">Screen</button>
+                        <button id="source-camera"
+                            class="source-btn px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10">Camera
+                            + Mic</button>
+                        <button id="source-screen-camera"
+                            class="source-btn px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10">Screen
+                            + Camera</button>
+                        <span id="capture-status" class="text-sm text-gray-400 ml-auto">No capture source
+                            selected.</span>
+                    </div>
+
+                    <div class="glass-panel rounded-[30px] overflow-hidden flex-1 min-h-0">
+                        <div class="relative h-full min-h-[520px]">
+                            <img id="studio-preview-image"
+                                src="https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=2000&auto=format&fit=crop"
+                                alt="Studio output"
+                                class="absolute inset-0 w-full h-full object-cover opacity-85 transition-all duration-700">
+                            <video id="studio-video-preview"
+                                class="absolute inset-0 w-full h-full object-contain bg-black hidden" autoplay muted
+                                playsinline controls></video>
+                            <div id="live-overlay"
+                                class="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-[#0a0b0f]/10 to-transparent">
+                            </div>
+                            <div class="absolute top-5 left-5 flex items-center gap-3">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-black/50 backdrop-blur text-white text-xs font-black tracking-[0.16em]">PROGRAM</span>
+                                <span id="program-status"
+                                    class="px-3 py-1 rounded-full bg-[#00ff87]/15 border border-[#00ff87]/30 text-[#00ff87] text-xs font-black tracking-[0.16em]">READY
+                                    FOR LIVE CUT</span>
+                            </div>
+                            <div class="absolute top-5 right-5 flex items-center gap-3">
+                                <div id="on-air-pill"
+                                    class="hidden items-center gap-2 px-4 py-2 rounded-full bg-[#ff4654] text-white text-xs font-black tracking-[0.16em] pulse-live">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                                    ON AIR
+                                </div>
+                            </div>
+                            <div class="absolute left-5 right-5 bottom-28">
+                                <div
+                                    class="max-w-xl rounded-[24px] bg-black/30 backdrop-blur border border-white/10 p-5">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Live
+                                        Status</p>
+                                    <h2 id="live-headline" class="text-2xl font-black text-white">Studio standing by for
+                                        launch</h2>
+                                    <p id="live-subheadline" class="text-sm text-gray-300 mt-2">Press Go Live to start
+                                        the session, animate the program state, and unlock the stream chat feed.</p>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-5 left-5 right-5 grid grid-cols-2 lg:grid-cols-5 gap-3">
+                                <div class="glass-panel rounded-2xl p-4">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Health
+                                    </p>
+                                    <p id="stream-health" class="text-xl font-black mt-2">Standby</p>
+                                </div>
+                                <div class="glass-panel rounded-2xl p-4">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Viewers
+                                    </p>
+                                    <p id="viewer-count" class="text-xl font-black mt-2">0</p>
+                                </div>
+                                <div class="glass-panel rounded-2xl p-4">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Bitrate
+                                    </p>
+                                    <p id="bitrate-count" class="text-xl font-black mt-2">6000 kbps</p>
+                                </div>
+                                <div class="glass-panel rounded-2xl p-4">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Latency
+                                    </p>
+                                    <p id="latency-count" class="text-xl font-black mt-2">0 sec</p>
+                                </div>
+                                <div class="glass-panel rounded-2xl p-4">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Dropped
+                                        Frames</p>
+                                    <p id="dropped-frames" class="text-xl font-black mt-2">0.0%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="w-[420px] flex-shrink-0 flex flex-col gap-6 overflow-y-auto max-h-[calc(100vh-140px)]">
+                    <div class="glass-panel rounded-[28px] p-6">
+                        <h2 class="text-lg font-black mb-4">Producer Notes</h2>
+                        <textarea id="producer-notes" rows="6"
+                            class="w-full rounded-2xl bg-white/5 border border-white/10 p-4 text-sm text-white outline-none resize-none"
+                            placeholder="Drop segment notes, sponsor cues, and moderation reminders here."></textarea>
+                    </div>
+
+                    <div class="glass-panel rounded-[28px] p-6 flex flex-col min-h-[420px]">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h2 class="text-lg font-black">Live Chat</h2>
+                                <p id="chat-status" class="text-xs text-gray-500 mt-1">Chat is waiting for the live
+                                    session to start.</p>
+                            </div>
+                            <div class="px-3 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold">
+                                <span id="chat-count">0</span> msgs
+                            </div>
+                        </div>
+                        <div id="chat-messages" class="flex-1 min-h-[240px] overflow-y-auto space-y-3 pr-1"></div>
+                        <form id="chat-form" class="mt-4 flex items-center gap-3">
+                            <input id="chat-input"
+                                class="flex-1 rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none"
+                                placeholder="Send a message to your stream chat..." />
+                            <button type="submit" id="chat-send"
+                                class="px-5 py-3 rounded-2xl bg-[#00ff87] text-[#0a0b0f] text-sm font-black uppercase tracking-[0.16em] hover:bg-[#00e67a]">Send</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-panel rounded-[28px] p-6">
+                        <h2 class="text-lg font-black mb-4">Live Activity</h2>
+                        <div id="activity-log" class="space-y-3 text-sm text-gray-300"></div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script src="./stream_studio.js"></script>
+</body>
+
+</html>

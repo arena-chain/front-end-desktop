@@ -1,0 +1,4 @@
+{
+  "apiOrigin": "http://192.168.1.105:3000",
+  "_comment": "Backend root URL without /api. Use 127.0.0.1 if localhost fails on Windows. Edit this file and restart the app."
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duel Engine | Arena Chain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #050505;
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-neon {
+            color: #00ff87;
+            text-shadow: 0 0 10px rgba(0, 255, 135, 0.4);
+        }
+        .text-opponent {
+            color: #22d3ee;
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+        }
+        #game-overlay {
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+        .flash-red {
+            animation: flashRed 0.2s ease-out;
+        }
+        @keyframes flashRed {
+            0% { background: rgba(255, 70, 84, 0.1); }
+            100% { background: transparent; }
+        }
+        .screen-shake {
+            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .bonus-popup {
+            position: absolute;
+            pointer-events: none;
+            font-weight: 900;
+            font-size: 1.5rem;
+            animation: floatUp 0.6s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+        }
+        .hit-quality {
+            position: absolute;
+            pointer-events: none;
+            font-weight: 900;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            animation: floatSlow 0.8s ease-out forwards;
+            z-index: 90;
+        }
+        @keyframes floatSlow {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+        .text-perfect { color: #facc15; text-shadow: 0 0 10px rgba(250, 204, 21, 0.4); }
+        .text-good { color: #00ff87; text-shadow: 0 0 10px rgba(0, 255, 135, 0.4); }
+        .text-bad { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div id="game-overlay" class="fixed inset-0 flex flex-col justify-between p-8">
+        <!-- TOP ROW: Stats & Opponent -->
+        <div class="flex justify-between items-start">
+            <!-- Local Stats -->
+            <div class="hud-panel p-6 rounded-[2rem] flex gap-8">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">LOCAL SCORE</p>
+                    <h3 id="hud-score" class="text-4xl font-black text-neon italic tabular-nums">0</h3>
+                </div>
+                <div class="w-px h-12 bg-white/5"></div>
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">ACCURACY</p>
+                    <h3 id="hud-accuracy" class="text-4xl font-black text-white italic">100%</h3>
+                </div>
+            </div>
+
+            <!-- Timer (Center) -->
+            <div class="bg-black/60 backdrop-blur-xl border border-white/5 p-8 rounded-full flex flex-col items-center justify-center w-32 h-32">
+                <p class="text-[10px] text-gray-600 uppercase font-black mb-1">REMAINING</p>
+                <h3 id="hud-timer" class="text-3xl font-black text-white italic">00:00</h3>
+            </div>
+
+            <!-- Opponent Stats -->
+            <div class="hud-panel p-6 rounded-[2rem] flex gap-8 border-[#22d3ee]/20">
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">OPPONENT</p>
+                    <h3 id="opponent-name" class="text-lg font-black text-gray-200">WAITING...</h3>
+                </div>
+                <div class="w-px h-12 bg-white/5"></div>
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">SCORE</p>
+                    <h3 id="opponent-score" class="text-4xl font-black text-opponent italic tabular-nums">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW: Combo & EXIT -->
+        <div class="flex justify-between items-end">
+            <div class="flex items-end gap-6">
+                <!-- Combo -->
+                <div class="flex flex-col items-center">
+                    <h2 id="hud-combo" class="text-7xl font-black italic text-white transition-all duration-100">0</h2>
+                    <p class="text-[10px] text-gray-500 uppercase font-black tracking-[0.3em]">COMBO STREAK</p>
+                </div>
+                <!-- Multiplier -->
+                <div class="mb-2 px-3 py-1 bg-[#00ff87]/10 border border-[#00ff87]/20 rounded-lg">
+                    <span id="hud-multiplier" class="text-neon text-xs font-black tracking-tighter italic">x1.0</span>
+                </div>
+            </div>
+
+            <button id="exit-btn" class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-red-500/20 hover:border-red-500/40 transition-all text-white/40 hover:text-red-500 group pointer-events-auto">
+                <svg class="w-6 h-6 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Ready Screen / Countdown -->
+    <div id="start-screen" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-50 transition-all">
+        <div class="text-center pop-in">
+            <p id="countdown-label" class="text-[#00ff87] text-xs font-black tracking-[0.5em] uppercase mb-8">SYNCHRONIZING COMBAT PROTOCOL</p>
+            <h1 id="countdown-timer" class="text-[12rem] font-black italic tracking-tighter leading-none mb-12">READY?</h1>
+            <div class="flex gap-4 justify-center">
+                <div class="px-6 py-3 glass-panel rounded-2xl">
+                    <p class="text-[10px] text-gray-600 uppercase font-black mb-1">DIFFICULTY</p>
+                    <p id="info-difficulty" class="text-xs font-bold text-white tracking-widest">MEDIUM</p>
+                </div>
+                <div class="px-6 py-3 glass-panel rounded-2xl">
+                    <p class="text-[10px] text-gray-600 uppercase font-black mb-1">DURATION</p>
+                    <p id="info-duration" class="text-xs font-bold text-white tracking-widest">60S</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disconnect Overlay -->
+    <div id="disconnect-screen" class="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[100] hidden">
+        <div class="glass-panel p-12 rounded-[3rem] text-center border-red-500/30">
+            <h2 class="text-4xl font-black text-red-500 mb-4 italic">SIGNAL LOST</h2>
+            <p class="text-gray-400 mb-8 max-w-md mx-auto">The opponent has disconnected from the combat uplink. You are being extracted.</p>
+            <button onclick="window.location.href='../duel/dashboard.html'" class="px-12 py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-all">
+                EXIT DUEL
+            </button>
+        </div>
+    </div>
+
+    <script src="./game.js"></script>
+</body>
+</html>
