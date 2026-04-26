@@ -449,7 +449,7 @@ ipcMain.handle('steam-create-lobby', async (event, { gameId, mode }) => {
     
     try {
         console.log('[Steam] Creating lobby (Public, 10 members)...');
-        const lobby = await steamClient.matchmaking.createLobby(1, 10);
+        const lobby = await steamClient.matchmaking.createLobby(2, 10);
         const lobbyIdStr = lobby.id.toString();
         console.log(`[Steam] LOBBY CREATED: ${lobbyIdStr}`);
         

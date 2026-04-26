@@ -1,17 +1,17 @@
 const { io } = require('socket.io-client');
-const { getAccessToken } = require('./api');
+const { getAccessToken, getArenaBaseOrigin } = require('./api');
 
 class DuelSocket {
     constructor() {
         this.socket = null;
-        this.baseUrl = 'http://127.0.0.1:3000/duel';
     }
 
     connect() {
         if (this.socket && this.socket.connected) return this.socket;
 
         const token = getAccessToken();
-        this.socket = io(this.baseUrl, {
+        const baseUrl = `${getArenaBaseOrigin()}/duel`;
+        this.socket = io(baseUrl, {
             auth: { token },
             reconnection: true,
             reconnectionAttempts: 5,
