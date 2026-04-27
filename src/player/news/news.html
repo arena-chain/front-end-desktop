@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0b0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 135, 0.3);
+            border-radius: 10px;
+        }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+
+        .sidebar-collapsible {
+            width: 90px;
+            position: relative;
+            z-index: 20;
+            overflow: visible !important;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-collapsible:hover { width: 250px; }
+
+        .sidebar-collapsible .sidebar-brand-text,
+        .sidebar-collapsible .sidebar-section-title,
+        .sidebar-collapsible .sidebar-profile-text {
+            display: none;
+        }
+
+        .sidebar-collapsible:hover .sidebar-brand-text,
+        .sidebar-collapsible:hover .sidebar-section-title,
+        .sidebar-collapsible:hover .sidebar-profile-text {
+            display: block;
+        }
+
+        .sidebar-scroll-area {
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .sidebar-collapsible .sidebar-menu-btn,
+        .sidebar-collapsible .game-select-btn {
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            width: 46px;
+            height: 40px;
+            margin-left: auto;
+            margin-right: auto;
+            overflow: visible;
+            z-index: 30;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            transition: all 0.22s ease;
+        }
+
+        .sidebar-collapsible:hover .sidebar-menu-btn,
+        .sidebar-collapsible:hover .game-select-btn {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }
+
+        .sidebar-collapsible .sidebar-label {
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            position: absolute;
+            left: 50px;
+        }
+
+        .sidebar-collapsible:hover .sidebar-label {
+            opacity: 1;
+        }
+
+        .news-card {
+            transition: all 0.3s ease;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(0, 255, 135, 0.3);
+        }
+
+        .news-card img {
+            transition: transform 0.5s ease;
+        }
+
+        .news-card:hover img {
+            transform: scale(1.05);
+        }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- News Content -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-6">Latest Updates</h1>
+
+                <!-- Category Filters -->
+                <div id="category-filters" class="flex flex-wrap gap-2 mb-8"></div>
+
+                <!-- Featured Highlight (Hero News) — populated by renderer.js -->
+                <div id="featured-hero"></div>
+
+                <!-- News Grid — populated by renderer.js -->
+                <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+
+                <!-- Load More -->
+                <div id="load-more-container" class="flex justify-center mt-10 mb-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>

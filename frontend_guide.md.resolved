@@ -1,0 +1,150 @@
+# Frontend Implementation Guide
+
+## Overview
+This guide details the API endpoints and data structures for integrating **Partnerships**, **Missions**, and **Achievements** into the frontend application.
+
+## 1. Partnerships Module
+Manage and display event or platform sponsors.
+
+### Data Model
+```typescript
+interface Partnership {
+  _id: string;
+  name: string;
+  logo?: string; // URL
+  type: 'Event Sponsor' | 'Platform Sponsor';
+  description?: string;
+  website?: string; // URL
+  createdAt: string;
+}
+```
+
+### API Endpoints
+| Method | Endpoint | Description | Payload |
+|:--- |:--- |:--- |:--- |
+| `GET` | `/partnerships` | List all partnerships | - |
+| `GET` | `/partnerships/:id` | Get single partnership | - |
+| `POST` | `/partnerships` | Create partnership | `{ name, type, logo?, website?, description? }` |
+| `PATCH` | `/partnerships/:id` | Update partnership | `{ ...partial fields }` |
+| `DELETE` | `/partnerships/:id` | Delete partnership | - |
+
+---
+
+## 2. Missions Module
+Display available missions and track progress.
+
+### Data Model
+```typescript
+interface MissionCriteria {
+  type: string; // e.g., 'play_games'
+  target: number; // e.g., 10
+}
+
+interface Mission {
+  _id: string;
+  title: string;
+  description?: string;
+  reward: number; // XP or Coins
+  criteria: MissionCriteria;
+  createdAt: string;
+}
+```
+
+### API Endpoints
+| Method | Endpoint | Description | Payload |
+|:--- |:--- |:--- |:--- |
+| `GET` | `/mission` | List all missions | - |
+| `GET` | `/mission/:id` | Get single mission | - |
+| `POST` | `/mission` | Create mission | `{ title, reward, criteria: { type, target }, description? }` |
+| `PATCH` | `/mission/:id` | Update mission | `{ ...partial fields }` |
+| `DELETE` | `/mission/:id` | Delete mission | - |
+
+---
+
+## 3. Achievements Module
+Display unlocked medals and rewards.
+
+### Data Model
+```typescript
+interface Achievement {
+  _id: string;
+  name: string;
+  description?: string;
+  icon: string; // URL to image
+  missionsRequired: number;
+  createdAt: string;
+}
+```
+
+### API Endpoints
+| Method | Endpoint | Description | Payload |
+|:--- |:--- |:--- |:--- |
+| `GET` | `/achievements` | List all achievements | - |
+| `GET` | `/achievements/:id` | Get single achievement | - |
+| `POST` | `/achievements` | Create achievement | `{ name, icon, missionsRequired, description? }` |
+| `PATCH` | `/achievements/:id` | Update achievement | `{ ...partial fields }` |
+| `DELETE` | `/achievements/:id` | Delete achievement | - |
+
+## Integration Tips
+
+### Partnerships
+- **Admin**: Create a form with fields for Name, Type (Dropdown), and URL inputs for Logo/Website.
+- **User/Public**: Display a carousel of logos. Link the logo to the `website` URL if present.
+
+### Missions
+- **Admin**: Form to define `criteria.type` (e.g., 'Win Match', 'Kill Boss') and `criteria.target` (count).
+- **User**: List missions with a progress bar (current / target).
+
+### Achievements
+- **Admin**: Upload or provide URL for medal icons. Set the `missionsRequired` threshold.
+
+---
+
+## 4. Player Desktop Application
+The desktop client for players to manage their career, matchmaking, and subscriptions.
+
+### File Structure
+- **`player/dashboard.html`**: Main single-page application (SPA) view. Contains all sections (Matchmaking, Leagues, etc.) hidden/shown via JS.
+- **`player/renderer.js`**: Handles UI logic, navigation state, chart rendering (Chart.js), and IPC communication with the main process.
+
+### Features & Implementation
+
+#### Navigation System
+- **Sidebar**:
+    - **Primary Tabs**: Play (Collapsible), Match History, My Channel, etc.
+    - **Sub-Tabs**: Under "Play" -> Matchmaking, Tournaments, Leagues.
+- **Logic**: Uses `showSection(navId, sectionId)` to toggle visibility of `.content-section` divs.
+- **Active State**: Highlights current tab with neon green accents (`#00FF00`) and background glow.
+
+#### Visual Style ("Pro Gamer" Aesthetic)
+- **Theme**: Dark Mode (`#0a0a0a` backgrounds) with high-contrast text and neon green/purple accents.
+- **Effects**:
+    - **Glassmorphism**: Translucent card backgrounds.
+    - **Neon Glows**: `box-shadow` and `drop-shadow` for interactive elements.
+    - **3D Badges**: CSS-only metallic badges for achievements (Gold, Silver, Bronze).
+
+#### Core Modules
+
+**1. Matchmaking**
+- **Hero Section**: "Find Match" CTA with skewed button design.
+- **Stats Grid**: Dashboard showing Current Rank (e.g., Diamond II), Win Rate, and Hours Played.
+- **Performance Chart**: Chart.js integration showing MMR/LP trends over time.
+
+**2. Leagues & Standings**
+- **Leaderboard**: Ranked table displaying Player Name, Avatar, Country Flag, Elo, and Win Rate.
+- **Filters**: Interactive tabs to filter by Region (World, Africa, Europe, Asia, Americas).
+- **Highlights**: Top 3 players get distinct Gold/Silver/Bronze row styling. Current user is pinned/highlighted.
+
+**3. Subscriptions**
+- **Plans**: "Rookie" (Free), "Pro" ($9.99), "Legend" ($19.99).
+- **UI**: Pricing cards with feature lists. "Pro" plan is visually emphasized (scaled up, "Most Popular" badge).
+- **Triggers**: Accessible via the "Upgrade to Pro" button in the sidebar.
+
+**4. Missions & Achievements**
+- **Missions**: Tiered cards (Common, Rare, Legendary) with animated progress bars and XP rewards.
+- **Achievements**: "Hall of Fame" grid with rarity-based hover effects and 3D badge simulations.
+
+### How to Run
+1.  **Install Dependencies**: `npm install`
+2.  **Start Application**: `npm start`
+3.  **Login**: Use test credentials (or register) to access the dashboard.
