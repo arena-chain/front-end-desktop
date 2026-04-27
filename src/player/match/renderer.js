@@ -924,6 +924,10 @@
             if (el) el.classList.add('hidden');
         });
 
+        const appIdMap = { cs2: 730, dota2: 570 };
+        const appId = appIdMap[state.nowGame] || 730;
+        const gameLabel = state.nowGame === 'dota2' ? 'Dota 2' : 'CS2';
+
         const user = JSON.parse(localStorage.getItem('arena_user') || '{}');
         const isHost = state.game.hostUserId === user.id;
 
@@ -932,9 +936,9 @@
         const launchBtn = $('gr-steam-action-btn');
 
         if (!isHost) {
-            // ─── JOINER: waiting state, no launch button ───────────────────
+            // ─── JOINER: waiting state + simple launch button (no lobby) ───
             if (statusText) {
-                statusText.textContent = 'Waiting for host to create the lobby and send you an invite...';
+                statusText.textContent = 'Waiting for host to send you an invite. You can launch the game now to be ready.';
                 statusText.className = 'text-sm font-bold text-amber-400 mb-4 italic';
             }
             if (statusIcon) {
@@ -943,15 +947,31 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>`;
             }
-            if (launchBtn) launchBtn.classList.add('hidden');
+            if (launchBtn) {
+                launchBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                    </svg>
+                    Launch ${gameLabel} 
+                `;
+                launchBtn.className = 'px-6 py-3 bg-amber-500 hover:bg-amber-400 text-[#080B14] font-bold text-sm rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-wider flex items-center justify-center gap-2';
+                launchBtn.classList.remove('hidden');
+
+                const freshBtn = launchBtn.cloneNode(true);
+                launchBtn.parentNode.replaceChild(freshBtn, launchBtn);
+
+                freshBtn.addEventListener('click', () => {
+                    const { spawn } = require('child_process');
+                    const steamExe = 'C:\\Program Files (x86)\\Steam\\steam.exe';
+                    console.log(`[CS2Launch] Joiner launching ${gameLabel}...`);
+                    spawn(steamExe, ['-applaunch', String(appId)], { detached: true, stdio: 'ignore' }).unref();
+                });
+            }
             return;
         }
 
         // ─── HOST: show launch button ──────────────────────────────────────
-        const appIdMap = { cs2: 730, dota2: 570 };
-        const appId = appIdMap[state.nowGame] || 730;
         const launchUrl = `steam://rungameid/${appId}//+map de_dust2/`;
-        const gameLabel = state.nowGame === 'dota2' ? 'Dota 2' : 'CS2';
 
         if (statusText) {
             statusText.textContent = 'Ready to launch custom game';
