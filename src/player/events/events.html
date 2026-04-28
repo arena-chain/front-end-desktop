@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-orange-glow { box-shadow: 0 0 20px rgba(255, 120, 0, 0.35); }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10" style="scrollbar-width: none;">
+                <h1 class="text-4xl font-black text-white mb-2">Events</h1>
+                <p class="text-gray-400 mb-8">Browse tournaments, register your team, and track prize pools.</p>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-5xl">
+                    <div class="glass-panel rounded-3xl p-8 neon-orange-glow border border-[#ff7800]/20">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-[#00ff87]/20 text-[#00ff87] text-xs font-bold rounded-lg border border-[#00ff87]/30">OPEN</span>
+                            <span class="px-3 py-1 bg-[#ff4654]/20 text-[#ff4654] text-xs font-bold rounded-lg">LIVE</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-white mb-2">Valorant Champions Tour</h2>
+                        <p class="text-sm text-gray-400 mb-6">Feb 22, 2026 · 14:00 UTC · $150K prize pool</p>
+                        <button type="button" class="w-full py-4 bg-[#ff7800] hover:bg-[#e66d00] text-white font-black rounded-xl uppercase">Register</button>
+                    </div>
+                    <div class="glass-panel rounded-3xl p-8 border border-[#22d3ee]/20">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-[#22d3ee]/20 text-[#22d3ee] text-xs font-bold rounded-lg border border-[#22d3ee]/30">UPCOMING</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-white mb-2">League Season Finals</h2>
+                        <p class="text-sm text-gray-400 mb-6">Mar 5, 2026 · Online · Double elimination</p>
+                        <button type="button" class="w-full py-4 border-2 border-[#22d3ee] text-[#22d3ee] font-black rounded-xl uppercase hover:bg-[#22d3ee]/10">View details</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function highlightTopNav() {
+                var ev = document.getElementById('nav-page-events');
+                var mk = document.getElementById('nav-page-market');
+                if (ev) {
+                    ev.classList.add('bg-[#00ff87]', 'text-[#0a0b0f]');
+                    ev.classList.remove('text-gray-500');
+                }
+                if (mk) mk.classList.add('text-gray-500');
+            }
+            function bindLogout() {
+                var lb = document.getElementById('logoutBtn');
+                if (!lb) return false;
+                lb.addEventListener('click', function () {
+                    try {
+                        var api = require('../../../shared/api');
+                        if (api.logout) api.logout();
+                    } catch (e) {}
+                });
+                return true;
+            }
+            highlightTopNav();
+            if (!bindLogout()) setTimeout(function () { bindLogout(); }, 100);
+        });
+    </script>
+</body>
+</html>

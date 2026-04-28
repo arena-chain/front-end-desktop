@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA — Player shell (reference layout)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+    <script src="../components/shell-loader.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <!--
+      Reference “single layout” skeleton: sidebar | (topbar + scrollable main).
+      Feature pages under src/player/pages/ should follow this flex structure.
+    -->
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="../components/sidebar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="../components/topbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10" style="scrollbar-width: none;">
+                <p class="text-gray-500 text-sm mb-4">Reference layout only — replace this region with your page body.</p>
+                <h1 class="text-3xl font-black text-white mb-2">Player shell</h1>
+                <p class="text-gray-400 max-w-xl">Use the same outer structure as this file when adding new player screens so chrome stays consistent.</p>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var lb = document.getElementById('logoutBtn');
+            if (lb) lb.addEventListener('click', function () {
+                try { require('../../../shared/api').logout(); } catch (e) {}
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Channel Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0f; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.25); border-radius: 999px; }
+        .glass-panel { background: rgba(18, 20, 28, 0.72); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); }
+        .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
+        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
+        .sidebar-collapsible:hover { width: 250px; }
+        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
+        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
+        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+        .field-label { color: #8f97b2; font-size: 11px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+        .field-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: white; border-radius: 16px; padding: 14px 16px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .field-input:focus { border-color: rgba(0,255,135,0.55); box-shadow: 0 0 0 3px rgba(0,255,135,0.08); }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <div class="flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between mb-8">
+                    <div>
+                        <p class="text-[11px] font-black tracking-[0.3em] text-[#00ff87] uppercase mb-3">Creator Workspace</p>
+                        <h1 class="text-4xl font-black tracking-tight mb-2">Build Your Arena Channel</h1>
+                        <p class="text-gray-400 max-w-2xl">Configure your creator identity, prepare your live metadata, and move straight into desktop stream control without changing the backend.</p>
+                    </div>
+                    <div class="glass-panel rounded-3xl px-5 py-4 min-w-[280px]">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-[0.22em] mb-2">Owner</p>
+                        <p id="channel-owner" class="text-2xl font-black text-white">Creator</p>
+                        <p class="text-sm text-gray-400 mt-1">Desktop creator profile ready</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-[1.25fr_0.95fr] gap-6">
+                    <section class="glass-panel rounded-[28px] p-6 lg:p-8">
+                        <div class="flex items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h2 class="text-2xl font-black">Channel Setup</h2>
+                                <p class="text-sm text-gray-400 mt-1">This form is stored locally in the desktop app, so you can iterate before connecting any extra streaming services.</p>
+                            </div>
+                            <div class="px-3 py-2 rounded-2xl bg-[#00ff87]/10 border border-[#00ff87]/20 text-[#00ff87] text-xs font-black tracking-[0.18em] uppercase">Desktop Ready</div>
+                        </div>
+
+                        <form id="channel-form" class="space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <label class="block">
+                                    <span class="field-label block mb-2">Channel Name</span>
+                                    <input id="channel-name" class="field-input" placeholder="Radiant with Med" />
+                                </label>
+                                <label class="block">
+                                    <span class="field-label block mb-2">Public Slug</span>
+                                    <input id="channel-slug" class="field-input" placeholder="radiant-with-med" />
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <section>
+                                    <span class="field-label block mb-3">Category</span>
+                                    <div id="category-checkboxes" class="grid grid-cols-2 gap-2">
+                                        <!-- Categories generated by JS -->
+                                    </div>
+                                </section>
+                                <section>
+                                    <span class="field-label block mb-3">Tags</span>
+                                    <div id="tags-checkboxes" class="grid grid-cols-2 gap-2">
+                                        <!-- Tags generated by JS -->
+                                    </div>
+                                </section>
+                            </div>
+
+                            <section>
+                                <span class="field-label block mb-3">Select Avatar</span>
+                                <div id="avatar-grid" class="grid grid-cols-4 sm:grid-cols-8 gap-3">
+                                    <!-- Avatars generated by JS -->
+                                </div>
+                            </section>
+
+                            <label class="block">
+                                <span class="field-label block mb-2">Stream Title</span>
+                                <input id="stream-title" class="field-input" placeholder="Tonight we push ranked and review VODs" />
+                            </label>
+
+                            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-5">
+                                <label class="block">
+                                    <span class="field-label block mb-2">Next Planned Session</span>
+                                    <input id="stream-schedule" type="datetime-local" class="field-input" />
+                                </label>
+                                <div class="glass-panel rounded-3xl px-5 py-4 flex flex-col justify-center">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">RTMP Stream Key</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <input id="stream-key" class="bg-transparent text-sm text-white w-[220px] outline-none" readonly />
+                                        <button type="button" id="copy-stream-key" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-bold">Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label class="block">
+                                <span class="field-label block mb-2">Channel Description</span>
+                                <textarea id="channel-description" rows="5" class="field-input resize-none" placeholder="Tell your audience what they can expect from your live sessions."></textarea>
+                            </label>
+
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between pt-2">
+                                <p id="save-status" class="text-sm text-gray-500">Draft not saved yet.</p>
+                                <div class="flex gap-3">
+                                    <button type="submit" class="px-6 py-3 rounded-2xl bg-[#00ff87] text-[#0a0b0f] font-black text-sm uppercase tracking-[0.18em] hover:bg-[#00e67a] transition-colors">Save Draft</button>
+                                    <button type="button" id="open-studio" class="px-6 py-3 rounded-2xl bg-[#ff4654] text-white font-black text-sm uppercase tracking-[0.18em] hover:bg-[#f03c4b] transition-colors">Open Stream Studio</button>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="space-y-6">
+                        <div class="glass-panel rounded-[28px] overflow-hidden">
+                            <div class="aspect-video relative bg-black">
+                                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" alt="Channel preview" class="w-full h-full object-cover opacity-80">
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-[#0a0b0f]/20 to-transparent"></div>
+                                <div class="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#00ff87]/15 border border-[#00ff87]/35 text-[#00ff87] text-[11px] font-black uppercase tracking-[0.2em]">Preview</div>
+                                <div class="absolute bottom-5 left-5 right-5">
+                                    <h3 id="preview-stream-title" class="text-2xl font-black">No stream title yet</h3>
+                                    <p id="preview-channel-name" class="text-sm text-gray-300 mt-1">Unnamed Channel</p>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center justify-between gap-3 mb-4">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-500">Public URL</p>
+                                        <p id="preview-channel-slug" class="text-sm font-semibold text-white mt-1">arena.gg/channel</p>
+                                    </div>
+                                    <div class="px-3 py-2 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold text-white" id="preview-category">General</div>
+                                </div>
+                                <div class="rounded-2xl bg-white/[0.03] border border-white/5 px-4 py-3">
+                                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 mb-2">Tags</p>
+                                    <p id="preview-tags" class="text-sm text-gray-300">No tags</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-[28px] p-6">
+                            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-[#00ff87] mb-3">Desktop Clone Scope</p>
+                            <ul class="space-y-3 text-sm text-gray-300 mb-6">
+                                <li>Reuse the same player shell, nav, and server configuration.</li>
+                                <li>Prepare creator metadata locally before starting the live session.</li>
+                                <li>Hand off the saved draft to a desktop stream studio screen without backend changes.</li>
+                            </ul>
+                            
+                            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-[#00ff87] mb-3">Active Chains</p>
+                            <div id="chains-list" class="space-y-2">
+                                <!-- Chains generated by JS -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>
