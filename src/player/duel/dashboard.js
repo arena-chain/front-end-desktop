@@ -64,7 +64,7 @@ function initUI() {
     if (backBtn) {
         backBtn.addEventListener('click', () => {
             duelSocket.disconnect();
-            ipcRenderer.send('navigate-to', 'player-dashboard');
+            window.location.href = require('../components/nav-config').href('dashboard');
         });
     }
 

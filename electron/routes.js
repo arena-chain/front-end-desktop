@@ -18,6 +18,18 @@ const ROUTES = {
     'player-channel': 'src/player/channel/channel_dashboard.html',
     'stream-studio': 'src/player/stream/stream_studio.html',
     'player-example': 'src/player/pages/example.html',
+    'player-news': 'src/player/news/news.html',
+    'player-missions': 'src/player/missions/missions.html',
+    'player-matchmaking': 'src/player/match/matchmaking.html',
+    'player-market': 'src/player/market/market.html',
+    'player-events': 'src/player/events/events.html',
+    'player-rewards': 'src/player/rewards/rewards.html',
+    'player-profile': 'src/player/profile/profile.html',
+    'player-friends': 'src/player/freinds/freinds.html',
+    'player-recent-games': 'src/player/recent_games/recent_games.html',
+    'player-chat': 'src/player/chat/chat.html',
+    'player-stream-dashboard': 'src/player/stream/stream_dashboard.html',
+    'player-league': 'src/player/league/league.html',
 };
 
 const ROLE_HOME = {

@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duel Result | Arena Chain</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         body {
-            font-family: 'Outfit', sans-serif;
             background: #0a0b0f;
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.1) 0%, transparent 50%);
         }
         .glass-panel {
@@ -41,6 +45,7 @@
             box-shadow: 0 0 40px rgba(0, 255, 135, 0.15);
         }
     </style>
+    <script src="../components/shell-loader.js"></script>
 </head>
 <body class="flex flex-col items-center justify-center p-8 min-h-screen">
     
