@@ -5,9 +5,9 @@ const {
     isDashboardPage,
     resolveActiveSidebarNavId,
     resolveComponentFilename,
-} = require('./nav-config');
-const { initTopbarChrome } = require('./topbar-init');
-const { initSidebarChrome } = require('./sidebar-chrome');
+} = require(path.join(__dirname, 'nav-config'));
+const { initTopbarChrome } = require(path.join(__dirname, 'topbar-init'));
+const { initSidebarChrome } = require(path.join(__dirname, 'sidebar-chrome'));
 
 const COMPONENTS_DIR = __dirname;
 
