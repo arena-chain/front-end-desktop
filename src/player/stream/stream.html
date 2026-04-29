@@ -8,36 +8,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
-        body { background: #0a0b0f; margin: 0; overflow: auto; min-height: 100vh; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .chat-panel { background: #12141c; border-left: 1px solid rgba(255,255,255,0.05); }
         .glass-panel { background: rgba(18,20,28,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .nav-menu-btn.active { background: rgba(0,255,135,0.15); color: #00ff87; }
-        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; height: 100%; }
-        .sidebar-collapsible:hover { width: 250px; }
-        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
-        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; min-height: 0; }
-        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn {
-            position: relative; justify-content: center; align-items: center; width: 46px; height: 40px;
-            margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease;
-        }
-        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn {
-            width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important;
-        }
-        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
-        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
     </style>
     <script src="../_common/loadComponents.js"></script>
 </head>
-<body class="bg-[#0a0b0f] text-white antialiased min-h-screen overflow-auto m-0">
-    <div class="flex w-full min-w-0 min-h-screen overflow-visible">
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
         <common-navbar src="left_side_navbar.html"></common-navbar>
-        <main class="flex-1 min-w-0 flex flex-col overflow-visible relative">
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
             <common-navbar src="top_navbar.html"></common-navbar>
-            <div class="flex-1 flex overflow-visible p-6 gap-6 items-start">
+            <div class="flex-1 overflow-y-auto overflow-x-hidden">
+                <div class="flex p-6 gap-6 items-start min-h-full">
                 <div class="flex-1 flex flex-col min-w-0 h-full">
                     <div class="w-full relative bg-black rounded-2xl overflow-hidden shadow-2xl flex-shrink-0" style="aspect-ratio: 16/9; max-height: calc(100vh - 200px);">
                         <video id="viewer-video" class="w-full h-full object-contain bg-black" autoplay playsinline controls></video>
@@ -92,6 +79,7 @@
                             <button id="chat-send" class="w-10 h-10 flex items-center justify-center bg-[#00ff87] hover:bg-[#00e67a] text-[#0a0b0f] rounded-xl transition-all shadow-lg flex-shrink-0 ml-1 font-black">→</button>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </main>

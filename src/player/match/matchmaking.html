@@ -152,7 +152,7 @@
 
                         <!-- Training warm-up card -->
                         <div class="mt-6" id="mm-training-card"
-                            onclick="require('electron').ipcRenderer.send('navigate-to', 'training-dashboard')"
+                            onclick="window.electronApp.navigate('training-dashboard')"
                             style="cursor:pointer">
                             <div class="glass-panel rounded-2xl p-5 border border-[#00ff87]/10 hover:border-[#00ff87]/30 transition-all group"
                                 style="background: linear-gradient(135deg, rgba(0,255,135,0.04) 0%, rgba(34,211,238,0.02) 100%)">

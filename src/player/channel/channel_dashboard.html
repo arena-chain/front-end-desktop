@@ -14,15 +14,6 @@
         ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.25); border-radius: 999px; }
         .glass-panel { background: rgba(18, 20, 28, 0.72); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); }
         .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
-        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
-        .sidebar-collapsible:hover { width: 250px; }
-        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
-        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; min-height: 0; }
-        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
-        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
-        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
-        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
         .field-label { color: #8f97b2; font-size: 11px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
         .field-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: white; border-radius: 16px; padding: 14px 16px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .field-input:focus { border-color: rgba(0,255,135,0.55); box-shadow: 0 0 0 3px rgba(0,255,135,0.08); }
@@ -120,7 +111,7 @@
                                 <p id="save-status" class="text-sm text-gray-500">Draft not saved yet.</p>
                                 <div class="flex gap-3">
                                     <button type="submit" class="px-6 py-3 rounded-2xl bg-[#00ff87] text-[#0a0b0f] font-black text-sm uppercase tracking-[0.18em] hover:bg-[#00e67a] transition-colors">Save Draft</button>
-                                    <button type="button" id="open-studio" onclick="window.location.href='../stream/stream_studio.html'" class="px-6 py-3 rounded-2xl bg-[#ff4654] text-white font-black text-sm uppercase tracking-[0.18em] hover:bg-[#f03c4b] transition-colors">Open Stream Studio</button>
+                                    <button type="button" id="open-studio" onclick="window.location.href = require('../components/nav-config').href('streamStudio')" class="px-6 py-3 rounded-2xl bg-[#ff4654] text-white font-black text-sm uppercase tracking-[0.18em] hover:bg-[#f03c4b] transition-colors">Open Stream Studio</button>
                                 </div>
                             </div>
                         </form>

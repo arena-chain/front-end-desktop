@@ -31,16 +31,6 @@
 
         .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
 
-        /* Sidebar styles from common */
-        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; height: 100%; }
-        .sidebar-collapsible:hover { width: 250px; }
-        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
-        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; min-height: 0; }
-        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
-        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
-        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
-        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
     </style>
     <script src="../_common/loadComponents.js"></script>
 </head>
@@ -63,7 +53,7 @@
                     
                     <!-- Chat Header -->
                     <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/20">
-                        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='chat.html'">
+                        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href = require('../components/nav-config').href('chat')">
                             <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
                             </button>

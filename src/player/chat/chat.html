@@ -53,16 +53,6 @@
         .status-dot-ingame { border: 3px solid #0a0b0f; background: #a855f7; }
         .status-dot-offline { border: 3px solid #0a0b0f; background: #6b7280; }
 
-        /* Sidebar styles from common */
-        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
-        .sidebar-collapsible:hover { width: 250px; }
-        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
-        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
-        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; min-height: 0; }
-        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease; }
-        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn { width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important; }
-        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
-        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
     </style>
     <script src="../_common/loadComponents.js"></script>
 </head>
@@ -113,7 +103,7 @@
                         <div class="flex-1 overflow-y-auto space-y-2 pr-2">
                             
                             <!-- Unread Message / Group -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" onclick="window.location.href='chat_detail.html'">
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
                                 <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00ff87] rounded-r-lg"></div>
                                 <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-lg flex-shrink-0 shadow-lg relative">
                                     V
@@ -130,7 +120,7 @@
                             </div>
 
                             <!-- Individual Chat (Online) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="window.location.href='chat_detail.html'">
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
                                 <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#00ff87]">
                                     <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" alt="TenZify" class="w-full h-full object-cover">
                                     <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-online"></span>
@@ -145,7 +135,7 @@
                             </div>
 
                             <!-- Individual Chat (In-Game) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="window.location.href='chat_detail.html'">
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
                                 <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all">
                                     <img src="https://ui-avatars.com/api/?name=Faker&background=ff4654&color=fff&size=64" alt="Faker" class="w-full h-full object-cover">
                                     <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-ingame"></span>
@@ -160,7 +150,7 @@
                             </div>
 
                             <!-- Individual Chat (Offline) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group opacity-70 hover:opacity-100" onclick="window.location.href='chat_detail.html'">
+                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group opacity-70 hover:opacity-100" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
                                 <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all filter grayscale">
                                     <img src="https://ui-avatars.com/api/?name=S1mple&background=facc15&color=fff&size=64" alt="S1mple" class="w-full h-full object-cover text-black">
                                     <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-offline"></span>

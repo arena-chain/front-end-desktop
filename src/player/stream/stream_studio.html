@@ -16,8 +16,8 @@
         body {
             background: #0a0b0f;
             margin: 0;
-            overflow: auto;
-            min-height: 100vh;
+            overflow: hidden;
+            height: 100vh;
         }
 
         ::-webkit-scrollbar {
@@ -42,72 +42,6 @@
         .nav-menu-btn.active {
             background: rgba(0, 255, 135, 0.15);
             color: #00ff87;
-        }
-
-        .sidebar-collapsible {
-            width: 90px;
-            position: relative;
-            z-index: 20;
-            overflow: visible !important;
-            transition: width 0.3s ease;
-            height: 100%;
-        }
-
-        .sidebar-collapsible:hover { width: 250px; }
-
-        .sidebar-collapsible .sidebar-brand-text,
-        .sidebar-collapsible .sidebar-section-title,
-        .sidebar-collapsible .sidebar-profile-text {
-            display: none;
-        }
-
-        .sidebar-collapsible:hover .sidebar-brand-text,
-        .sidebar-collapsible:hover .sidebar-section-title,
-        .sidebar-collapsible:hover .sidebar-profile-text {
-            display: block;
-        }
-
-        .sidebar-scroll-area {
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-            width: 100%; min-height: 0;}
-
-        .sidebar-collapsible .sidebar-menu-btn,
-        .sidebar-collapsible .game-select-btn {
-            position: relative;
-            justify-content: center;
-            align-items: center;
-            width: 46px;
-            height: 40px;
-            margin-left: auto;
-            margin-right: auto;
-            overflow: visible;
-            z-index: 30;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            transition: all 0.22s ease;
-        }
-
-        .sidebar-collapsible:hover .sidebar-menu-btn,
-        .sidebar-collapsible:hover .game-select-btn {
-            width: 100%;
-            justify-content: flex-start;
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-        }
-
-        .sidebar-collapsible .sidebar-label {
-            opacity: 0;
-            pointer-events: none;
-            white-space: nowrap;
-            transition: opacity 0.2s ease;
-            position: absolute;
-            left: 50px;
-        }
-
-        .sidebar-collapsible:hover .sidebar-label {
-            opacity: 1;
         }
 
         .pulse-live {
@@ -137,12 +71,13 @@
     <script src="../_common/loadComponents.js"></script>
 </head>
 
-<body class="bg-[#0a0b0f] text-white antialiased min-h-screen overflow-auto m-0">
-    <div class="flex w-full min-w-0 min-h-screen overflow-visible">
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
         <common-navbar src="left_side_navbar.html"></common-navbar>
-        <main class="flex-1 min-w-0 flex flex-col overflow-visible relative">
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
             <common-navbar src="top_navbar.html"></common-navbar>
-            <div class="flex-1 flex overflow-visible p-6 gap-6 items-start">
+            <div class="flex-1 overflow-y-auto overflow-x-hidden">
+                <div class="flex p-6 gap-6 items-start min-h-full">
                 <section class="flex-1 min-w-0 flex flex-col gap-6">
                     <div
                         class="glass-panel rounded-[28px] p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -293,6 +228,7 @@
                         <div id="activity-log" class="space-y-3 text-sm text-gray-300"></div>
                     </div>
                 </aside>
+                </div>
             </div>
         </main>
     </div>
