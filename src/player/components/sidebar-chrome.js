@@ -1,4 +1,5 @@
-const { href, isDashboardPage } = require('./nav-config');
+const path = require('path');
+const { href, isDashboardPage } = require(path.join(__dirname, 'nav-config'));
 
 /**
  * Games section collapse + non-dashboard game tiles navigate to the home dashboard.

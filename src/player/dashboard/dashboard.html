@@ -3768,12 +3768,6 @@
 
         // ── Wire up buttons ────────────────────────────────────────
         ['lol', 'val', 'dota2', 'csgo'].forEach(prefix => {
-            const findBtn = document.getElementById(`${prefix}-find-match-btn`);
-            if (findBtn) findBtn.addEventListener('click', () => joinQueue(prefix));
-
-            const cancelBtn = document.getElementById(`${prefix}-cancel-queue-btn`);
-            if (cancelBtn) cancelBtn.addEventListener('click', () => cancelQueue(prefix));
-        });
             const findBtn = $(`${prefix}-find-match-btn`);
             const cancelBtn = $(`${prefix}-cancel-queue-btn`);
             const scheduleBtn = $(`${prefix}-schedule-match-btn`);
