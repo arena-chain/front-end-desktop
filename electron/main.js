@@ -15,6 +15,27 @@ let currentPairingCode = null;
 let conduitHubPollTimer = null;
 let conduitLaunchTimeout = null;
 
+function resolveRiftDir() {
+    const configured = process.env.RIFT_DIR;
+    const candidates = [
+        configured,
+        path.join(ROOT, '..', 'backend-nest-Rank_and_ELO', 'rift'),
+        path.join(ROOT, '..', 'backend-nest-matchmakingcs2back', 'backend-nest-matchmakingcs2back', 'rift'),
+        path.join(ROOT, '..', '..', 'backend-nest-matchmakingcs2back', 'backend-nest-matchmakingcs2back', 'rift'),
+        path.join(ROOT, '..', '..', 'backend-nest-Rank_and_ELO', 'rift'),
+    ].filter(Boolean);
+
+    for (const dir of candidates) {
+        const srcIndex = path.join(dir, 'src', 'index.ts');
+        const pkg = path.join(dir, 'package.json');
+        if (fs.existsSync(srcIndex) && fs.existsSync(pkg)) {
+            return dir;
+        }
+    }
+
+    return null;
+}
+
 function clearConduitLaunchWatchers() {
     if (conduitHubPollTimer) {
         clearInterval(conduitHubPollTimer);
@@ -65,8 +86,18 @@ function startRift() {
         }
     } catch (_) {}
 
-    // Dynamic path relative to project structure
-    const riftDir = path.join(ROOT, '..', 'backend-nest-Rank_and_ELO', 'rift');
+    const riftDir = resolveRiftDir();
+    if (!riftDir) {
+        console.error('[Rift] Could not locate rift directory. Set RIFT_DIR env var or place backend next to desktop project.');
+        if (win) {
+            win.webContents.send(
+                'conduit-error',
+                'Rift backend not found. Set RIFT_DIR or place backend-nest project next to this desktop folder.',
+            );
+        }
+        return;
+    }
+    console.log('[Rift] Using directory:', riftDir);
     const distIndex = path.join(riftDir, 'dist', 'index.js');
 
     try {

@@ -893,11 +893,10 @@
         $('gr-error-fallback').classList.add('hidden');
         grScreen.classList.remove('hidden');
 
-        // Game-specific lobby handling
+        // Game-specific launch handling (Project 2 parity):
+        // LoL no longer triggers direct local LCU automation from desktop.
         if (['cs2', 'dota2'].includes(state.nowGame)) {
             handleCS2LaunchFlow();
-        } else if (state.nowGame === 'lol') {
-            handleLoLLobbyFlow(game);
         }
     }
 
