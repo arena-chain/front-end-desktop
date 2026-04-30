@@ -263,6 +263,48 @@
             padding-right: 16px;
         }
 
+        .party-invite-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(0, 255, 135, 0.1);
+            border: 1.5px solid rgba(0, 255, 135, 0.3);
+            color: #00ff87;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .party-invite-btn:hover {
+            background: rgba(0, 255, 135, 0.2);
+            border-color: #00ff87;
+        }
+
+        .party-badge-strip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 8px;
+        }
+
+        .party-member-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 135, 0.45);
+            background: #1a2035;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
         @media (max-width: 1279px) {
             [class*="grid-cols-12"] {
                 grid-template-columns: minmax(0, 1fr) !important;
@@ -817,6 +859,14 @@
                                             <h2 class="text-2xl font-black text-white mb-1">QUICK MATCH</h2>
                                             <p class="text-sm text-gray-400">Jump into competitive matchmaking</p>
                                         </div>
+                                        <div class="flex items-center">
+                                            <div id="party-badge-val" class="party-badge-strip"></div>
+                                            <button id="party-btn-val" class="party-invite-btn" onclick="openPartyPanel('VALORANT')" title="Create party and invite friends">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-4 gap-3 mb-4">
                                         <div class="glass-panel rounded-xl p-2.5 text-center">
@@ -1079,6 +1129,14 @@
                                             <h2 class="text-2xl font-black text-white mb-1">RANKED QUEUE</h2>
                                             <p class="text-sm text-gray-400">Compete in Summoner's Rift</p>
                                         </div>
+                                        <div class="flex items-center">
+                                            <div id="party-badge-lol" class="party-badge-strip"></div>
+                                            <button id="party-btn-lol" class="party-invite-btn" onclick="openPartyPanel('LOL')" title="Create party and invite friends">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-4 gap-3 mb-4">
                                         <div class="glass-panel rounded-xl p-2.5 text-center">
@@ -1278,6 +1336,14 @@
                                             <h2 class="text-2xl font-black text-white uppercase tracking-tight">CS:GO Matchmaking</h2>
                                             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Competitive Arena</p>
                                         </div>
+                                        <div class="flex items-center ml-auto">
+                                            <div id="party-badge-cs2" class="party-badge-strip"></div>
+                                            <button id="party-btn-cs2" class="party-invite-btn" onclick="openPartyPanel('CS2')" title="Create party and invite friends">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-4 gap-4 mb-6">
                                         <div class="space-y-1">
@@ -1433,6 +1499,14 @@
                                         <div>
                                             <h2 class="text-2xl font-black text-white uppercase tracking-tight">Dota 2 Matchmaking</h2>
                                             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Competitive Arena</p>
+                                        </div>
+                                        <div class="flex items-center ml-auto">
+                                            <div id="party-badge-d2" class="party-badge-strip"></div>
+                                            <button id="party-btn-d2" class="party-invite-btn" onclick="openPartyPanel('DOTA2')" title="Create party and invite friends">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-4 gap-4 mb-6">
@@ -2954,6 +3028,41 @@
         </div>
     </div>
 
+    <!-- Party Panel Modal -->
+    <div id="party-panel-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; align-items:center; justify-content:center;">
+        <div id="party-panel" style="background:#0d1117; border:1px solid rgba(0,255,135,0.2); border-radius:16px; padding:28px; width:420px; max-width:90vw; position:relative; max-height:80vh; overflow-y:auto;">
+            <button onclick="closePartyPanel()" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#666; font-size:20px; cursor:pointer;">✕</button>
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 4px;" id="party-panel-title">Create Party</h2>
+                <p style="color:#666; font-size:12px; margin:0;" id="party-panel-subtitle">Invite friends with a verified account to queue together</p>
+            </div>
+            <div id="party-members-section" style="display:none; margin-bottom:16px;">
+                <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Party</div>
+                <div id="party-members-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+            <div id="party-status-bar" style="display:none; padding:8px 12px; border-radius:8px; background:rgba(0,255,135,0.08); border:1px solid rgba(0,255,135,0.15); font-size:12px; color:#00ff87; margin-bottom:16px;"></div>
+            <div style="margin-bottom:16px;">
+                <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Friends with verified account</div>
+                <div id="party-friends-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <div style="color:#666; font-size:12px; text-align:center; padding:16px;" id="party-friends-loading">Loading friends...</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button id="party-queue-btn" onclick="queueAsParty()" style="display:none; flex:1; padding:12px; background:#00ff87; color:#000; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer;">▶ Queue as Party</button>
+                <button onclick="closePartyPanel()" style="flex:1; padding:12px; background:transparent; color:#666; border:1px solid #333; border-radius:8px; font-size:13px; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="party-invite-toast" style="display:none; position:fixed; right:20px; bottom:20px; z-index:100001; width:320px; background:#0d1117; border:1px solid rgba(0,255,135,0.25); border-radius:12px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,0.45);">
+        <div style="font-size:13px; color:#fff; font-weight:700; margin-bottom:4px;">Party Invite</div>
+        <div id="party-invite-toast-message" style="font-size:12px; color:#9aa3b2; margin-bottom:10px;">You received a party invite.</div>
+        <div style="display:flex; gap:8px;">
+            <button id="party-toast-decline" style="flex:1; padding:8px 10px; border-radius:8px; border:1px solid #334155; background:transparent; color:#cbd5e1; font-size:12px; cursor:pointer;">Deny</button>
+            <button id="party-toast-accept" style="flex:1; padding:8px 10px; border-radius:8px; border:none; background:#00ff87; color:#0a0b0f; font-size:12px; font-weight:700; cursor:pointer;">Accept</button>
+        </div>
+    </div>
+
     <!-- ========== PHASE 3: MATCHMAKING JS ========== -->
     <script>
     (function () {
@@ -3407,7 +3516,7 @@
                         stopScheduledWatch();
                         return;
                     }
-                    if (gameRes.game.status === 'ACCEPTED' && gameRes.game.roomInfo) {
+                    if ((gameRes.game.status === 'ACCEPTED' || gameRes.game.status === 'IN_PROGRESS') && gameRes.game.roomInfo) {
                         navigateToGameRoom(gameRes.game);
                         stopScheduledWatch();
                         return;
@@ -3458,7 +3567,7 @@
                         return;
                     }
 
-                    if (game.status === 'ACCEPTED' && game.roomInfo) {
+                    if ((game.status === 'ACCEPTED' || game.status === 'IN_PROGRESS') && game.roomInfo) {
                         stopPolling();
                         stopCountdown();
                         hideOverlay();
@@ -3629,6 +3738,7 @@
                         server: selectedServer,
                         region: selectedRegion,
                         ...(scheduledAt ? { scheduledAt: scheduledAt.toISOString() } : {}),
+                        ...(window.__partyQueuePartyId ? { partyId: window.__partyQueuePartyId } : {}),
                         riotAccountInfo: {
                             originalIconId: state.linkInfo.originalIconId || 1,
                             riotGameName: state.linkInfo.riotGameName,
@@ -3650,9 +3760,11 @@
                     startPolling();
                     stopScheduledWatch();
                 }
+                window.__partyQueuePartyId = null;
             } catch (err) {
                 showQueueState(prefix, 'idle');
                 stopTimer();
+                window.__partyQueuePartyId = null;
                 await window.showArenaAlert('Matchmaking Failed', err.message || 'Failed to join queue.', 'error');
             }
         }
@@ -3752,7 +3864,7 @@
                         stopScheduledWatch();
                         return;
                     }
-                    if (gameRes.game.status === 'ACCEPTED' && gameRes.game.roomInfo) {
+                    if ((gameRes.game.status === 'ACCEPTED' || gameRes.game.status === 'IN_PROGRESS') && gameRes.game.roomInfo) {
                         navigateToGameRoom(gameRes.game);
                         stopScheduledWatch();
                         return;
@@ -3782,8 +3894,547 @@
             if (valVis) restoreMatchmakingState('val');
         };
 
+        window.__joinQueue = joinQueue;
+        window.__mmState = state;
         window._mmOrigShowContent = true;
     })();
+    </script>
+
+    <script>
+    (function () {
+        const { apiRequest } = require('../../../shared/api');
+        let presenceModule = null;
+        try { presenceModule = require('../../../shared/presence'); } catch {}
+        let _partyCurrentGame = null;
+        let _partyCurrentPrefix = null;
+        let _partyCurrentMode = null;
+        let _partyGameCatalogId = null;
+        let _partyId = null;
+        let _partyData = null;
+        let _partyPollInterval = null;
+        let _invitePollInterval = null;
+        let _pendingInvitePartyId = null;
+        const _shownPartyInvites = new Set();
+        const _catalogIdToGameKey = new Map();
+        const GAME_TO_PREFIX = { LOL: 'lol', VALORANT: 'val', CS2: 'csgo', DOTA2: 'dota2' };
+        const GAME_LABELS = { LOL: 'League of Legends', VALORANT: 'Valorant', CS2: 'CS2', DOTA2: 'Dota 2' };
+        const PARTY_MODE_BY_LABEL = { '1v1': 'CUSTOM_1V1', '2v2': 'CUSTOM_2V2', '5v5': 'RANKED_5V5' };
+
+        function getCurrentUser() {
+            try {
+                const user = JSON.parse(localStorage.getItem('arena_user') || '{}');
+                return { id: user.id || user._id || null, ...user };
+            } catch {
+                return { id: null };
+            }
+        }
+
+        function toId(v) {
+            if (!v) return null;
+            if (typeof v === 'string') return v;
+            return v._id || v.id || null;
+        }
+
+        async function resolveCatalogId(gameKey) {
+            const res = await apiRequest('/catalog');
+            const list = Array.isArray(res) ? res : (res?.items || res?.data || []);
+            const patterns = {
+                LOL: /league of legends|lol/i,
+                VALORANT: /valorant/i,
+                CS2: /counter-strike\s*2|cs2|csgo/i,
+                DOTA2: /dota\s*2/i,
+            };
+            const match = list.find((g) => patterns[gameKey]?.test(g?.title || g?.name || ''));
+            const id = toId(match);
+            if (id) _catalogIdToGameKey.set(String(id), gameKey);
+            return id;
+        }
+
+        function normalizePartyMode(mode) {
+            if (!mode) return 'CUSTOM_1V1';
+            if (mode === 'CUSTOM_5V5') return 'RANKED_5V5';
+            if (mode === 'RANKED_5V5' || mode === 'CUSTOM_2V2' || mode === 'CUSTOM_1V1') return mode;
+            return 'CUSTOM_1V1';
+        }
+
+        function detectSelectedPartyMode(prefix) {
+            const buttons = Array.from(document.querySelectorAll(`.mm-mode-btn-${prefix}`));
+            if (!buttons.length) {
+                if (prefix === 'csgo' || prefix === 'dota2') return 'RANKED_5V5';
+                return 'CUSTOM_1V1';
+            }
+
+            const active = buttons.find((btn) => {
+                const cls = btn.className || '';
+                return cls.includes('text-white') && !cls.includes('bg-white/10');
+            }) || buttons[0];
+
+            const explicitMode = active?.dataset?.mode;
+            if (explicitMode) return normalizePartyMode(explicitMode);
+
+            const label = (active?.textContent || '').trim().toLowerCase();
+            return PARTY_MODE_BY_LABEL[label] || 'CUSTOM_1V1';
+        }
+
+        function detectCurrentGameKey() {
+            if (!document.getElementById('content-game-lol')?.classList.contains('hidden')) return 'LOL';
+            if (!document.getElementById('content-game-valorant')?.classList.contains('hidden')) return 'VALORANT';
+            if (!document.getElementById('content-game-csgo')?.classList.contains('hidden')) return 'CS2';
+            if (!document.getElementById('content-game-dota2')?.classList.contains('hidden')) return 'DOTA2';
+            return 'LOL';
+        }
+
+        function getGameKeyFromParty(party) {
+            if (!party) return detectCurrentGameKey();
+            const byId = _catalogIdToGameKey.get(String(toId(party.gameId)));
+            return byId || _partyCurrentGame || detectCurrentGameKey();
+        }
+
+        function clearPartyBadges() {
+            ['party-badge-lol', 'party-badge-val', 'party-badge-cs2', 'party-badge-d2'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+        }
+
+        function renderPartyBadges(party) {
+            clearPartyBadges();
+            if (!party?.members?.length) return;
+            const myId = String(getCurrentUser().id || '');
+            const gameKey = getGameKeyFromParty(party);
+            const badgeId = gameKey === 'LOL'
+                ? 'party-badge-lol'
+                : gameKey === 'VALORANT'
+                    ? 'party-badge-val'
+                    : gameKey === 'CS2'
+                        ? 'party-badge-cs2'
+                        : 'party-badge-d2';
+            const badgeWrap = document.getElementById(badgeId);
+            if (!badgeWrap) return;
+
+            const acceptedOthers = party.members
+                .filter((m) => m.status === 'ACCEPTED' && String(toId(m.userId)) !== myId)
+                .slice(0, 3);
+            acceptedOthers.forEach((member) => {
+                const uid = String(toId(member.userId) || '');
+                const badge = document.createElement('div');
+                badge.className = 'party-member-badge';
+                badge.textContent = uid ? uid.slice(-2).toUpperCase() : 'P';
+                badgeWrap.appendChild(badge);
+            });
+        }
+
+        function setPartyStatus(text, isError = false) {
+            const bar = document.getElementById('party-status-bar');
+            if (!bar) return;
+            bar.style.display = 'block';
+            bar.style.color = isError ? '#ff4c4c' : '#00ff87';
+            bar.style.borderColor = isError ? 'rgba(255,76,76,0.2)' : 'rgba(0,255,135,0.2)';
+            bar.style.background = isError ? 'rgba(255,76,76,0.08)' : 'rgba(0,255,135,0.08)';
+            bar.textContent = text;
+        }
+
+        function renderPartyMembers(party) {
+            const section = document.getElementById('party-members-section');
+            const list = document.getElementById('party-members-list');
+            const queueBtn = document.getElementById('party-queue-btn');
+            if (!section || !list || !queueBtn) return;
+            const members = Array.isArray(party?.members) ? party.members : [];
+            if (!members.length) {
+                section.style.display = 'none';
+                queueBtn.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+            const hostId = toId(party?.hostUserId);
+            const acceptedCount = members.filter((m) => m.status === 'ACCEPTED').length;
+            const allAccepted = acceptedCount === members.length;
+
+            members.forEach((member) => {
+                const memberId = toId(member?.userId);
+                const shortName = (memberId || 'PL').slice(-6);
+                const isLeader = memberId === hostId;
+                const status = member?.status || 'INVITED';
+                const statusColor = status === 'ACCEPTED' ? '#00ff87' : status === 'INVITED' ? '#f59e0b' : '#ff4c4c';
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px 10px; background:rgba(255,255,255,0.03); border-radius:8px;';
+                row.innerHTML = `
+                    <div style="width:28px; height:28px; border-radius:50%; background:#1a2035; display:flex; align-items:center; justify-content:center; font-size:11px; color:#888; font-weight:700;">${shortName.slice(0,2).toUpperCase()}</div>
+                    <div style="flex:1; font-size:13px; color:#fff;">${shortName}${isLeader ? ' <span style="color:#00ff87;font-size:10px;">(Leader)</span>' : ''}</div>
+                    <span style="font-size:10px; color:${statusColor}; font-weight:600;">${status}</span>
+                `;
+                list.appendChild(row);
+            });
+
+            queueBtn.style.display = allAccepted ? 'block' : 'none';
+            setPartyStatus(allAccepted ? 'All members ready - you can queue now!' : 'Waiting for party members to accept...');
+        }
+
+        async function loadActiveParty() {
+            const res = await apiRequest('/party/user/active');
+            const party = res?.party || null;
+            if (!party) {
+                _partyId = null;
+                _partyData = null;
+                renderPartyMembers(null);
+                clearPartyBadges();
+                return null;
+            }
+            _partyId = toId(party);
+            _partyData = party;
+            renderPartyMembers(party);
+            renderPartyBadges(party);
+            return party;
+        }
+
+        async function pollParty() {
+            if (!_partyId) return;
+            try {
+                const res = await apiRequest(`/party/${_partyId}`);
+                const party = res?.party || res;
+                if (party) {
+                    _partyData = party;
+                    renderPartyMembers(party);
+                    renderPartyBadges(party);
+                }
+            } catch {}
+        }
+
+        function showInviteToast(message, partyId) {
+            const toast = document.getElementById('party-invite-toast');
+            const messageEl = document.getElementById('party-invite-toast-message');
+            const acceptBtn = document.getElementById('party-toast-accept');
+            const declineBtn = document.getElementById('party-toast-decline');
+            if (!toast || !messageEl || !acceptBtn || !declineBtn) return;
+            _pendingInvitePartyId = partyId;
+            messageEl.textContent = message;
+            toast.style.display = 'block';
+            acceptBtn.onclick = () => respondToPartyInvite(true);
+            declineBtn.onclick = () => respondToPartyInvite(false);
+        }
+
+        async function respondToPartyInvite(accept) {
+            const partyId = _pendingInvitePartyId;
+            if (!partyId) return;
+            try {
+                await apiRequest(`/party/${partyId}/respond`, {
+                    method: 'POST',
+                    body: JSON.stringify({ accept }),
+                });
+                if (accept) {
+                    await loadActiveParty();
+                }
+            } finally {
+                _pendingInvitePartyId = null;
+                const toast = document.getElementById('party-invite-toast');
+                if (toast) toast.style.display = 'none';
+            }
+        }
+
+        function startPartyPolling() {
+            if (_partyPollInterval) return;
+            _partyPollInterval = setInterval(pollParty, 3000);
+        }
+
+        function stopPartyPolling() {
+            if (_partyPollInterval) {
+                clearInterval(_partyPollInterval);
+                _partyPollInterval = null;
+            }
+        }
+
+        function getFriendUserNode(edge, myId) {
+            if (edge?.userId || edge?._id || edge?.id) {
+                const directId = edge.userId?._id || edge.userId || edge._id || edge.id;
+                return { id: String(directId || ''), user: edge };
+            }
+            const requester = edge?.requesterId;
+            const recipient = edge?.recipientId;
+            const requesterId = toId(requester);
+            const recipientId = toId(recipient);
+            if (String(requesterId) === String(myId)) return { id: String(recipientId || ''), user: recipient };
+            return { id: String(requesterId || ''), user: requester };
+        }
+
+        async function getOnlinePresenceIds() {
+            const online = new Set();
+            if (!presenceModule) return online;
+            try {
+                await presenceModule.connectPresence();
+                const pf = await presenceModule.getFriends();
+                (Array.isArray(pf) ? pf : []).forEach((friend) => {
+                    const fid = String(friend?.userId || '');
+                    if (!fid) return;
+                    if (friend?.status && friend.status !== 'offline') {
+                        online.add(fid);
+                    }
+                });
+            } catch {}
+            return online;
+        }
+
+        async function getPresenceFriends() {
+            if (!presenceModule) return [];
+            try {
+                await presenceModule.connectPresence();
+                const pf = await presenceModule.getFriends();
+                return Array.isArray(pf) ? pf : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function getSidebarOnlineFriends() {
+            const list = [];
+            try {
+                document.querySelectorAll('#friends-connected-list .friend-row').forEach((row) => {
+                    const userId = row.getAttribute('data-user-id');
+                    const nameEl = row.querySelector('p.text-sm.font-bold');
+                    const statusEl = row.querySelector('p.text-\\[11px\\]');
+                    const imgEl = row.querySelector('img');
+                    const statusText = (statusEl?.textContent || '').toLowerCase();
+                    const isOnline = statusText.includes('online') || statusText.includes('in game') || statusText.includes('in queue');
+                    if (userId && isOnline) {
+                        list.push({
+                            userId,
+                            nickname: (nameEl?.textContent || '').trim() || 'Unknown',
+                            avatar: imgEl?.getAttribute('src') || null,
+                            status: 'online',
+                        });
+                    }
+                });
+            } catch {}
+            return list;
+        }
+
+        async function loadPartyFriends(gameKey) {
+            const listEl = document.getElementById('party-friends-list');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="color:#666; font-size:12px; text-align:center; padding:16px;">Loading friends...</div>';
+
+            try {
+                const currentUser = getCurrentUser();
+                if (!currentUser.id) return;
+                const friendsRes = await apiRequest(`/friendship/friends/${currentUser.id}`);
+                const friends = Array.isArray(friendsRes) ? friendsRes : (friendsRes?.friends || []);
+                const presenceFriends = await getPresenceFriends();
+                const sidebarFriends = getSidebarOnlineFriends();
+                const onlinePresenceIds = new Set(
+                    presenceFriends
+                        .filter((f) => f?.status && f.status !== 'offline')
+                        .map((f) => String(f.userId)),
+                );
+
+                // If friendship endpoint returns empty/incompatible shape,
+                // fallback to presence friend payload used by right sidebar.
+                const sourceFriends = friends.length
+                    ? friends
+                    : presenceFriends.map((pf) => ({
+                          userId: pf.userId,
+                          nickname: pf.nickname,
+                          avatar: pf.avatar,
+                          status: pf.status,
+                      }));
+                const mergedSourceFriends = sourceFriends.length
+                    ? [...sourceFriends, ...sidebarFriends]
+                    : sidebarFriends;
+                const eligible = [];
+                const seenIds = new Set();
+                for (const edge of mergedSourceFriends) {
+                    const entry = getFriendUserNode(edge, currentUser.id);
+                    if (!entry.id) continue;
+                    if (seenIds.has(entry.id)) continue;
+                    seenIds.add(entry.id);
+                    const onlineState = entry.user?.onlineStatus || entry.user?.status || edge?.onlineStatus || edge?.status;
+                    const isOnline = onlinePresenceIds.has(String(entry.id)) || entry.user?.online === true || entry.user?.isOnline === true || onlineState === 'online' || onlineState === 'ONLINE' || onlineState === 'in_game' || onlineState === 'in_queue';
+                    if (!isOnline) continue;
+                    try {
+                        const profileRes = await apiRequest(`/player/${entry.id}`);
+                        const profile = profileRes?.profile || profileRes || {};
+                        const userNode = profile.userId || {};
+                        const riotStatus = profile.riotLinkStatus || userNode.riotLinkStatus || profile.linkStatus;
+                        const riotVerified =
+                            riotStatus === 'verified' ||
+                            riotStatus === 'VERIFIED';
+                        const steamVerified =
+                            profile.steamVerified === true ||
+                            userNode.steamVerified === true;
+
+                        // Be tolerant with inconsistent profile payloads:
+                        // if we cannot prove "not linked", still show online friend.
+                        const eligibleByLink =
+                            (gameKey === 'LOL' || gameKey === 'VALORANT')
+                                ? (riotVerified || riotStatus == null)
+                                : (steamVerified || userNode.steamId || profile.steamId);
+
+                        if (eligibleByLink) {
+                            eligible.push({
+                                id: entry.id,
+                                name: entry.user?.nickname || entry.user?.username || userNode.nickname || profile.nickname || 'Unknown',
+                                avatar: entry.user?.avatar || entry.user?.avatarUrl || userNode.avatar || null,
+                            });
+                        }
+                    } catch {
+                        // If profile endpoint fails for a valid online friend,
+                        // still show them and let backend validate on invite.
+                        eligible.push({
+                            id: entry.id,
+                            name: entry.user?.nickname || entry.user?.username || 'Unknown',
+                            avatar: entry.user?.avatar || entry.user?.avatarUrl || null,
+                        });
+                    }
+                }
+
+                listEl.innerHTML = '';
+                if (!eligible.length) {
+                    listEl.innerHTML = `<div style="color:#555; font-size:12px; text-align:center; padding:16px;">No friends have a verified ${GAME_LABELS[gameKey] || gameKey} account</div>`;
+                    return;
+                }
+
+                eligible.forEach((friend) => {
+                    const isInParty = !!_partyData?.members?.some((m) => toId(m.userId) === friend.id);
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06);';
+                    row.innerHTML = `
+                        <div style="width:32px; height:32px; border-radius:50%; background:#1a2035; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                            ${friend.avatar ? `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="color:#888;font-size:13px;font-weight:600;">${friend.name.charAt(0).toUpperCase()}</span>`}
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="color:#fff; font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${friend.name}</div>
+                        </div>
+                        <button onclick="inviteToParty('${friend.id}', '${friend.name.replace(/'/g, "\\'")}')" ${isInParty ? 'disabled' : ''} style="padding:6px 14px; border-radius:6px; font-size:11px; font-weight:600; cursor:${isInParty ? 'default' : 'pointer'}; border:1px solid ${isInParty ? 'rgba(0,255,135,0.3)' : 'rgba(0,255,135,0.5)'}; background:${isInParty ? 'rgba(0,255,135,0.05)' : 'rgba(0,255,135,0.1)'}; color:${isInParty ? '#555' : '#00ff87'};">${isInParty ? 'Invited' : 'Invite'}</button>
+                    `;
+                    listEl.appendChild(row);
+                });
+            } catch (e) {
+                listEl.innerHTML = '<div style="color:#ff4c4c; font-size:12px; text-align:center; padding:16px;">Failed to load friends</div>';
+            }
+        }
+
+        window.openPartyPanel = async function (gameKey) {
+            _partyCurrentGame = gameKey;
+            _partyCurrentPrefix = GAME_TO_PREFIX[gameKey] || 'lol';
+            _partyCurrentMode = normalizePartyMode(window.__mmState?.mode?.[_partyCurrentPrefix] || detectSelectedPartyMode(_partyCurrentPrefix));
+            _partyGameCatalogId = await resolveCatalogId(gameKey);
+            const title = document.getElementById('party-panel-title');
+            if (title) title.textContent = `${GAME_LABELS[gameKey] || gameKey} Party`;
+            const overlay = document.getElementById('party-panel-overlay');
+            if (overlay) overlay.style.display = 'flex';
+            await loadActiveParty();
+            startPartyPolling();
+            await loadPartyFriends(gameKey);
+        };
+
+        window.closePartyPanel = function () {
+            const overlay = document.getElementById('party-panel-overlay');
+            if (overlay) overlay.style.display = 'none';
+            stopPartyPolling();
+        };
+
+        window.inviteToParty = async function (friendId, friendName) {
+            try {
+                if (!_partyId) {
+                    const resolvedGameKey = _partyCurrentGame || detectCurrentGameKey();
+                    if (!_partyGameCatalogId && resolvedGameKey) {
+                        _partyGameCatalogId = await resolveCatalogId(resolvedGameKey);
+                    }
+                    const created = await apiRequest('/party/create', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            gameId: _partyGameCatalogId,
+                            game: resolvedGameKey,
+                            mode: normalizePartyMode(_partyCurrentMode),
+                        }),
+                    });
+                    const createdParty = created?.party || created;
+                    _partyId = toId(createdParty);
+                    _partyData = createdParty;
+                    renderPartyMembers(createdParty);
+                }
+
+                await apiRequest(`/party/${_partyId}/invite`, {
+                    method: 'POST',
+                    body: JSON.stringify({ targetUserId: friendId }),
+                });
+                setPartyStatus(`Invitation sent to ${friendName}`);
+                await pollParty();
+                await loadPartyFriends(_partyCurrentGame);
+            } catch (e) {
+                setPartyStatus(e?.message || 'Failed to invite friend', true);
+            }
+        };
+
+        window.queueAsParty = async function () {
+            if (!_partyId || !_partyCurrentPrefix) return;
+            const joinQueue = window.__joinQueue;
+            if (typeof joinQueue !== 'function') {
+                setPartyStatus('Queue unavailable on this screen', true);
+                return;
+            }
+            try {
+                await apiRequest(`/party/${_partyId}/ready`, {
+                    method: 'POST',
+                    body: JSON.stringify({}),
+                });
+                window.__partyQueuePartyId = _partyId;
+                await joinQueue(_partyCurrentPrefix);
+                setPartyStatus('Party joined queue successfully');
+                window.closePartyPanel();
+            } catch (e) {
+                window.__partyQueuePartyId = null;
+                setPartyStatus(e?.message || 'Failed to queue as party', true);
+            }
+        };
+
+        async function pollInvites() {
+            const currentUser = getCurrentUser();
+            if (!currentUser.id) return;
+            try {
+                const res = await apiRequest('/party/user/active');
+                const party = res?.party || null;
+                const partyId = toId(party);
+                if (!party || !partyId || _shownPartyInvites.has(partyId)) return;
+                const myMembership = party.members?.find((m) => toId(m.userId) === String(currentUser.id));
+                if (myMembership?.status === 'INVITED') {
+                    _shownPartyInvites.add(partyId);
+                    let hostName = 'A friend';
+                    try {
+                        const hostProfile = await apiRequest(`/player/${toId(party.hostUserId)}`);
+                        hostName = hostProfile?.profile?.nickname || hostProfile?.profile?.username || hostName;
+                    } catch {}
+                    const gameKey = getGameKeyFromParty(party);
+                    const message = `${hostName} invited you to a ${GAME_LABELS[gameKey] || 'party'} queue.`;
+                    showInviteToast(message, partyId);
+                }
+            } catch {}
+        }
+
+        function startInvitePolling() {
+            if (_invitePollInterval) return;
+            _invitePollInterval = setInterval(pollInvites, 5000);
+        }
+
+        document.getElementById('party-panel-overlay')?.addEventListener('click', function (e) {
+            if (e.target === this) window.closePartyPanel();
+        });
+
+        startInvitePolling();
+    })();
+    </script>
+
+    <script>
+    // Fallback for stale/removed Riot CDN asset ids (prevents noisy 403 image errors)
+    document.addEventListener('error', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLImageElement)) return;
+        const src = target.getAttribute('src') || '';
+        if (!src.includes('ddragon.leagueoflegends.com')) return;
+        if (target.dataset.ddFallbackApplied === '1') return;
+        target.dataset.ddFallbackApplied = '1';
+        target.src = 'https://ui-avatars.com/api/?name=LC&background=1a2035&color=ffffff';
+    }, true);
     </script>
 
     <!-- ========== LEAGUE ACCESS CONTROL MODAL ========== -->

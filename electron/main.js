@@ -15,6 +15,19 @@ let currentPairingCode = null;
 let conduitHubPollTimer = null;
 let conduitLaunchTimeout = null;
 
+// Windows machines can fail creating default GPU cache folders (Access denied).
+// Force cache paths to a writable temp location to avoid noisy startup errors.
+if (process.platform === 'win32') {
+    try {
+        const cacheRoot = path.join(app.getPath('temp'), 'arena-chain-electron-cache');
+        fs.mkdirSync(cacheRoot, { recursive: true });
+        app.commandLine.appendSwitch('disk-cache-dir', cacheRoot);
+        app.commandLine.appendSwitch('user-data-dir', path.join(cacheRoot, 'user-data'));
+    } catch (e) {
+        console.warn('[Electron] Cache path override failed:', e.message);
+    }
+}
+
 function resolveRiftDir() {
     const configured = process.env.RIFT_DIR;
     const candidates = [
