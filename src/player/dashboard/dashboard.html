@@ -4543,25 +4543,34 @@
 
         if (gainBtn) {
             gainBtn.addEventListener('click', () => {
-                resetModal();
+                // If the player hid the modal with X/backdrop while a code was active,
+                // re-open without wiping QR / status (same session).
+                const codeActive =
+                    generateBtn &&
+                    generateBtn.textContent === 'Code Active' &&
+                    codeValue &&
+                    codeValue.textContent &&
+                    codeValue.textContent.length > 0;
+                if (!codeActive) {
+                    resetModal();
+                }
                 modal.classList.remove('hidden');
             });
         }
 
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
+                // Hide-only: keep Conduit running so the mobile session stays alive.
+                // Re-opening the modal shows the same QR + code + status as before.
                 modal.classList.add('hidden');
-                window.electronApp.stopConduit();
-                resetModal();
             });
         }
 
         if (modal) {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal || e.target === modal.querySelector('.absolute')) {
+                    // Hide-only — same rationale as the X button. Session stays alive.
                     modal.classList.add('hidden');
-                    window.electronApp.stopConduit();
-                    resetModal();
                 }
             });
         }

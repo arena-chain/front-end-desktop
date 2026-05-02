@@ -6,7 +6,7 @@ const path = require('path');
  * Default when no file and no localStorage override.
  * 127.0.0.1 avoids some Windows "localhost" → IPv6 resolution issues.
  */
-const DEFAULT_API_ORIGIN = 'http://192.168.1.175:3000';
+const DEFAULT_API_ORIGIN = 'http://127.0.0.1:3000';
 
 /**
  * Optional file next to package.json (project root): { "apiOrigin": "http://127.0.0.1:3000" }
