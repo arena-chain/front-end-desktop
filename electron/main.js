@@ -6,6 +6,8 @@ const os = require('os');
 const dgram = require('dgram');
 const steamworks = require('steamworks.js');
 const { ROOT, resolveRoute, resolveRoleHome } = require('./routes');
+const { LcuService } = require('./lcu.service');
+const liveGame = require('./live-game.service');
 
 let steamClient = null;
 let currentAppId = null;
@@ -468,9 +470,83 @@ function navigateTo(routeName) {
     win.loadFile(filePath);
 }
 
+// ─── LCU phase watcher ────────────────────────────────────────────────────
+let _lcuSvc = null;
+let _phaseWatcherInterval = null;
+let _lastPhaseSent = '';
+
+async function _ensureLcuService() {
+    if (_lcuSvc && _lcuSvc.api) return _lcuSvc;
+    const svc = new LcuService();
+    const ok = await svc.connect();
+    if (!ok) return null;
+    _lcuSvc = svc;
+    return _lcuSvc;
+}
+
+async function _phaseTick() {
+    try {
+        const svc = await _ensureLcuService();
+        if (!svc || !svc.api) return;
+
+        let raw;
+        try {
+            const res = await svc.api.get('/lol-gameflow/v1/gameflow-phase', { timeout: 4000 });
+            raw = res?.data;
+        } catch (e) {
+            _lcuSvc = null;
+            return;
+        }
+
+        let phase = '';
+        if (typeof raw === 'string') {
+            phase = raw.replace(/"/g, '').trim();
+        } else if (raw && typeof raw === 'object') {
+            phase = String(raw.phase ?? raw.gameflowPhase ?? '').trim();
+        }
+        if (!phase) return;
+
+        if (phase !== _lastPhaseSent) {
+            _lastPhaseSent = phase;
+            console.log(`[LCU] Phase → ${phase}`);
+            void liveGame.postPhase(phase);
+        }
+
+        if (phase === 'InProgress') {
+            if (!liveGame.isPollingActive()) {
+                liveGame.startLiveGamePolling();
+            }
+        } else {
+            if (liveGame.isPollingActive()) {
+                liveGame.stopLiveGamePolling();
+            }
+        }
+    } catch (e) {
+        console.warn('[LCU] phaseTick error:', e?.message || e);
+    }
+}
+
+function startLcuPhaseWatcher() {
+    if (_phaseWatcherInterval) return;
+    console.log('[LCU] Phase watcher starting (3s interval)');
+    void _phaseTick();
+    _phaseWatcherInterval = setInterval(() => void _phaseTick(), 3000);
+}
+
+function stopLcuPhaseWatcher() {
+    if (_phaseWatcherInterval) {
+        clearInterval(_phaseWatcherInterval);
+        _phaseWatcherInterval = null;
+    }
+    _lastPhaseSent = '';
+}
+
 app.whenReady().then(() => {
     startRift();
     createWindow();
+
+    liveGame.registerLiveGameIpc(ipcMain);
+    startLcuPhaseWatcher();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -482,6 +558,8 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+    stopLcuPhaseWatcher();
+    liveGame.stopLiveGamePolling();
     if (riftProcess) riftProcess.kill();
     if (conduitProcess) conduitProcess.kill();
 });
@@ -664,7 +742,6 @@ ipcMain.handle('steam-invite-friend', async (event, { steamId, lobbyId }) => {
 // LCU / LEAGUE OF LEGENDS IPC HANDLERS
 // ──────────────────────────────────────────────────────────
 
-const { LcuService } = require('./lcu.service');
 const lcu = new LcuService();
 
 ipcMain.handle('lcu-create-match-lobby', async (event, { opponentNames, gameMode }) => {
