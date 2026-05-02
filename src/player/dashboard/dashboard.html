@@ -4470,10 +4470,27 @@
                     Waiting for League of Legends...
                 </div>
 
-                <div id="conduitCodeDisplay" class="hidden text-center p-5 bg-[#00ff87]/5 border border-[#00ff87]/15 rounded-2xl mb-4">
-                    <div class="text-gray-500 text-[10px] uppercase tracking-[2px] mb-3 font-bold">Your Pairing Code</div>
-                    <div id="conduitCodeValue" class="text-[#00ff87] text-5xl font-black tracking-[16px] font-mono"></div>
-                    <div class="text-gray-500 text-xs mt-3">Enter this code in the ArenaChain mobile app</div>
+                <div id="conduitCodeDisplay" class="hidden p-5 bg-[#00ff87]/5 border border-[#00ff87]/15 rounded-2xl mb-4">
+                    <div class="flex flex-col items-center gap-4">
+                        <!-- QR canvas (192px square, white background for contrast on the dark modal) -->
+                        <div class="bg-white rounded-xl p-3">
+                            <canvas id="conduitPairQr" width="192" height="192" style="width:192px;height:192px;display:block;"></canvas>
+                        </div>
+
+                        <!-- 6-digit code (kept as fallback for manual entry) -->
+                        <div class="w-full text-center">
+                            <div class="text-gray-500 text-[10px] uppercase tracking-[2px] mb-2 font-bold">Or enter manually</div>
+                            <div id="conduitCodeValue" class="text-[#00ff87] text-4xl font-black tracking-[12px] font-mono"></div>
+                            <div id="conduitPairAddress" class="text-gray-500 text-[11px] mt-2 font-mono"></div>
+                            <select id="conduitIpSelect" class="hidden mt-3 bg-[#0a0b0f] border border-[#00ff87]/20 text-gray-300 text-[11px] font-mono rounded-md px-2 py-1 focus:outline-none focus:border-[#00ff87]/60">
+                                <!-- populated dynamically when there are 2+ candidate LAN IPs -->
+                            </select>
+                        </div>
+
+                        <div class="text-gray-400 text-xs text-center max-w-[280px]">
+                            Scan with the Arena Chain mobile app, or type the code on the LoL Control screen.
+                        </div>
+                    </div>
                 </div>
 
                 <div id="conduitStatusText" class="text-center text-sm text-gray-500 min-h-[20px]"></div>
@@ -4504,6 +4521,8 @@
         const allowDeny = document.getElementById('conduitAllowDeny');
         const allowBtn = document.getElementById('conduitAllowBtn');
         const denyBtn = document.getElementById('conduitDenyBtn');
+        const ipSelect = document.getElementById('conduitIpSelect');
+        let _activePairing = null; // {ip, port, code}
 
         function resetModal() {
             generateBtn.disabled = false;
@@ -4515,6 +4534,11 @@
             statusText.style.color = '';
             statusText.className = 'text-center text-sm text-gray-500 min-h-[20px]';
             codeValue.textContent = '';
+            if (ipSelect) {
+                ipSelect.innerHTML = '';
+                ipSelect.classList.add('hidden');
+            }
+            _activePairing = null;
         }
 
         if (gainBtn) {
@@ -4561,13 +4585,79 @@
             });
         }
 
-        window.electronApp.onConduitCode((code) => {
+        async function _renderQrFor(ip, port, code) {
+            try {
+                const QRCode = require('qrcode');
+                const url = `arenachain://pair?ip=${encodeURIComponent(ip)}&port=${port}&code=${encodeURIComponent(code)}`;
+                const canvas = document.getElementById('conduitPairQr');
+                await QRCode.toCanvas(canvas, url, {
+                    width: 192,
+                    margin: 1,
+                    errorCorrectionLevel: 'M',
+                    color: { dark: '#0a0b0f', light: '#ffffff' },
+                });
+                const addr = document.getElementById('conduitPairAddress');
+                if (addr) addr.textContent = `${ip}:${port}`;
+            } catch (e) {
+                console.error('[LeagueAccess] QR render failed:', e);
+            }
+        }
+
+        if (ipSelect) {
+            ipSelect.addEventListener('change', () => {
+                if (!_activePairing) return;
+                const ip = ipSelect.value;
+                _activePairing.ip = ip;
+                _renderQrFor(ip, _activePairing.port, _activePairing.code);
+            });
+        }
+
+        window.electronApp.onConduitCode(async (code) => {
             spinner.classList.add('hidden');
             codeDisplay.classList.remove('hidden');
             codeValue.textContent = code;
             generateBtn.textContent = 'Code Active';
             statusText.textContent = 'Waiting for mobile connection...';
             statusText.className = 'text-center text-sm text-gray-500 min-h-[20px]';
+
+            try {
+                const payload = await window.electronApp.getPairingPayload();
+                const port = payload && payload.port ? payload.port : 51001;
+                const initialIp = payload && payload.ip ? payload.ip : '127.0.0.1';
+                _activePairing = { ip: initialIp, port, code };
+                await _renderQrFor(initialIp, port, code);
+
+                // Populate the dropdown if there's more than one candidate.
+                const candidates = (await window.electronApp.getLanIpCandidates()) || [];
+                if (ipSelect) {
+                    ipSelect.innerHTML = '';
+                    const seen = new Set();
+                    // Make sure the auto-picked IP is in the list (it should be, but
+                    // belt-and-braces in case the route probe disagreed with the
+                    // os.networkInterfaces() snapshot).
+                    const merged = [...candidates];
+                    if (!merged.find((c) => c.address === initialIp)) {
+                        merged.unshift({ name: 'Auto', address: initialIp });
+                    }
+                    for (const c of merged) {
+                        if (seen.has(c.address)) continue;
+                        seen.add(c.address);
+                        const opt = document.createElement('option');
+                        opt.value = c.address;
+                        opt.textContent = `${c.name}: ${c.address}`;
+                        if (c.address === initialIp) opt.selected = true;
+                        ipSelect.appendChild(opt);
+                    }
+                    // Only show the dropdown if there's a real choice (≥ 2 IPs).
+                    if (merged.length >= 2) {
+                        ipSelect.classList.remove('hidden');
+                    } else {
+                        ipSelect.classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('[LeagueAccess] pairing payload fetch failed:', e);
+            }
         });
 
         window.electronApp.onMobilePaired(() => {

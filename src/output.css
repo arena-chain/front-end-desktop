@@ -939,6 +939,9 @@
   .max-w-\[240px\] {
     max-width: 240px;
   }
+  .max-w-\[280px\] {
+    max-width: 280px;
+  }
   .max-w-\[320px\] {
     max-width: 320px;
   }
@@ -2649,9 +2652,9 @@
     --tw-tracking: 4px;
     letter-spacing: 4px;
   }
-  .tracking-\[16px\] {
-    --tw-tracking: 16px;
-    letter-spacing: 16px;
+  .tracking-\[12px\] {
+    --tw-tracking: 12px;
+    letter-spacing: 12px;
   }
   .tracking-tight {
     --tw-tracking: var(--tracking-tight);
@@ -4221,6 +4224,11 @@
   .focus\:border-\[\#00ff87\]\/40 {
     &:focus {
       border-color: color-mix(in oklab, #00ff87 40%, transparent);
+    }
+  }
+  .focus\:border-\[\#00ff87\]\/60 {
+    &:focus {
+      border-color: color-mix(in oklab, #00ff87 60%, transparent);
     }
   }
   .focus\:border-\[\#66c0f4\]\/50 {
