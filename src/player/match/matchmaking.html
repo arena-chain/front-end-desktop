@@ -389,7 +389,9 @@
                                             </div>
                                             <div class="glass-panel rounded-xl p-2.5 text-center">
                                                 <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide">Map</p>
-                                                <p id="mm-queue-map" class="text-sm font-bold text-white mt-0.5">Summoner's Rift</p>
+                                                <select id="mm-queue-map" class="w-full bg-transparent text-white text-sm font-bold text-center outline-none cursor-pointer appearance-none">
+                                                    <!-- Options populated by renderer.js per-game -->
+                                                </select>
                                             </div>
                                         </div>
 
@@ -397,7 +399,7 @@
                                         <div id="mm-queue-idle">
                                             <button id="mm-find-match-btn" class="w-full py-5 bg-gradient-to-r from-[#00ff87] to-[#22d3ee] hover:from-[#00e67a] hover:to-[#06b6d4] text-[#0a0b0f] font-black text-xl rounded-2xl transition-all neon-green-glow uppercase tracking-wide flex items-center justify-center gap-3">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                                FIND MATCH
+                                                <span id="mm-find-match-label">FIND MATCH</span>
                                             </button>
                                         </div>
 

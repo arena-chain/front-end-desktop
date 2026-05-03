@@ -9,7 +9,12 @@
     const GAME_API  = { valorant: 'VALORANT', lol: 'LOL', dota2: 'DOTA2', cs2: 'CS2' };
     const GAME_ACCENT = { valorant: '#ff4654', lol: '#0bc6e3', dota2: '#a855f7', cs2: '#f59e0b' };
     const GAME_SUBTITLES = { valorant: 'Competitive 5v5 Tactical Shooter', lol: '5v5 MOBA - Strategic Team Combat', dota2: '10-Player MOBA - Massive Strategy', cs2: 'Premier FPS - Precision & Tactics' };
-    const GAME_MAPS = { valorant: '—', lol: "Summoner's Rift", dota2: 'The Radiant & Dire', cs2: 'Active Duty Group' };
+    const GAME_MAPS = {
+        lol: ["Summoner's Rift", 'Howling Abyss'],
+        valorant: ['Bind', 'Haven', 'Split', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl', 'Lotus', 'Sunset'],
+        cs2: ['Dust II', 'Mirage', 'Inferno', 'Nuke', 'Overpass', 'Ancient', 'Anubis', 'Vertigo'],
+        dota2: ['Dota Auto Chess', 'Overthrow', 'Pudge Wars', 'Custom Hero Chaos'],
+    };
 
     const RIOT_REGION_TO_SERVER = {
         euw1:'EUW', na1:'NA', eun1:'EUNE', kr:'KR', br1:'BR',
@@ -23,12 +28,34 @@
 
     function riotRegionToServer(r) { return RIOT_REGION_TO_SERVER[r] || (r ? r.toUpperCase() : 'EUW'); }
 
+    function mapsForGame(g) {
+        const list = GAME_MAPS[g];
+        return Array.isArray(list) && list.length ? list : ['DEFAULT'];
+    }
+
+    function repopulateMapSelector(g) {
+        const sel = $('mm-queue-map');
+        if (!sel) return;
+        const list = mapsForGame(g);
+        sel.innerHTML = list
+            .map(m => `<option value="${m}" class="bg-[#12141c]">${m}</option>`)
+            .join('');
+        const current = state.selectedMap;
+        if (current && list.includes(current)) {
+            sel.value = current;
+        } else {
+            sel.value = list[0];
+            state.selectedMap = list[0];
+        }
+    }
+
     const state = {
         nowGame: null,
         schedGame: null,
         schedStep: 0,
         linkInfo: null,
         mode: 'CUSTOM_1V1',
+        selectedMap: null,
         ticketId: null,
         gameId: null,
         game: null,
@@ -253,8 +280,7 @@
         title.textContent = GAME_NAMES[g];
         subtitle.textContent = GAME_SUBTITLES[g];
 
-        const mapEl = $('mm-queue-map');
-        if (mapEl) mapEl.textContent = GAME_MAPS[g];
+        repopulateMapSelector(g);
 
         const gradient = $('mm-queue-gradient');
         if (gradient) gradient.style.background = `linear-gradient(to bottom right, ${GAME_ACCENT[g]}20, transparent)`;
@@ -262,9 +288,13 @@
         const qTitle = $('mm-queue-title');
         if (qTitle) qTitle.textContent = g === 'lol' ? 'RANKED QUEUE' : 'QUICK MATCH';
         const qSub = $('mm-queue-subtitle');
-        if (qSub) qSub.textContent = g === 'lol' ? "Compete in Summoner's Rift" : 'Jump into competitive matchmaking';
+        if (qSub) {
+            const subMap = state.selectedMap || mapsForGame(g)[0];
+            qSub.textContent = subMap ? `Compete in ${subMap}` : 'Compete on the Arena Chain ladder';
+        }
 
         updateModeButtonColors();
+        refreshFindMatchLabel();
     }
 
     function updateModeButtonColors() {
@@ -446,6 +476,17 @@
         if (mode === 'CUSTOM_2V2') return '2v2';
         if (mode === 'CUSTOM_5V5') return '5v5';
         return mode || '—';
+    }
+
+    function findMatchLabel() {
+        if (state.mode === 'CUSTOM_5V5') return 'Play Ranked';
+        if (state.mode === 'CUSTOM_1V1' || state.mode === 'CUSTOM_2V2') return 'Play Draft';
+        return 'Find Match';
+    }
+
+    function refreshFindMatchLabel() {
+        const el = $('mm-find-match-label');
+        if (el) el.textContent = findMatchLabel().toUpperCase();
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1193,11 +1234,15 @@
             let selectedServer = serverEl ? serverEl.value : 'EUW';
             let selectedRegion = regionEl ? regionEl.value : 'ALL';
 
+            const mapEl = $('mm-queue-map');
+            const selectedMap = (state.selectedMap || (mapEl ? mapEl.value : '') || mapsForGame(gameKey)[0] || 'DEFAULT').toString();
+
             const payload = {
                 game: gameType,
                 mode: state.mode || 'CUSTOM_1V1',
                 server: selectedServer,
                 region: selectedRegion,
+                map: selectedMap,
                 ...(scheduledAt ? { scheduledAt: scheduledAt.toISOString() } : {}),
             };
 
@@ -1604,7 +1649,14 @@
                     btn.classList.add('is-active');
                     state.mode = btn.dataset.mode;
                     updateModeButtonColors();
+                    refreshFindMatchLabel();
                 });
+            });
+
+            safeAddListener('mm-queue-map', 'change', (e) => {
+                state.selectedMap = e.target.value;
+                const qSub = $('mm-queue-subtitle');
+                if (qSub) qSub.textContent = `Compete in ${e.target.value}`;
             });
 
             safeAddListener('mm-find-match-btn', 'click', () => joinQueue(null));
