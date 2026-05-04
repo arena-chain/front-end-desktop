@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aim Training - Session Complete</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; color: white; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .grade-text {
+            font-size: 160px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: 0 0 50px rgba(0, 255, 135, 0.3);
+            background: linear-gradient(135deg, #00ff87 0%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body class="bg-[#0a0b0f] flex items-center justify-center p-8">
+    <div class="max-w-4xl w-full">
+        <div class="glass-panel rounded-[40px] p-12 relative overflow-hidden pop-in">
+            <!-- Background Decoration -->
+            <div class="absolute -top-20 -right-20 w-80 h-80 bg-[#00ff87]/10 rounded-full blur-[100px]"></div>
+            <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-[#22d3ee]/10 rounded-full blur-[100px]"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:text-left">
+                    <span class="px-4 py-1.5 bg-[#00ff87]/20 text-[#00ff87] text-xs font-black rounded-full mb-6 inline-block tracking-widest uppercase">Session Complete</span>
+                    <h1 class="text-3xl font-black text-gray-500 mb-2">FINAL SCORE</h1>
+                    <div id="final-score" class="text-7xl font-black mb-12 tracking-tighter">000,000</div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-panel bg-white/5 border-white/5 p-5 rounded-2xl">
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Accuracy</p>
+                            <p id="stat-accuracy" class="text-2xl font-black text-[#00ff87]">0%</p>
+                        </div>
+                        <div class="glass-panel bg-white/5 border-white/5 p-5 rounded-2xl">
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Max Combo</p>
+                            <p id="stat-combo" class="text-2xl font-black text-white">0</p>
+                        </div>
+                        <div class="glass-panel bg-white/5 border-white/5 p-5 rounded-2xl">
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Hits</p>
+                            <p id="stat-hits" class="text-2xl font-black text-white">0</p>
+                        </div>
+                        <div class="glass-panel bg-white/5 border-white/5 p-5 rounded-2xl">
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Best Streak</p>
+                            <p id="stat-streak" class="text-2xl font-black text-[#22d3ee]">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Precision Breakdown -->
+                    <div class="mt-8 flex flex-col gap-3">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-[#00ff87] shadow-[0_0_10px_#00ff87]"></div>
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Perfect Hits</span>
+                            </div>
+                            <span id="stat-perfect" class="text-sm font-black text-[#00ff87]">0</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-[#facc15] shadow-[0_0_10px_#facc15]"></div>
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Good Hits</span>
+                            </div>
+                            <span id="stat-good" class="text-sm font-black text-[#facc15]">0</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-[#ef4444] shadow-[0_0_10px_#ef4444]"></div>
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bad Hits</span>
+                            </div>
+                            <span id="stat-bad" class="text-sm font-black text-[#ef4444]">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center">
+                    <div id="grade" class="grade-text mb-4">A</div>
+                    <p id="grade-label" class="text-xl font-bold text-gray-200 mb-12 uppercase tracking-[0.2em]">Sharpshooter</p>
+                    
+                    <div class="flex flex-col gap-3 w-full max-w-[240px]">
+                        <button id="retry-btn" class="w-full py-4 bg-[#00ff87] text-[#0a0b0f] font-black rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(0,255,135,0.2)]">
+                            TRY AGAIN
+                        </button>
+                        <button id="dashboard-btn" class="w-full py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all">
+                            BACK TO DASHBOARD
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Feedback Section -->
+            <div class="mt-12 pt-8 border-t border-white/5 relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="p-2 bg-[#22d3ee]/20 rounded-lg">
+                        <svg class="w-5 h-5 text-[#22d3ee]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </span>
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest">Performance Feedback</h3>
+                </div>
+                <div id="feedback-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Feedback items will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="result.js"></script>
+</body>
+</html>

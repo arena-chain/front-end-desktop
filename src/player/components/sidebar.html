@@ -1,0 +1,196 @@
+<!-- Left Sidebar - Game Selection (Faceit Style) -->
+<style>
+    .left-rail-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .left-rail-scrollbar-hide::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .logo-3d-spin {
+        transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+        filter: drop-shadow(0 0 12px rgba(0, 255, 135, 0.4));
+    }
+
+    .logo-3d-spin:hover {
+        transform: rotateY(360deg) scale(1.1);
+        filter: drop-shadow(0 0 25px rgba(0, 255, 135, 0.8));
+    }
+</style>
+<aside class="hidden xl:flex sidebar-collapsible bg-[#12141c] flex-col border-r border-white/5 h-full">
+    <!-- Logo & Mac Window Drag Region -->
+    <div class="px-3 pt-6 pb-4 border-b border-white/5" style="-webkit-app-region: drag;">
+        <div class="flex items-center justify-center gap-3">
+            <div class="w-20 h-20 flex items-center justify-center p-1" style="-webkit-app-region: no-drag;">
+                <img src="../../../assets/logo.png" alt="Arena Chain Logo"
+                    class="logo-3d-spin w-full h-full object-contain">
+            </div>
+            <span class="sidebar-brand-text text-xl font-black tracking-tight"
+                style="-webkit-app-region: no-drag;"></span>
+        </div>
+    </div>
+
+    <div class="sidebar-scroll-area left-rail-scrollbar-hide flex-1 overflow-y-auto py-2">
+        <!-- Main Navigation -->
+        <div class="px-4 pt-2 space-y-1">
+            <button id="nav-play" type="button"
+                class="sidebar-menu-btn nav-menu-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-gray-400 hover:text-white hover:bg-white/5 group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                <span class="sidebar-label font-bold text-sm leading-none">PLAY</span>
+            </button>
+
+            <button id="nav-matchmaking" type="button"
+                class="sidebar-menu-btn nav-menu-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-gray-400 hover:text-white hover:bg-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span class="sidebar-label font-semibold text-sm leading-none">Matchmaking</span>
+            </button>
+            <button id="nav-channel" type="button"
+                class="sidebar-menu-btn nav-menu-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-gray-400 hover:text-white hover:bg-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14m-8 5h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" />
+                </svg>
+                <span class="sidebar-label font-semibold text-sm leading-none">My Channel</span>
+            </button>
+            <button id="nav-streams" type="button"
+                class="sidebar-menu-btn nav-menu-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-gray-400 hover:text-white hover:bg-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14m-8 5h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" />
+                </svg>
+                <span class="sidebar-label font-semibold text-sm leading-none">Streams</span>
+            </button>
+        </div>
+
+        <div class="mx-4 h-px bg-white/10 my-4"></div>
+
+        <!-- Games List -->
+        <div class="px-4 pb-4">
+            <button type="button" id="games-toggle"
+                class="w-full flex items-center justify-center gap-2 mb-3 px-2 py-2 rounded-lg hover:bg-white/5 transition-all">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6 12h.01M18 12h.01M9 9v6m6-6v6M6.5 19h11a3.5 3.5 0 0 0 3.5-3.5v-7A3.5 3.5 0 0 0 17.5 5h-11A3.5 3.5 0 0 0 3 8.5v7A3.5 3.5 0 0 0 6.5 19z" />
+                    </svg>
+                    <h3 class="sidebar-section-title text-xs font-bold text-gray-500 uppercase tracking-wider">GAMES
+                    </h3>
+                </div>
+                <svg id="games-toggle-icon" xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+                </svg>
+            </button>
+
+            <div id="games-dropdown" class="space-y-1">
+                <!-- Valorant -->
+                <button type="button"
+                    class="game-select-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5 text-gray-400"
+                    data-game="valorant">
+                    <div class="w-8 h-8 rounded-lg bg-[#ff4654] flex items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-black text-white leading-none">V</span>
+                    </div>
+                    <span class="sidebar-label flex-1 text-left text-sm font-semibold truncate leading-none">VALORANT</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 opacity-0" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+                <!-- League of Legends -->
+                <button type="button"
+                    class="game-select-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5 text-gray-400"
+                    data-game="lol">
+                    <div class="w-8 h-8 rounded-lg bg-[#0bc6e3] flex items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-black text-white leading-none">LoL</span>
+                    </div>
+                    <span class="sidebar-label flex-1 text-left text-sm font-semibold truncate leading-none">League of Legends</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 opacity-0" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile - Premium Card -->
+    <div class="border-t border-white/5"
+        style="background: linear-gradient(180deg, transparent 0%, rgba(0,255,135,0.03) 100%)">
+        <!-- Avatar + Name Row -->
+        <div class="flex items-center gap-3 px-4 pt-4 pb-2">
+            <!-- Avatar with rank ring — href set by shell-loader -->
+            <a id="nav-profile-link" href="#" class="relative flex-shrink-0 cursor-pointer" title="My Profile">
+                <div class="w-10 h-10 rounded-xl overflow-hidden"
+                    style="box-shadow: 0 0 0 2px #00ff87, 0 0 12px rgba(0,255,135,0.4)">
+                    <img id="sidebar-avatar"
+                        src="https://ui-avatars.com/api/?name=Player&background=00ff87&color=0a0b0f&bold=true"
+                        alt="User" class="w-full h-full object-cover" />
+                </div>
+                <span
+                    class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#00ff87] border-2 border-[#12141c]"></span>
+            </a>
+
+            <!-- Name + rank (hidden in icon-only mode) -->
+            <div class="sidebar-profile-text flex-1 min-w-0">
+                <p id="sidebar-nickname" class="text-sm font-black text-white truncate leading-tight">Player</p>
+                <!-- Rank badge -->
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span id="sidebar-rank-badge"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide"
+                        style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a0a00">&#9670;
+                        Unranked</span>
+                    <span id="sidebar-rank-meta" class="text-[10px] text-gray-500 font-medium">—</span>
+                </div>
+            </div>
+
+            <!-- Logout icon -->
+            <button type="button" id="logoutBtn" title="Logout"
+                class="sidebar-profile-text flex-shrink-0 p-1.5 rounded-lg hover:bg-red-500/20 transition-colors group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 group-hover:text-red-400"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- XP Bar (hidden in icon-only mode) -->
+        <div class="sidebar-profile-text px-4 pb-2">
+            <div class="flex items-center justify-between mb-1">
+                <span id="sidebar-level-label" class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Level —</span>
+                <span id="sidebar-xp-text" class="text-[10px] text-[#00ff87] font-bold">— / — XP</span>
+            </div>
+            <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.07)">
+                <div id="sidebar-xp-bar" class="h-full rounded-full"
+                    style="width: 0%; background: linear-gradient(90deg, #00ff87, #22d3ee); box-shadow: 0 0 8px rgba(0,255,135,0.5)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats (hidden in icon-only mode) -->
+        <div class="sidebar-profile-text px-4 pb-4">
+            <div class="grid grid-cols-3 gap-1.5">
+                <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
+                    <p id="sidebar-stat-kd" class="text-xs font-black text-white">—</p>
+                    <p class="text-[9px] text-gray-500 uppercase font-semibold">K/D</p>
+                </div>
+                <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
+                    <p id="sidebar-stat-win" class="text-xs font-black text-[#00ff87]">—</p>
+                    <p class="text-[9px] text-gray-500 uppercase font-semibold">WIN</p>
+                </div>
+                <div class="text-center py-1.5 rounded-lg" style="background: rgba(255,255,255,0.04)">
+                    <p id="sidebar-stat-elo" class="text-xs font-black text-white">—</p>
+                    <p class="text-[9px] text-gray-500 uppercase font-semibold">ELO</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>

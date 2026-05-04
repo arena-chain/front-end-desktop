@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA — Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <div class="max-w-3xl mx-auto">
+                    <div class="mb-10">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00ff87]/80 mb-2">Account</p>
+                        <h1 class="text-3xl lg:text-4xl font-black text-white tracking-tight mb-2">Settings</h1>
+                        <p class="text-gray-400 text-sm">Tune your profile, security, and preferences. Changes to your profile sync across the app.</p>
+                    </div>
+
+                    <!-- Profile (dynamic) -->
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-6" aria-labelledby="settings-profile-heading">
+                        <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+                            <div>
+                                <h2 id="settings-profile-heading" class="text-lg font-black text-white uppercase tracking-wider">Profile</h2>
+                                <p class="text-gray-500 text-sm mt-1">Display name and avatar (same generator as the mobile app).</p>
+                            </div>
+                            <a id="link-public-profile" href="#" class="text-xs font-bold text-[#00ff87] hover:underline shrink-0">View profile page →</a>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-8 items-start">
+                            <div class="relative shrink-0">
+                                <div class="w-28 h-28 rounded-2xl overflow-hidden relative ring-2 ring-[#00ff87]/40 ring-offset-2 ring-offset-[#0a0b0f]">
+                                    <img id="settings-avatar-preview" src="" alt="" class="w-full h-full object-cover bg-[#1a1c26]">
+                                    <button type="button" id="btn-shuffle-avatar" title="New random avatar"
+                                        class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1 bg-black/60 text-white text-[10px] font-black uppercase tracking-wide opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        <span>Shuffle</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0 space-y-4 w-full">
+                                <div>
+                                    <label for="input-nickname" class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Display name</label>
+                                    <input id="input-nickname" type="text" maxlength="40" autocomplete="nickname"
+                                        class="w-full px-4 py-3 rounded-xl bg-[#12141c] border border-white/10 text-white text-sm font-semibold outline-none focus:border-[#00ff87]/50 focus:ring-1 focus:ring-[#00ff87]/30">
+                                </div>
+                                <p class="text-xs text-gray-600">Your email is never shown on your public profile or to friends from here.</p>
+                                <div class="flex flex-wrap gap-3 pt-2">
+                                    <button type="button" id="btn-save-profile"
+                                        class="px-6 py-3 rounded-xl bg-[#00ff87] text-[#0a0b0f] text-sm font-black uppercase tracking-wide hover:bg-[#00e67a] transition-colors disabled:opacity-50 disabled:pointer-events-none">
+                                        Save profile
+                                    </button>
+                                    <button type="button" id="btn-reset-profile"
+                                        class="px-5 py-3 rounded-xl border border-white/15 text-gray-300 text-sm font-semibold hover:bg-white/5 transition-colors">
+                                        Reset
+                                    </button>
+                                </div>
+                                <p id="profile-save-status" class="text-sm font-semibold min-h-[1.25rem]"></p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Static sections -->
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-6">
+                        <h2 class="text-lg font-black text-white uppercase tracking-wider mb-2">Account security</h2>
+                        <p class="text-gray-500 text-sm mb-4">Password, two-factor authentication, and connected logins.</p>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Password</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Two-factor authentication</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                            <li class="flex items-center justify-between py-2">
+                                <span>Connected accounts (Google, Steam)</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-6">
+                        <h2 class="text-lg font-black text-white uppercase tracking-wider mb-2">Privacy</h2>
+                        <p class="text-gray-500 text-sm mb-4">Control who can see your activity and profile details.</p>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Profile visibility</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Appear offline</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                            <li class="flex items-center justify-between py-2">
+                                <span>Data &amp; analytics</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-6">
+                        <h2 class="text-lg font-black text-white uppercase tracking-wider mb-2">Notifications</h2>
+                        <p class="text-gray-500 text-sm mb-4">Match invites, friend requests, and rewards.</p>
+                        <div class="space-y-4">
+                            <label class="flex items-center justify-between gap-4 cursor-not-allowed opacity-60">
+                                <span class="text-sm text-gray-300">Match found &amp; queue alerts</span>
+                                <input type="checkbox" disabled class="w-5 h-5 rounded accent-[#00ff87]">
+                            </label>
+                            <label class="flex items-center justify-between gap-4 cursor-not-allowed opacity-60">
+                                <span class="text-sm text-gray-300">Friend &amp; club activity</span>
+                                <input type="checkbox" disabled class="w-5 h-5 rounded accent-[#00ff87]">
+                            </label>
+                            <label class="flex items-center justify-between gap-4 cursor-not-allowed opacity-60">
+                                <span class="text-sm text-gray-300">Marketing &amp; events</span>
+                                <input type="checkbox" disabled class="w-5 h-5 rounded accent-[#00ff87]">
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-4">Notification preferences will be configurable in a future update.</p>
+                    </section>
+
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-6">
+                        <h2 class="text-lg font-black text-white uppercase tracking-wider mb-2">Game settings</h2>
+                        <p class="text-gray-500 text-sm mb-4">Per-title preferences and linked accounts.</p>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Linked Riot account</span>
+                                <a href="../profile/profile.html" class="text-xs font-bold text-[#00ff87] hover:underline">Manage in profile</a>
+                            </li>
+                            <li class="flex items-center justify-between py-2 border-b border-white/5">
+                                <span>Default queue region</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                            <li class="flex items-center justify-between py-2">
+                                <span>Streamer / spectator mode</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">Coming soon</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="glass-panel rounded-2xl p-6 lg:p-8 mb-10">
+                        <h2 class="text-lg font-black text-white uppercase tracking-wider mb-2">App &amp; legal</h2>
+                        <ul class="space-y-2 text-sm">
+                            <li><span class="text-gray-500">Terms of service — </span><span class="text-gray-600">placeholder</span></li>
+                            <li><span class="text-gray-500">Privacy policy — </span><span class="text-gray-600">placeholder</span></li>
+                            <li><span class="text-gray-500">Version — </span><span class="text-gray-400 font-mono text-xs">desktop player shell</span></li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Stream</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
+        body { background: #0a0b0f; margin: 0; overflow: auto; min-height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .chat-panel { background: #12141c; border-left: 1px solid rgba(255,255,255,0.05); }
+        .glass-panel { background: rgba(18,20,28,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .nav-menu-btn.active { background: rgba(0,255,135,0.15); color: #00ff87; }
+        .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; height: 100%; }
+        .sidebar-collapsible:hover { width: 250px; }
+        .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+        .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+        .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+        .sidebar-collapsible .sidebar-menu-btn, .sidebar-collapsible .game-select-btn {
+            position: relative; justify-content: center; align-items: center; width: 46px; height: 40px;
+            margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0 !important; padding-right: 0 !important; transition: all 0.22s ease;
+        }
+        .sidebar-collapsible:hover .sidebar-menu-btn, .sidebar-collapsible:hover .game-select-btn {
+            width: 100%; justify-content: flex-start; padding-left: 16px !important; padding-right: 16px !important;
+        }
+        .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity 0.2s ease; position: absolute; left: 50px; }
+        .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased min-h-screen overflow-auto m-0">
+    <div class="flex w-full min-w-0 min-h-screen overflow-visible">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-visible relative">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 flex overflow-visible p-6 gap-6 items-start">
+                <div class="flex-1 flex flex-col min-w-0 h-full">
+                    <div class="w-full relative bg-black rounded-2xl overflow-hidden shadow-2xl flex-shrink-0" style="aspect-ratio: 16/9; max-height: calc(100vh - 200px);">
+                        <video id="viewer-video" class="w-full h-full object-contain bg-black" autoplay playsinline controls></video>
+                        <div id="viewer-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#0c0e11] to-black">
+                            <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/5 animate-pulse">
+                                <span class="text-white/30 text-3xl">▶</span>
+                            </div>
+                            <p id="viewer-status" class="mt-4 text-white/30 font-black uppercase tracking-[0.3em] text-[10px]">Connecting to live signal...</p>
+                        </div>
+                        <div class="absolute top-4 left-4 flex items-center gap-2">
+                            <span id="viewer-live-badge" class="px-3 py-1 bg-[#ff4654] text-white text-[10px] font-black rounded tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> LIVE
+                            </span>
+                            <span id="viewer-count" class="px-3 py-1 bg-black/50 backdrop-blur text-white text-xs font-bold rounded">0 Viewers</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-col flex-1 min-h-0 bg-[#12141c]/50 rounded-2xl p-6 border border-white/5 overflow-y-auto">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <img id="channel-avatar" src="https://ui-avatars.com/api/?name=Streamer&background=00ff87&color=0a0b0f&size=64" class="w-16 h-16 rounded-full border-2 border-[#00ff87]" alt="Streamer">
+                                </div>
+                                <div>
+                                    <h2 id="channel-name" class="text-2xl font-black text-white mb-1">Loading...</h2>
+                                    <p id="stream-title" class="text-sm font-bold text-gray-400">Loading stream...</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span id="stream-category" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#ff4654]/20 text-[#ff4654]">LIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button id="copy-watch-link" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-sm transition-all border border-white/10">Copy Link</button>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-white/5">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">About Streamer</h3>
+                            <p id="channel-description" class="text-sm text-gray-500 leading-relaxed max-w-3xl">Loading description...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-80 lg:w-96 flex-shrink-0 chat-panel rounded-3xl flex flex-col relative overflow-hidden max-h-[calc(100vh-140px)]">
+                    <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white tracking-wide">Stream Chat</h3>
+                        <div class="text-gray-400"><span id="chat-message-count">0</span> msgs</div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 space-y-5" id="chatContainer"></div>
+                    <div class="p-4 border-t border-white/5 bg-[#0a0b0f]/50">
+                        <div class="relative flex items-center bg-white/5 rounded-2xl p-1.5 border border-white/10 overflow-hidden">
+                            <input id="chat-input" type="text" placeholder="Send a message..." class="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder-gray-500 py-2 px-2" />
+                            <button id="chat-send" class="w-10 h-10 flex items-center justify-center bg-[#00ff87] hover:bg-[#00e67a] text-[#0a0b0f] rounded-xl transition-all shadow-lg flex-shrink-0 ml-1 font-black">→</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { getUser } = require('../../../shared/api');
+        const { getChannelMessages, createLiveSocket, getIceServers, BASE_URL, ROOT_URL } = require('../../../shared/creator');
+
+        const params = new URLSearchParams(window.location.search);
+        const channelId = params.get('channelId');
+        const user = getUser();
+        const video = document.getElementById('viewer-video');
+        const placeholder = document.getElementById('viewer-placeholder');
+        const viewerStatus = document.getElementById('viewer-status');
+        const viewerCount = document.getElementById('viewer-count');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const chatMessageCount = document.getElementById('chat-message-count');
+        const copyWatchLink = document.getElementById('copy-watch-link');
+
+        let socket = null;
+        let peer = null;
+        let pendingIceCandidates = [];
+        let remoteStream = null;
+        let messageCount = 0;
+        let iceServers = [];
+
+        function setMeta(channel, stream) {
+            document.getElementById('channel-name').textContent = channel?.name || 'Channel';
+            document.getElementById('stream-title').textContent = stream?.title || 'No active stream';
+            document.getElementById('channel-description').textContent = channel?.description || 'No description available.';
+            document.getElementById('channel-avatar').src = channel?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(channel?.name || 'Channel')}&background=00ff87&color=0a0b0f&size=64`;
+            document.getElementById('stream-category').textContent = (channel?.categories && channel.categories[0]) || 'LIVE';
+            viewerCount.textContent = `${Number(stream?.viewerCount || 0).toLocaleString()} Viewers`;
+        }
+
+        function appendMessage(message, self = false) {
+            const row = document.createElement('div');
+            row.className = 'flex items-start gap-3';
+            const nickname = message.senderNickname || message.name || 'Viewer';
+            const body = message.message || message.text || '';
+            row.innerHTML = `
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=${self ? '00ff87' : 'ff4654'}&color=${self ? '0a0b0f' : 'fff'}&size=32" class="w-8 h-8 rounded-full border ${self ? 'border-[#00ff87]' : 'border-white/10'}">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-baseline gap-2 mb-1">
+                        <span class="text-xs font-bold ${self ? 'text-[#00ff87]' : 'text-white'}">${nickname}</span>
+                        <span class="text-[10px] text-gray-500">${new Date(message.createdAt || Date.now()).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="${self ? 'bg-[#00ff87]/10 border border-[#00ff87]/20 text-white' : 'bg-white/5 border border-white/5 text-gray-300'} rounded-r-xl rounded-bl-xl p-3 text-sm">
+                        ${body}
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(row);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            messageCount += 1;
+            chatMessageCount.textContent = String(messageCount);
+        }
+
+        async function loadChannelAndStream() {
+            if (!channelId) {
+                viewerStatus.textContent = 'Missing channelId';
+                return;
+            }
+            const [channel, streams] = await Promise.all([
+                fetch(`${BASE_URL}/channel/${channelId}`).then((r) => r.json()),
+                fetch(`${BASE_URL}/stream/channel/${channelId}`).then((r) => r.json()),
+            ]);
+            const liveStream = (streams || []).find((item) => item.isLive) || (streams || [])[0] || null;
+            setMeta(channel, liveStream);
+        }
+
+        async function loadMessages() {
+            if (!channelId) return;
+            chatContainer.innerHTML = '';
+            messageCount = 0;
+            chatMessageCount.textContent = '0';
+            const messages = await getChannelMessages(channelId, 50).catch(() => []);
+            messages.forEach((message) => appendMessage(message, false));
+        }
+
+        async function attachRemoteStream(stream) {
+            video.srcObject = stream;
+            try {
+                await video.play();
+                placeholder.classList.add('hidden');
+            } catch {
+                viewerStatus.textContent = 'Click video controls to start playback';
+            }
+        }
+
+        async function connectViewer() {
+            if (!channelId) return;
+
+            iceServers = await getIceServers().catch(() => []);
+            socket = await createLiveSocket();
+
+            socket.on('broadcaster-status', ({ isBroadcasting }) => {
+                viewerStatus.textContent = isBroadcasting ? 'Broadcaster is live.' : 'Waiting for broadcaster...';
+            });
+
+            socket.on('broadcast-ended', () => {
+                viewerStatus.textContent = 'Broadcast ended.';
+                placeholder.classList.remove('hidden');
+                if (peer) {
+                    peer.close();
+                    peer = null;
+                }
+                if (video) video.srcObject = null;
+            });
+
+            socket.on('chat-message', (message) => {
+                appendMessage(message, false);
+            });
+
+            socket.on('signal-offer', async ({ sourceId, description }) => {
+                peer = new RTCPeerConnection({ iceServers: iceServers.length ? iceServers : undefined });
+                remoteStream = new MediaStream();
+                video.srcObject = remoteStream;
+
+                peer.ontrack = (event) => {
+                    if (event.streams && event.streams[0]) {
+                        remoteStream = event.streams[0];
+                        void attachRemoteStream(event.streams[0]);
+                    } else {
+                        remoteStream.addTrack(event.track);
+                        void attachRemoteStream(remoteStream);
+                    }
+                };
+
+                peer.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('ice-candidate', {
+                            targetId: sourceId,
+                            channelId,
+                            candidate: event.candidate.toJSON(),
+                        });
+                    }
+                };
+
+                await peer.setRemoteDescription(new RTCSessionDescription(description));
+                const answer = await peer.createAnswer();
+                await peer.setLocalDescription(answer);
+
+                for (const candidate of pendingIceCandidates) {
+                    await peer.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+                pendingIceCandidates = [];
+
+                socket.emit('signal-answer', {
+                    targetId: sourceId,
+                    channelId,
+                    description: answer,
+                });
+                viewerStatus.textContent = 'Live signal connected.';
+            });
+
+            socket.on('ice-candidate', async ({ candidate }) => {
+                if (!peer || !candidate) return;
+                if (!peer.remoteDescription) {
+                    pendingIceCandidates.push(candidate);
+                    return;
+                }
+                await peer.addIceCandidate(new RTCIceCandidate(candidate));
+            });
+
+            socket.on('connect', () => {
+                socket.emit('join-channel', {
+                    channelId,
+                    role: 'viewer',
+                });
+            });
+        }
+
+        chatSend.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (!message || !socket || !channelId) return;
+            socket.emit('chat-message', { channelId, message });
+            appendMessage({
+                senderNickname: user?.nickname || 'You',
+                message,
+                createdAt: new Date().toISOString(),
+            }, true);
+            chatInput.value = '';
+        });
+
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                chatSend.click();
+            }
+        });
+
+        copyWatchLink.addEventListener('click', async () => {
+            const url = `${ROOT_URL}/watch/${channelId}`;
+            try {
+                await navigator.clipboard.writeText(url);
+                copyWatchLink.textContent = 'Copied';
+                setTimeout(() => { copyWatchLink.textContent = 'Copy Link'; }, 1200);
+            } catch {}
+        });
+
+        void loadChannelAndStream();
+        void loadMessages();
+        void connectViewer();
+    </script>
+</body>
+</html>
