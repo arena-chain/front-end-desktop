@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .glass-panel { background: rgba(18, 20, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .chat-bubble { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .chat-bubble-self { background: rgba(0, 255, 135, 0.05); border: 1px solid rgba(0, 255, 135, 0.2); }
+
+        .neon-green-glow { box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2); }
+        .green-accent { background: #00ff87; }
+        
+        .status-dot-online { border: 3px solid #12141c; background: #00ff87; }
+
+        .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
+
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <!-- CHAT DETAIL CONTAINER -->
+            <div class="flex-1 flex overflow-hidden p-6 lg:p-10 gap-6 justify-center">
+
+                <div class="w-full max-w-5xl flex flex-col bg-[#12141c] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+                    
+                    <!-- Chat Header -->
+                    <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/20">
+                        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href = require('../components/nav-config').href('chat')">
+                            <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <div class="relative w-12 h-12 rounded-full border border-white/10">
+                                <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full" alt="User">
+                                <span class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-full status-dot-online"></span>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-white leading-tight">TenZify</h2>
+                                <p class="text-xs text-[#00ff87] font-semibold tracking-wide uppercase">Online</p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2">
+                            <button class="px-4 py-2 border border-[#00ff87]/30 text-[#00ff87] bg-[#00ff87]/10 hover:bg-[#00ff87]/20 font-bold text-sm rounded-xl transition-all flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Invite to Lobby
+                            </button>
+                            <div class="w-px h-6 bg-white/10 mx-2"></div>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            </button>
+                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col" id="chatContainer">
+                        
+                        <div class="text-center my-4">
+                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Yesterday</span>
+                        </div>
+
+                        <!-- Friend Message -->
+                        <div class="flex items-end gap-3 max-w-[80%]">
+                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
+                            <div class="flex flex-col gap-1 items-start">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs font-bold text-white">TenZify</span>
+                                    <span class="text-[10px] text-gray-500">10:42 PM</span>
+                                </div>
+                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
+                                    Yo, are we running ranked tonight?
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Self Message -->
+                        <div class="flex items-end gap-3 max-w-[80%] self-end flex-row-reverse">
+                            <div class="flex flex-col gap-1 items-end">
+                                <div class="chat-bubble-self rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] text-white shadow-sm">
+                                    Yeah give me 10 mins. Just finishing some food.
+                                </div>
+                                <span class="text-[10px] text-gray-500 mr-1">10:44 PM</span>
+                            </div>
+                        </div>
+
+                        <!-- Friend Message -->
+                        <div class="flex items-end gap-3 max-w-[80%]">
+                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
+                            <div class="flex flex-col gap-1 items-start">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs font-bold text-white">TenZify</span>
+                                    <span class="text-[10px] text-gray-500">10:45 PM</span>
+                                </div>
+                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
+                                    Bet. I'll warm up in deathmatch.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center my-4">
+                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Today</span>
+                        </div>
+
+                        <!-- Game Invite View -->
+                        <div class="flex items-end gap-3 max-w-[80%]">
+                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
+                            <div class="flex flex-col gap-1 items-start w-full max-w-sm">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-xs font-bold text-white">TenZify</span>
+                                    <span class="text-[10px] text-gray-500">2h ago</span>
+                                </div>
+                                <!-- Match Invite Invite -->
+                                <div class="bg-[#1a1d27] border border-[#00ff87]/30 rounded-2xl w-full p-4 hover:border-[#00ff87] transition-colors cursor-pointer shadow-[0_0_15px_rgba(0,255,135,0.05)]">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-8 h-8 rounded bg-[#ff4654] flex items-center justify-center font-black text-white text-xs">V</div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-white leading-tight">Valorant Lobby</h4>
+                                            <p class="text-xs text-gray-400">Competitive • 2/5 Players</p>
+                                        </div>
+                                    </div>
+                                    <button class="w-full py-2 bg-[#00ff87] text-black text-xs font-bold rounded-lg hover:bg-[#00e67a] transition-all">JOIN LOBBY</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Friend Message -->
+                        <div class="flex items-end gap-3 max-w-[80%]">
+                            <div class="w-8 h-8 flex-shrink-0 mb-1"></div> <!-- Spacer since same user -->
+                            <div class="flex flex-col gap-1 items-start">
+                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
+                                    Thanks for the raid earlier bro, means a lot! 🤘
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Chat Input Area -->
+                    <div class="p-6 pt-4 border-t border-white/5 bg-black/20">
+                        <div class="relative flex items-center bg-[#0a0b0f] rounded-2xl p-2 border border-white/10 focus-within:border-[#00ff87]/50 transition-colors shadow-inner">
+                            <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            </button>
+                            
+                            <input type="text" placeholder="Message TenZify..." class="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-gray-500 py-3 px-3" />
+                            
+                            <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
+
+                            <button class="w-12 h-12 flex items-center justify-center green-accent hover:bg-[#00e67a] text-black rounded-xl transition-all shadow-[0_0_15px_rgba(0,255,135,0.4)] flex-shrink-0 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Navigation Script & Setup -->
+    <script>
+        setTimeout(() => {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }, 150);
+    </script>
+</body>
+</html>
