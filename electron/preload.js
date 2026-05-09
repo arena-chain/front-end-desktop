@@ -14,6 +14,8 @@ const api = {
     versions: process.versions,
     launchConduit: () => ipcRenderer.invoke('launch-conduit'),
     getConduitCode: () => ipcRenderer.invoke('get-conduit-code'),
+    getPairingPayload: () => ipcRenderer.invoke('get-pairing-payload'),
+    getLanIpCandidates: () => ipcRenderer.invoke('get-lan-ip-candidates'),
     stopConduit: () => ipcRenderer.invoke('stop-conduit'),
     onConduitCode: (cb) => ipcRenderer.on('conduit-code', (_, code) => cb(code)),
     onConduitStopped: (cb) => ipcRenderer.on('conduit-stopped', () => cb()),
@@ -31,7 +33,6 @@ const api = {
     // LCU Automation
     lcuStatus: () => ipcRenderer.invoke('lcu-get-status'),
     createLcuLobby: (data) => ipcRenderer.invoke('lcu-create-match-lobby', data),
-    acceptLcuLobbyInvites: () => ipcRenderer.invoke('lcu-accept-lobby-invites'),
 };
 
 if (typeof window !== 'undefined') {

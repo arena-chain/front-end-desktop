@@ -2,8 +2,12 @@ const { app, BrowserWindow, ipcMain, nativeImage, desktopCapturer, shell } = req
 const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const dgram = require('dgram');
 const steamworks = require('steamworks.js');
 const { ROOT, resolveRoute, resolveRoleHome } = require('./routes');
+const { LcuService } = require('./lcu.service');
+const liveGame = require('./live-game.service');
 
 let steamClient = null;
 let currentAppId = null;
@@ -61,17 +65,140 @@ function clearConduitLaunchWatchers() {
 }
 
 /**
- * Mimic Conduit stores the hub JWT in %APPDATA%\\Mimic\\token (see Persistence.cs).
+ * Names that almost always belong to a virtual / container / VPN adapter,
+ * never to a physical LAN NIC the phone can reach.
+ */
+const _VIRTUAL_NAME_RE =
+    /virtualbox|vbox|vmware|hyper-?v|docker|wsl|tailscale|zerotier|tap|tun\d|tunnel|pseudo|loopback|default ?switch|bluetooth pan|teredo|isatap|pptp|l2tp/i;
+
+/**
+ * IPv4 prefixes that almost always belong to a virtual / container subnet.
+ *  - 169.254.x.x  : APIPA (link-local, no DHCP).
+ *  - 192.168.56.x : VirtualBox Host-Only default.
+ *  - 192.168.99.x : Docker Machine default.
+ *  - 172.17–172.31.x : Docker bridge ranges and Hyper-V virtual switches commonly land here.
+ *  - 10.0.75.x    : Hyper-V / Docker Desktop "DockerNAT".
+ */
+function _isVirtualIp(addr) {
+    if (addr.startsWith('169.254.')) return true;
+    if (addr.startsWith('192.168.56.')) return true;
+    if (addr.startsWith('192.168.99.')) return true;
+    if (addr.startsWith('10.0.75.')) return true;
+    const m = addr.match(/^172\.(\d+)\./);
+    if (m) {
+        const second = parseInt(m[1], 10);
+        if (second >= 17 && second <= 31) return true;
+    }
+    return false;
+}
+
+/**
+ * Returns the list of physical-LAN IPv4 candidates with their interface name.
+ * Filters out loopback, link-local, and known virtual-NIC ranges/names.
+ * Preferred candidates (Wi-Fi / Ethernet) are sorted to the front.
+ */
+function listLanCandidates() {
+    const ifaces = os.networkInterfaces();
+    const out = [];
+    for (const name of Object.keys(ifaces)) {
+        if (_VIRTUAL_NAME_RE.test(name)) continue;
+        for (const info of ifaces[name] || []) {
+            if (info.family !== 'IPv4' || info.internal) continue;
+            if (_isVirtualIp(info.address)) continue;
+            out.push({ name, address: info.address });
+        }
+    }
+    // Stable sort: Wi-Fi first, then Ethernet, then the rest.
+    const rank = (n) => {
+        if (/wi-?fi|wireless|wlan/i.test(n)) return 0;
+        if (/ethernet|eth\d|en\d/i.test(n)) return 1;
+        return 2;
+    };
+    out.sort((a, b) => rank(a.name) - rank(b.name));
+    return out;
+}
+
+/**
+ * Asks the OS routing table which local IPv4 the kernel would use to reach
+ * a public address. UDP `connect()` does NOT send any packets — it just
+ * resolves the route and binds the socket to the local interface that
+ * the OS would normally use for outbound traffic. After bind, `address()`
+ * returns that interface's IP.
+ *
+ * This is the most reliable way to pick the "real" LAN NIC because it
+ * matches whatever path the phone (which goes through the same default
+ * gateway) would reach.
+ */
+function probeRoutedLanIp(timeoutMs = 600) {
+    return new Promise((resolve) => {
+        let settled = false;
+        const sock = dgram.createSocket('udp4');
+        const finish = (val) => {
+            if (settled) return;
+            settled = true;
+            try {
+                sock.close();
+            } catch (_) {
+                /* ignore */
+            }
+            resolve(val);
+        };
+        const timer = setTimeout(() => finish(null), timeoutMs);
+        sock.once('error', () => {
+            clearTimeout(timer);
+            finish(null);
+        });
+        try {
+            // 8.8.8.8 / 1.1.1.1 are routable public IPs. We never send a packet —
+            // connect() only triggers a route lookup and a local bind.
+            sock.connect(53, '8.8.8.8', () => {
+                clearTimeout(timer);
+                try {
+                    const addr = sock.address();
+                    if (addr && addr.address && addr.address !== '0.0.0.0') {
+                        finish(addr.address);
+                    } else {
+                        finish(null);
+                    }
+                } catch (_) {
+                    finish(null);
+                }
+            });
+        } catch (_) {
+            clearTimeout(timer);
+            finish(null);
+        }
+    });
+}
+
+/**
+ * Best-effort LAN IPv4 picker. Tries (in order):
+ *   1) OS routing table via UDP route probe.
+ *   2) Heuristic over `os.networkInterfaces()` with virtual-NIC deny lists.
+ *   3) `127.0.0.1` (only useful for emulator-on-same-machine pairing).
+ */
+async function getLocalLanIp() {
+    const probed = await probeRoutedLanIp();
+    if (probed && !probed.startsWith('127.') && !_isVirtualIp(probed)) {
+        return probed;
+    }
+    const candidates = listLanCandidates();
+    if (candidates.length > 0) return candidates[0].address;
+    return '127.0.0.1';
+}
+
+/**
+ * Arena Chain Conduit stores the hub JWT in %APPDATA%\\Mimic\\token (see Persistence.cs).
  * The 6-digit pairing code is inside the JWT payload — same as the Conduit window.
  */
-function getMimicTokenPath() {
+function getConduitTokenPath() {
     const appData = process.env.APPDATA;
     if (!appData) return null;
     return path.join(appData, 'Mimic', 'token');
 }
 
-function getHubCodeFromMimicTokenFile() {
-    const tokenPath = getMimicTokenPath();
+function getHubCodeFromConduitTokenFile() {
+    const tokenPath = getConduitTokenPath();
     if (!tokenPath || !fs.existsSync(tokenPath)) return null;
     try {
         const token = fs.readFileSync(tokenPath, 'utf8').trim();
@@ -180,7 +307,7 @@ function launchConduit() {
 
         let preSpawnTokenContent = null;
         try {
-            const tp = getMimicTokenPath();
+            const tp = getConduitTokenPath();
             if (tp && fs.existsSync(tp)) preSpawnTokenContent = fs.readFileSync(tp, 'utf8');
         } catch (_) {
             /* ignore */
@@ -217,7 +344,7 @@ function launchConduit() {
                 clearConduitLaunchWatchers();
                 return;
             }
-            const tokenPath = getMimicTokenPath();
+            const tokenPath = getConduitTokenPath();
             if (!tokenPath || !fs.existsSync(tokenPath)) return;
             let content;
             let mtime;
@@ -229,11 +356,11 @@ function launchConduit() {
             }
             const tokenUpdated =
                 content !== preSpawnTokenContent || mtime >= spawnStartedAt - 1000;
-            const code = getHubCodeFromMimicTokenFile();
+            const code = getHubCodeFromConduitTokenFile();
             if (!code) return;
 
             if (tokenUpdated) {
-                console.log('[Conduit] Pairing code from Mimic token file:', code);
+                console.log('[Conduit] Pairing code from token file:', code);
                 onPairingCodeFound(code);
                 return;
             }
@@ -241,7 +368,7 @@ function launchConduit() {
             // Valid JWT was already on disk; Conduit may skip rewriting the file (ConnectionManager.cs).
             if (!usedStaleTokenFallback && Date.now() - spawnStartedAt >= 2500) {
                 usedStaleTokenFallback = true;
-                console.log('[Conduit] Pairing code from existing Mimic token file:', code);
+                console.log('[Conduit] Pairing code from existing token file:', code);
                 onPairingCodeFound(code);
             }
         }, 400);
@@ -249,7 +376,7 @@ function launchConduit() {
         conduitLaunchTimeout = setTimeout(() => {
             if (launchPhase === 'pending') {
                 failLaunch(
-                    'Timed out waiting for a pairing code. Open League of Legends so Mimic can connect, and ensure Rift is running (port 51001).',
+                    'Timed out waiting for a pairing code. Open League of Legends so Arena Chain can connect, and ensure Rift is running (port 51001).',
                 );
             }
         }, 120000);
@@ -291,7 +418,7 @@ function launchConduit() {
             currentPairingCode = null;
             const resourceMissing = stderrBuf.includes('MissingManifestResourceException');
             const msg = resourceMissing
-                ? 'Conduit.exe is missing embedded resources (often a bad copy or antivirus damaged the file). Fix: (1) In Avast, restore Conduit.exe if quarantined and add an exclusion for desktop version/resources/Conduit.exe. (2) Rebuild Conduit in Visual Studio from your Mimic/conduit project (Release) and copy bin/Release/Conduit.exe into resources/ — do not copy only part of the output.'
+                ? 'Conduit.exe is missing embedded resources (often a bad copy or antivirus damaged the file). Fix: (1) In Avast, restore Conduit.exe if quarantined and add an exclusion for desktop version/resources/Conduit.exe. (2) Rebuild Conduit in Visual Studio from your Arena Chain conduit project (Release) and copy bin/Release/Conduit.exe into resources/ — do not copy only part of the output.'
                 : `Conduit exited before showing a code (exit ${code}${signal ? ', signal ' + signal : ''}). If security software blocked Conduit.exe, allow it and try again.`;
 
             failLaunch(msg);
@@ -343,9 +470,83 @@ function navigateTo(routeName) {
     win.loadFile(filePath);
 }
 
+// ─── LCU phase watcher ────────────────────────────────────────────────────
+let _lcuSvc = null;
+let _phaseWatcherInterval = null;
+let _lastPhaseSent = '';
+
+async function _ensureLcuService() {
+    if (_lcuSvc && _lcuSvc.api) return _lcuSvc;
+    const svc = new LcuService();
+    const ok = await svc.connect();
+    if (!ok) return null;
+    _lcuSvc = svc;
+    return _lcuSvc;
+}
+
+async function _phaseTick() {
+    try {
+        const svc = await _ensureLcuService();
+        if (!svc || !svc.api) return;
+
+        let raw;
+        try {
+            const res = await svc.api.get('/lol-gameflow/v1/gameflow-phase', { timeout: 4000 });
+            raw = res?.data;
+        } catch (e) {
+            _lcuSvc = null;
+            return;
+        }
+
+        let phase = '';
+        if (typeof raw === 'string') {
+            phase = raw.replace(/"/g, '').trim();
+        } else if (raw && typeof raw === 'object') {
+            phase = String(raw.phase ?? raw.gameflowPhase ?? '').trim();
+        }
+        if (!phase) return;
+
+        if (phase !== _lastPhaseSent) {
+            _lastPhaseSent = phase;
+            console.log(`[LCU] Phase → ${phase}`);
+            void liveGame.postPhase(phase);
+        }
+
+        if (phase === 'InProgress') {
+            if (!liveGame.isPollingActive()) {
+                liveGame.startLiveGamePolling();
+            }
+        } else {
+            if (liveGame.isPollingActive()) {
+                liveGame.stopLiveGamePolling();
+            }
+        }
+    } catch (e) {
+        console.warn('[LCU] phaseTick error:', e?.message || e);
+    }
+}
+
+function startLcuPhaseWatcher() {
+    if (_phaseWatcherInterval) return;
+    console.log('[LCU] Phase watcher starting (3s interval)');
+    void _phaseTick();
+    _phaseWatcherInterval = setInterval(() => void _phaseTick(), 3000);
+}
+
+function stopLcuPhaseWatcher() {
+    if (_phaseWatcherInterval) {
+        clearInterval(_phaseWatcherInterval);
+        _phaseWatcherInterval = null;
+    }
+    _lastPhaseSent = '';
+}
+
 app.whenReady().then(() => {
     startRift();
     createWindow();
+
+    liveGame.registerLiveGameIpc(ipcMain);
+    startLcuPhaseWatcher();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -357,6 +558,8 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+    stopLcuPhaseWatcher();
+    liveGame.stopLiveGamePolling();
     if (riftProcess) riftProcess.kill();
     if (conduitProcess) conduitProcess.kill();
 });
@@ -395,6 +598,17 @@ ipcMain.handle('launch-conduit', async () => {
 });
 
 ipcMain.handle('get-conduit-code', async () => currentPairingCode);
+ipcMain.handle('get-pairing-payload', async () => {
+    return {
+        ip: await getLocalLanIp(),
+        port: 51001,
+        code: currentPairingCode,
+    };
+});
+
+ipcMain.handle('get-lan-ip-candidates', async () => {
+    return listLanCandidates();
+});
 
 ipcMain.handle('stop-conduit', async () => {
     stopConduit();
@@ -528,7 +742,6 @@ ipcMain.handle('steam-invite-friend', async (event, { steamId, lobbyId }) => {
 // LCU / LEAGUE OF LEGENDS IPC HANDLERS
 // ──────────────────────────────────────────────────────────
 
-const { LcuService } = require('./lcu.service');
 const lcu = new LcuService();
 
 ipcMain.handle('lcu-create-match-lobby', async (event, { opponentNames, gameMode }) => {
@@ -554,13 +767,4 @@ ipcMain.handle('lcu-create-match-lobby', async (event, { opponentNames, gameMode
 ipcMain.handle('lcu-get-status', async () => {
     const connected = await lcu.connect();
     return { connected };
-});
-
-ipcMain.handle('lcu-accept-lobby-invites', async () => {
-    try {
-        return await lcu.acceptAllReceivedInvitations();
-    } catch (e) {
-        console.error('[LCU] lcu-accept-lobby-invites:', e);
-        return { success: false, error: e.message, accepted: 0, total: 0 };
-    }
 });

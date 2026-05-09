@@ -239,47 +239,6 @@ class LcuService {
         }
         return results;
     }
-
-    /**
-     * Accept pending lobby invitations via LCU (custom game popups, etc.).
-     * Opening riotclient:// only focuses the app — this actually accepts the invite.
-     */
-    async acceptAllReceivedInvitations() {
-        const connected = await this.connect();
-        if (!connected || !this.api) {
-            return { success: false, error: 'LCU_NOT_DETECTED', accepted: 0, total: 0 };
-        }
-
-        try {
-            const res = await this.api.get('/lol-lobby/v2/received-invitations');
-            const list = Array.isArray(res.data) ? res.data : [];
-            let accepted = 0;
-
-            for (const inv of list) {
-                const id = inv.invitationId ?? inv.invitation_id ?? inv.id;
-                if (!id) continue;
-
-                try {
-                    await this.api.post(`/lol-lobby/v2/received-invitations/${encodeURIComponent(id)}/accept`);
-                    accepted += 1;
-                    console.log(`[LCU] Accepted lobby invitation ${id}`);
-                } catch (e) {
-                    const st = e.response?.status;
-                    const body = e.response?.data;
-                    console.warn(`[LCU] Accept invite ${id} failed:`, st, body || e.message);
-                }
-            }
-
-            if (!list.length) {
-                return { success: true, accepted: 0, total: 0, message: 'No invitations in queue.' };
-            }
-
-            return { success: true, accepted, total: list.length };
-        } catch (e) {
-            console.error('[LCU] acceptAllReceivedInvitations:', e.message);
-            return { success: false, error: e.message, accepted: 0, total: 0 };
-        }
-    }
 }
 
 module.exports = { LcuService };
