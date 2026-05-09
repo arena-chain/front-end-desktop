@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
+
         * {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             scroll-behavior: smooth;
@@ -47,7 +47,7 @@
             background: rgba(0, 255, 135, 0.15);
             color: #00ff87;
         }
-        
+
         /* Online Status Dots */
         .status-dot-online { border: 3px solid #0a0b0f; background: #00ff87; }
         .status-dot-ingame { border: 3px solid #0a0b0f; background: #a855f7; }
@@ -55,6 +55,7 @@
 
     </style>
     <script src="../_common/loadComponents.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
 <body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
@@ -65,19 +66,19 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
-            
+
             <common-navbar src="top_navbar.html"></common-navbar>
 
             <!-- CHAT DASHBOARD CONTENT -->
             <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
-                
+
                 <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
                     <div>
                         <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Messages</h1>
                         <p class="text-gray-400 text-sm">Chat with friends, strategize with your squad, and coordinate matches.</p>
                     </div>
-                    
-                    <button class="px-6 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl hover:bg-[#00e67a] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,135,0.4)]">
+
+                    <button onclick="window.startNewMessage()" class="px-6 py-3 bg-[#00ff87] text-[#0a0b0f] font-bold text-sm rounded-xl hover:bg-[#00e67a] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,135,0.4)]">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
@@ -87,144 +88,378 @@
 
                 <!-- Main Layout Container -->
                 <div class="flex flex-col lg:flex-row gap-8 min-h-0">
-                    
+
                     <!-- Left Column: Search & Chat List -->
                     <div class="flex-1 flex flex-col min-h-0 bg-[#12141c]/50 border border-white/5 rounded-3xl p-6">
-                        
+
                         <!-- Search Bar -->
                         <div class="relative w-full mb-6">
-                            <input type="text" placeholder="Search conversations..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl py-3 pl-11 pr-4 text-sm outline-none focus:border-[#00ff87] transition-all focus:bg-white/10">
+                            <input id="convSearchInput" type="text" placeholder="Search conversations..." class="w-full bg-white/5 border border-white/10 text-white rounded-xl py-3 pl-11 pr-4 text-sm outline-none focus:border-[#00ff87] transition-all focus:bg-white/10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
 
-                        <!-- Chat List -->
-                        <div class="flex-1 overflow-y-auto space-y-2 pr-2">
-                            
-                            <!-- Unread Message / Group -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
-                                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00ff87] rounded-r-lg"></div>
-                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-lg flex-shrink-0 shadow-lg relative">
-                                    V
-                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-ingame"></span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h3 class="font-bold text-white text-base truncate">Valorant 5-Stack Squad</h3>
-                                        <span class="text-[10px] font-bold text-[#00ff87]">JUST NOW</span>
-                                    </div>
-                                    <p class="text-sm text-gray-300 truncate font-medium"><span class="text-[#00ff87]">Kuian:</span> guys are we running it down mid or what? 🤣</p>
-                                </div>
-                                <div class="w-5 h-5 rounded-full bg-[#ff4654] text-[10px] font-black text-white flex items-center justify-center">3</div>
-                            </div>
-
-                            <!-- Individual Chat (Online) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
-                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-[#00ff87]">
-                                    <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" alt="TenZify" class="w-full h-full object-cover">
-                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-online"></span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate">TenZify</h3>
-                                        <span class="text-[10px] font-semibold text-gray-500">2h ago</span>
-                                    </div>
-                                    <p class="text-sm text-gray-500 truncate">Thanks for the raid earlier bro, means a lot! 🤘</p>
-                                </div>
-                            </div>
-
-                            <!-- Individual Chat (In-Game) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
-                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all">
-                                    <img src="https://ui-avatars.com/api/?name=Faker&background=ff4654&color=fff&size=64" alt="Faker" class="w-full h-full object-cover">
-                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-ingame"></span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate">Faker Clone</h3>
-                                        <span class="text-[10px] font-semibold text-gray-500">Yesterday</span>
-                                    </div>
-                                    <p class="text-sm text-gray-500 truncate">I'll queue up in 5 mins after this match</p>
-                                </div>
-                            </div>
-
-                            <!-- Individual Chat (Offline) -->
-                            <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group opacity-70 hover:opacity-100" onclick="/* chat_detail stays local (not in nav-config) */ window.location.href='chat_detail.html'">
-                                <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent group-hover:border-white/20 transition-all filter grayscale">
-                                    <img src="https://ui-avatars.com/api/?name=S1mple&background=facc15&color=fff&size=64" alt="S1mple" class="w-full h-full object-cover text-black">
-                                    <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full status-dot-offline"></span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h3 class="font-bold text-gray-400 group-hover:text-white transition-colors text-base truncate">S1mple</h3>
-                                        <span class="text-[10px] font-semibold text-gray-600">May 14</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 truncate">GGs wp</p>
-                                </div>
-                            </div>
-
+                        <!-- Chat List (rendered dynamically by renderChatList()) -->
+                        <div id="chatList" class="flex-1 overflow-y-auto space-y-2 pr-2">
+                            <p class="text-gray-500 p-4 font-black italic tracking-widest text-[10px] uppercase text-center opacity-30 animate-pulse">
+                                Loading conversations...
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Right Column: Active Friends Sidebar -->
+                    <!-- Right Column: Active Friends + Group Rooms Sidebar -->
                     <div class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 h-full">
-                        
+
                         <!-- Active Now -->
                         <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
                             <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse"></span>
-                                Active Now (4)
+                                Active Now (<span id="activeFriendsCount">0</span>)
                             </h3>
-                            
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative w-10 h-10 rounded-full flex-shrink-0 border border-[#00ff87]">
-                                        <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full">
-                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full status-dot-online border-2 border-[#12141c]"></span>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-[#00ff87] transition-colors">TenZify</h4>
-                                        <p class="text-[10px] text-gray-400 font-semibold truncate uppercase">Online</p>
-                                    </div>
-                                    <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg></button>
-                                </div>
-                                
-                                <div class="flex items-center gap-3 cursor-pointer group">
-                                    <div class="relative w-10 h-10 rounded-full flex-shrink-0 border border-transparent">
-                                        <img src="https://ui-avatars.com/api/?name=Faker&background=ff4654&color=fff&size=64" class="w-full h-full rounded-full">
-                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full status-dot-ingame border-2 border-[#12141c]"></span>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-white transition-colors">Faker Clone</h4>
-                                        <p class="text-[10px] text-[#a855f7] font-bold truncate uppercase flex items-center gap-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                            In Match (CS2)
-                                        </p>
-                                    </div>
-                                </div>
-                                <!-- More active friends... -->
+
+                            <!-- Active friends rendered dynamically by renderActiveUsers() -->
+                            <div id="activeFriends" class="space-y-4">
+                                <p class="text-gray-600 text-[10px] font-black uppercase italic tracking-widest text-center py-4">
+                                    Loading...
+                                </p>
                             </div>
+                        </div>
+
+                        <!-- Group Rooms -->
+                        <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m6 5.87v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m12-9a4 4 0 1 1-8 0 4 4 0 0 1 8 0zm6-3a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                    </svg>
+                                    Groups &amp; Rooms
+                                </h3>
+                                <button onclick="window.location.href='group_rooms.html'" class="text-[10px] font-bold text-[#00ff87] hover:underline uppercase tracking-widest">
+                                    Open
+                                </button>
+                            </div>
+
+                            <!-- Group rooms rendered dynamically by renderGroupList() -->
+                            <div id="groupRoomList" class="space-y-2"></div>
                         </div>
 
                         <!-- Suggestions -->
                         <div class="glass-panel p-6 rounded-3xl bg-[#12141c]">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Suggested Friends</h3>
-                            <button class="w-full py-4 rounded-xl border border-dashed border-white/20 text-gray-400 hover:text-white hover:border-[#00ff87] transition-all text-sm font-bold flex flex-col items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                                Sync Contacts or Steam
-                            </button>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Suggested Friends</h3>
+                            <div class="flex flex-col items-center gap-3 py-4">
+                                <button class="w-12 h-12 rounded-2xl bg-white/5 border border-dashed border-white/10 flex items-center justify-center text-gray-500 hover:text-[#00ff87] hover:border-[#00ff87]/30 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                </button>
+                                <p class="text-xs text-gray-600 text-center font-medium">Sync Contacts or Steam</p>
+                            </div>
                         </div>
+
                     </div>
 
                 </div>
-            </div>
 
+            </div>
         </main>
     </div>
 
-    <!-- Navigation Script & Setup -->
+    <!-- New-message modal: type a userId / nickname to start a private chat -->
+    <div id="userSearchModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div class="bg-[#12141c] border border-white/10 rounded-3xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black uppercase tracking-wider text-white">New Message</h3>
+                <button onclick="window.toggleUserSearch(false)" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Enter a player nickname or user ID to open a conversation.</p>
+            <input id="userIdInput" type="text" placeholder="Nickname or user ID"
+                   onkeydown="if(event.key==='Enter') window.submitUserSearch();"
+                   class="w-full bg-white/5 border border-white/10 text-white rounded-xl py-3 px-4 text-sm outline-none focus:border-[#00ff87] transition-all focus:bg-white/10 mb-4">
+            <button onclick="window.submitUserSearch()" class="w-full py-3 bg-[#00ff87] text-[#0a0b0f] font-black uppercase text-sm tracking-wider rounded-xl hover:bg-[#00e67a] transition-all">
+                Open Chat
+            </button>
+        </div>
+    </div>
+
     <script>
+        // ─────────────────────────────────────────────
+        //   Resolve API + chat-namespace origin via the
+        //   shared helper convention (arena_base_url).
+        // ─────────────────────────────────────────────
+        const __ARENA_ORIGIN = (() => {
+            try {
+                const stored = (typeof localStorage !== 'undefined' && localStorage.getItem('arena_base_url')) || '';
+                const raw = (stored.trim() || 'http://127.0.0.1:3000');
+                return raw.replace(/\/api\/?$/i, '').replace(/\/+$/, '');
+            } catch (_) {
+                return 'http://127.0.0.1:3000';
+            }
+        })();
+        const API_URL = `${__ARENA_ORIGIN}/api`;
+        const SOCKET_URL = `${__ARENA_ORIGIN}/chat`;
+        const token = localStorage.getItem('token');
+
+        console.log('[Chat] JS loaded; token:', token ? 'present' : 'MISSING', '; origin:', __ARENA_ORIGIN);
+        if (!token) console.error('[Chat] CRITICAL: token missing in localStorage');
+
+        // ── Public actions wired from buttons ──
+        window.openChat = function(userId) {
+            if (!userId || userId === 'undefined' || userId === 'null') {
+                console.error('[Chat] invalid userId:', userId);
+                return;
+            }
+            localStorage.setItem('active_chat_user_id', String(userId).trim());
+            window.location.href = 'chat_detail.html';
+        };
+
+        window.toggleUserSearch = function(show = true) {
+            const modal = document.getElementById('userSearchModal');
+            if (!modal) return;
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.replace('opacity-0', 'opacity-100'), 10);
+                const input = document.getElementById('userIdInput');
+                if (input) { input.value = ''; input.focus(); }
+            } else {
+                modal.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        };
+
+        window.submitUserSearch = function() {
+            const input = document.getElementById('userIdInput');
+            const val = input && input.value.trim();
+            if (val) { window.openChat(val); window.toggleUserSearch(false); }
+        };
+
+        window.startNewMessage = function() { window.toggleUserSearch(true); };
+
+        // ── State ──
+        let socket;
+        let presenceSocket;
+        let me = null;
+        let conversations = [];
+
+        // ── Inbox / Active friends / Groups ──
+        async function fetchInbox() {
+            const list = document.getElementById('chatList');
+            try {
+                const response = await fetch(`${API_URL}/chat/inbox?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                conversations = Array.isArray(data) ? data : [];
+                renderChatList();
+                fetchActiveUsers();
+                fetchGroups();
+            } catch (e) {
+                console.error('[Chat] inbox fetch failed:', e);
+                if (list) list.innerHTML = '<p class="text-red-500 p-4 font-black italic tracking-widest text-[10px] uppercase text-center opacity-50">Server offline</p>';
+            }
+        }
+        // Auto-refresh every 10s as a safety net (also driven by socket events).
+        setInterval(fetchInbox, 10000);
+
+        async function fetchActiveUsers() {
+            if (!me) return;
+            try {
+                const uId = me._id || me.id;
+                const response = await fetch(`${API_URL}/presence/friends/${uId}?_v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                const users = Array.isArray(data) ? data : (data.friends || []);
+                renderActiveUsers(users);
+            } catch (e) {
+                console.error('[Chat] active friends fetch failed:', e);
+            }
+        }
+
+        async function fetchGroups() {
+            try {
+                const response = await fetch(`${API_URL}/group-chat/my`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const groups = await response.json();
+                renderGroupList(Array.isArray(groups) ? groups : []);
+            } catch (e) {
+                console.error('[Chat] groups fetch failed:', e);
+            }
+        }
+
+        // ── Renderers (preserve the existing matchmaking_final visual style) ──
+        function renderChatList() {
+            const list = document.getElementById('chatList');
+            if (!list) return;
+            if (!conversations || conversations.length === 0) {
+                list.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-20 gap-4">
+                       <p class="text-gray-500 text-center uppercase font-black italic tracking-[0.3em] opacity-20 text-xs">No active conversations</p>
+                       <button onclick="window.startNewMessage()" class="text-[10px] font-black text-[#00ff87] border border-[#00ff87]/20 px-4 py-2 rounded-full hover:bg-[#00ff87]/10 transition-all uppercase tracking-widest">Start a conversation</button>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = conversations.map((conv, idx) => {
+                const user = conv.interlocutor || {};
+                if (user.role === 'admin') return '';
+
+                const uId = (user._id || user.id || conv._id || '').toString();
+                if (!uId) return '';
+
+                const nickname = user.nickname || user.username || user.name || 'Unknown Player';
+                const rawDate = conv.lastMessageDate || conv.updatedAt || conv.createdAt;
+                const date = rawDate ? new Date(rawDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                const avatar = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=00ff87&color=0a0b0f&size=64`;
+                const unread = conv.unreadCount || 0;
+                const lastMsg = conv.lastMessage || '...';
+                const isActive = !!user.isActive;
+                const dotClass = isActive ? 'status-dot-online' : 'status-dot-offline';
+
+                return `
+                    <div class="p-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all flex items-center gap-4 group relative" onclick="window.openChat('${uId}')">
+                        ${unread > 0 ? '<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00ff87] rounded-r-lg"></div>' : ''}
+                        <div class="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 ${isActive ? 'border-[#00ff87]' : 'border-transparent group-hover:border-white/20'}">
+                            <img src="${avatar}" alt="${nickname}" class="w-full h-full object-cover">
+                            <span class="absolute right-0 bottom-0 w-4 h-4 rounded-full ${dotClass}"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="font-bold text-gray-300 group-hover:text-white transition-colors text-base truncate">${nickname}</h3>
+                                <span class="text-[10px] font-semibold text-gray-500">${date}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 truncate ${unread > 0 ? 'text-white font-bold' : ''}">${lastMsg}</p>
+                        </div>
+                        ${unread > 0 ? `<div class="w-5 h-5 rounded-full bg-[#ff4654] text-[10px] font-black text-white flex items-center justify-center">${unread}</div>` : ''}
+                    </div>`;
+            }).join('');
+
+            // Apply the local search filter on top of the rendered list.
+            applyConvSearch();
+        }
+
+        function applyConvSearch() {
+            const input = document.getElementById('convSearchInput');
+            if (!input) return;
+            const q = input.value.trim().toLowerCase();
+            document.querySelectorAll('#chatList > div').forEach(el => {
+                const text = el.innerText.toLowerCase();
+                el.style.display = (!q || text.includes(q)) ? '' : 'none';
+            });
+        }
+        document.addEventListener('input', (e) => {
+            if (e.target && e.target.id === 'convSearchInput') applyConvSearch();
+        });
+
+        function renderActiveUsers(users) {
+            const container = document.getElementById('activeFriends');
+            const count = document.getElementById('activeFriendsCount');
+            if (!container) return;
+            const visible = (users || []).filter(u => {
+                const s = (u && u.status || '').toLowerCase();
+                return s === 'online' || s === 'in_game' || s === 'in_queue' || s === 'away';
+            });
+            if (count) count.innerText = visible.length;
+            if (visible.length === 0) {
+                container.innerHTML = '<p class="text-gray-600 text-[10px] font-black uppercase italic tracking-widest text-center py-4">No friends online</p>';
+                return;
+            }
+            container.innerHTML = visible.map(user => {
+                const uId = user.userId || user._id || user.id || '';
+                if (!uId) return '';
+                const status = (user.status || 'online').toLowerCase();
+                let dotClass = 'bg-gray-500';
+                let label = 'Offline';
+                if (status === 'online') { dotClass = 'bg-[#00ff87]'; label = 'Online'; }
+                else if (status === 'in_game') { dotClass = 'bg-purple-500'; label = 'In Game'; }
+                else if (status === 'in_queue') { dotClass = 'bg-blue-500'; label = 'In Queue'; }
+                else if (status === 'away') { dotClass = 'bg-orange-500'; label = 'Away'; }
+                const nickname = user.nickname || user.username || 'Player';
+                const avatar = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=00ff87&color=0a0b0f&size=64`;
+                return `
+                    <div class="flex items-center gap-3 cursor-pointer group" onclick="window.openChat('${uId}')">
+                        <div class="relative w-10 h-10 rounded-full flex-shrink-0 border ${status === 'online' ? 'border-[#00ff87]' : 'border-transparent'}">
+                            <img src="${avatar}" alt="${nickname}" class="w-full h-full rounded-full object-cover">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full ${dotClass} border-2 border-[#12141c]"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate w-full group-hover:text-[#00ff87] transition-colors">${nickname}</h4>
+                            <p class="text-[10px] text-gray-400 font-semibold truncate uppercase">${label}</p>
+                        </div>
+                        <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all" title="Open chat">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderGroupList(groups) {
+            const container = document.getElementById('groupRoomList');
+            if (!container) return;
+            if (!groups || groups.length === 0) {
+                container.innerHTML = '<p class="text-gray-700 text-[10px] font-black uppercase text-center py-4 opacity-50 italic">No groups yet</p>';
+                return;
+            }
+            container.innerHTML = groups.map(g => {
+                const id = (g._id || g.id || '').toString();
+                const name = g.name || 'Unnamed group';
+                const members = (g.members && g.members.length) || 0;
+                return `
+                    <div class="cursor-pointer p-3 rounded-2xl bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center gap-3" onclick="window.location.href='group_rooms.html?gid=${id}'">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-sm flex-shrink-0">${name.slice(0,1).toUpperCase()}</div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate">${name}</h4>
+                            <p class="text-[10px] text-gray-500 truncate uppercase tracking-wider">${members} member${members === 1 ? '' : 's'}</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── Sockets: chat namespace + presence namespace ──
+        function initSocket() {
+            if (!token || typeof io === 'undefined') return;
+            socket = io(SOCKET_URL, { auth: { token: `Bearer ${token}` } });
+
+            socket.on('newPrivateMessage', () => fetchInbox());
+            socket.on('newGroupMessage', () => fetchGroups());
+
+            // Voice signaling: we keep the listeners installed even on the inbox
+            // page so a peer's offer doesn't get dropped if the user is mid-navigation.
+            socket.on('user-joined', (data) => console.log('[Voice] user joined:', data && data.userId));
+            socket.on('user-left',   (data) => console.log('[Voice] user left:',   data && data.userId));
+
+            socket.on('connect_error', (err) => console.error('[Chat] socket error:', err && err.message));
+        }
+
+        function initPresence() {
+            if (!token || typeof io === 'undefined') return;
+            presenceSocket = io(`${__ARENA_ORIGIN}/presence`, { auth: { token: `Bearer ${token}` } });
+            presenceSocket.on('friend-online',  () => fetchActiveUsers());
+            presenceSocket.on('friend-offline', () => fetchActiveUsers());
+            presenceSocket.on('friend-status',  () => fetchActiveUsers());
+            presenceSocket.on('connect_error', (err) => console.error('[Presence] socket error:', err && err.message));
+        }
+
+        async function getMe() {
+            try {
+                const res = await fetch(`${API_URL}/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                me = await res.json();
+            } catch (e) {
+                console.error('[Chat] /auth/profile failed:', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await getMe();
+            fetchInbox();
+            initSocket();
+            initPresence();
+        });
     </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
+
         * {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             scroll-behavior: smooth;
@@ -26,13 +26,34 @@
 
         .neon-green-glow { box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2); }
         .green-accent { background: #00ff87; }
-        
+
         .status-dot-online { border: 3px solid #12141c; background: #00ff87; }
 
         .nav-menu-btn.active { background: rgba(0, 255, 135, 0.15); color: #00ff87; }
 
+        /* Dropdown / emoji picker / message context menu (re-used from IntegDesktop) */
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 200px; background: #12141c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 6px; }
+        .dropdown-menu.active { display: block; }
+        .dropdown-item { padding: 10px 12px; font-size: 13px; font-weight: 600; color: #9ca3af; border-radius: 8px; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .dropdown-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .dropdown-item.danger { color: #ff4654; }
+        .dropdown-item.danger:hover { background: rgba(255, 70, 84, 0.1); }
+
+        .emoji-picker { display: none; position: absolute; bottom: 80px; right: 20px; width: 280px; height: 320px; background: #12141c; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; flex-direction: column; }
+        .emoji-picker.active { display: flex; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px; overflow-y: auto; flex: 1; }
+        .emoji-item { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .emoji-item:hover { background: rgba(255, 255, 255, 0.05); transform: scale(1.1); }
+
+        .message-context-menu { display: none; position: fixed; background: #1a1c23; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 160px; padding: 4px; }
+        .message-context-menu.active { display: block; }
+
+        .chat-bubble, .chat-bubble-self { cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .chat-bubble:active, .chat-bubble-self:active { transform: scale(0.98); opacity: 0.8; }
+
     </style>
     <script src="../_common/loadComponents.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
 <body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
@@ -43,143 +64,80 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
-            
+
             <common-navbar src="top_navbar.html"></common-navbar>
 
             <!-- CHAT DETAIL CONTAINER -->
             <div class="flex-1 flex overflow-hidden p-6 lg:p-10 gap-6 justify-center">
 
                 <div class="w-full max-w-5xl flex flex-col bg-[#12141c] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-                    
+
                     <!-- Chat Header -->
-                    <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/20">
-                        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href = require('../components/nav-config').href('chat')">
+                    <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/20 relative">
+                        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href = 'chat.html'">
                             <button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <div class="relative w-12 h-12 rounded-full border border-white/10">
-                                <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=64" class="w-full h-full rounded-full" alt="User">
-                                <span class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-full status-dot-online"></span>
+                                <img id="headerAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Player" class="w-full h-full rounded-full" alt="User">
+                                <span id="headerStatus" class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-full bg-gray-500 border-2 border-[#12141c]"></span>
                             </div>
                             <div>
-                                <h2 class="text-lg font-bold text-white leading-tight">TenZify</h2>
-                                <p class="text-xs text-[#00ff87] font-semibold tracking-wide uppercase">Online</p>
+                                <h2 id="headerNickname" class="text-lg font-bold text-white leading-tight">Chargement...</h2>
+                                <p id="headerStatusLabel" class="text-xs font-semibold tracking-wide uppercase text-gray-500">Connecting...</p>
                             </div>
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 relative">
                             <button class="px-4 py-2 border border-[#00ff87]/30 text-[#00ff87] bg-[#00ff87]/10 hover:bg-[#00ff87]/20 font-bold text-sm rounded-xl transition-all flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Invite to Lobby
                             </button>
                             <div class="w-px h-6 bg-white/10 mx-2"></div>
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+
+                            <button id="headerMenuBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
                             </button>
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                            </button>
+                            <div id="headerDropdown" class="dropdown-menu">
+                                <div class="dropdown-item danger" onclick="clearConversation()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Clear history
+                                </div>
+                                <div class="dropdown-item" onclick="window.location.href='chat.html'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                                    Back to inbox
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Messages Area -->
-                    <div class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col" id="chatContainer">
-                        
-                        <div class="text-center my-4">
-                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Yesterday</span>
+                    <!-- Messages Area (rendered by renderMessages()) -->
+                    <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
+                        <div class="flex items-center justify-center h-full opacity-20">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
                         </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">10:42 PM</span>
-                                </div>
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Yo, are we running ranked tonight?
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Self Message -->
-                        <div class="flex items-end gap-3 max-w-[80%] self-end flex-row-reverse">
-                            <div class="flex flex-col gap-1 items-end">
-                                <div class="chat-bubble-self rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] text-white shadow-sm">
-                                    Yeah give me 10 mins. Just finishing some food.
-                                </div>
-                                <span class="text-[10px] text-gray-500 mr-1">10:44 PM</span>
-                            </div>
-                        </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">10:45 PM</span>
-                                </div>
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Bet. I'll warm up in deathmatch.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-center my-4">
-                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-semibold text-gray-500">Today</span>
-                        </div>
-
-                        <!-- Game Invite View -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <img src="https://ui-avatars.com/api/?name=TenZify&background=00ff87&color=0a0b0f&size=32" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1">
-                            <div class="flex flex-col gap-1 items-start w-full max-w-sm">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-xs font-bold text-white">TenZify</span>
-                                    <span class="text-[10px] text-gray-500">2h ago</span>
-                                </div>
-                                <!-- Match Invite Invite -->
-                                <div class="bg-[#1a1d27] border border-[#00ff87]/30 rounded-2xl w-full p-4 hover:border-[#00ff87] transition-colors cursor-pointer shadow-[0_0_15px_rgba(0,255,135,0.05)]">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <div class="w-8 h-8 rounded bg-[#ff4654] flex items-center justify-center font-black text-white text-xs">V</div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-white leading-tight">Valorant Lobby</h4>
-                                            <p class="text-xs text-gray-400">Competitive • 2/5 Players</p>
-                                        </div>
-                                    </div>
-                                    <button class="w-full py-2 bg-[#00ff87] text-black text-xs font-bold rounded-lg hover:bg-[#00e67a] transition-all">JOIN LOBBY</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Friend Message -->
-                        <div class="flex items-end gap-3 max-w-[80%]">
-                            <div class="w-8 h-8 flex-shrink-0 mb-1"></div> <!-- Spacer since same user -->
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm">
-                                    Thanks for the raid earlier bro, means a lot! 🤘
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
                     <!-- Chat Input Area -->
-                    <div class="p-6 pt-4 border-t border-white/5 bg-black/20">
+                    <div class="p-6 pt-4 border-t border-white/5 bg-black/20 relative">
+                        <div id="emojiPicker" class="emoji-picker hidden">
+                            <div class="bg-black/40 px-3 py-2 border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Pick an emoji</div>
+                            <div id="emojiGrid" class="emoji-grid"></div>
+                        </div>
+
                         <div class="relative flex items-center bg-[#0a0b0f] rounded-2xl p-2 border border-white/10 focus-within:border-[#00ff87]/50 transition-colors shadow-inner">
                             <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                             </button>
-                            
-                            <input type="text" placeholder="Message TenZify..." class="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-gray-500 py-3 px-3" />
-                            
-                            <button class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
+
+                            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-gray-500 py-3 px-3" />
+
+                            <button id="emojiBtn" class="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </button>
 
-                            <button class="w-12 h-12 flex items-center justify-center green-accent hover:bg-[#00e67a] text-black rounded-xl transition-all shadow-[0_0_15px_rgba(0,255,135,0.4)] flex-shrink-0 ml-2">
+                            <button id="sendBtn" class="w-12 h-12 flex items-center justify-center green-accent hover:bg-[#00e67a] text-black rounded-xl transition-all shadow-[0_0_15px_rgba(0,255,135,0.4)] flex-shrink-0 ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                             </button>
                         </div>
@@ -191,14 +149,474 @@
         </main>
     </div>
 
-    <!-- Navigation Script & Setup -->
+    <!-- Message Context Menu -->
+    <div id="msgContextMenu" class="message-context-menu">
+        <div class="dropdown-item" onclick="copyActiveMessage()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Copy message
+        </div>
+        <div id="deleteMsgItem" class="dropdown-item danger" onclick="deleteActiveMessage()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            Delete
+        </div>
+    </div>
+
     <script>
-        setTimeout(() => {
-            const chatContainer = document.getElementById('chatContainer');
-            if (chatContainer) {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+        // ─────────────────────────────────────────────
+        //   Resolve API + chat-namespace origin via the
+        //   shared helper convention (arena_base_url).
+        // ─────────────────────────────────────────────
+        const __ARENA_ORIGIN = (() => {
+            try {
+                const stored = (typeof localStorage !== 'undefined' && localStorage.getItem('arena_base_url')) || '';
+                const raw = (stored.trim() || 'http://127.0.0.1:3000');
+                return raw.replace(/\/api\/?$/i, '').replace(/\/+$/, '');
+            } catch (_) {
+                return 'http://127.0.0.1:3000';
             }
-        }, 150);
+        })();
+        const API_URL = `${__ARENA_ORIGIN}/api`;
+        const SOCKET_URL = `${__ARENA_ORIGIN}/chat`;
+        const PRESENCE_URL = `${__ARENA_ORIGIN}/presence`;
+        const token = localStorage.getItem('token');
+
+        // Read interlocutor from query string (?id=…) OR localStorage.
+        const __urlParams = new URLSearchParams(window.location.search);
+        let interlocutorId = __urlParams.get('id') || __urlParams.get('userId') || localStorage.getItem('active_chat_user_id');
+        let realinterlocutorId = '';
+
+        if (!interlocutorId || interlocutorId === 'undefined' || interlocutorId === '[object Object]') {
+            alert('Invalid chat session. Returning to inbox.');
+            window.location.href = 'chat.html';
+        }
+
+        let socket;
+        let presenceSocket;
+        let messages = [];
+        let currentUserId = '';
+        let interlocutorName = 'Player';
+
+        // ─────────────────────────────────────────────────────────────────
+        //  Defensive fetch helpers — never throw, always return safe
+        //  defaults so fetchHistory() can always reach renderMessages().
+        // ─────────────────────────────────────────────────────────────────
+        async function safeJson(url, opts) {
+            try {
+                const res = await fetch(url, opts);
+                const text = await res.text();
+                let body = null;
+                try { body = text ? JSON.parse(text) : null; } catch (_) { body = null; }
+                return { ok: res.ok, status: res.status, body, rawText: text };
+            } catch (e) {
+                console.warn('[ChatDetail] fetch failed:', url, e && e.message);
+                return { ok: false, status: 0, body: null, rawText: '', error: e };
+            }
+        }
+
+        // POST that retries once on 5xx (covers intermittent 503/504 from a
+        // backend that's recompiling, hitting a Mongo timeout, or briefly
+        // saturated under multi-instance load).
+        async function postWithRetry(url, opts, maxRetries = 1) {
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                const r = await safeJson(url, opts);
+                console.log(`[ChatDetail] POST ${url} attempt=${attempt} status=${r.status} body=`, r.body || r.rawText);
+                if (r.ok) return r;
+                if (r.status >= 500 && r.status < 600 && attempt < maxRetries) {
+                    await new Promise(res => setTimeout(res, 800));
+                    continue;
+                }
+                return r;
+            }
+        }
+
+        function setHeaderFallback() {
+            const nameEl   = document.getElementById('headerNickname');
+            const avatarEl = document.getElementById('headerAvatar');
+            const labelEl  = document.getElementById('headerStatusLabel');
+            const inputEl  = document.getElementById('messageInput');
+            if (!nameEl) return;
+            // Use first 8 chars of the ID so the user sees *something* meaningful
+            // even if /users/:id and /users/search both 404'd.
+            const shortId = (interlocutorId || '').slice(0, 8) || 'Player';
+            const fallbackName = `Player ${shortId}`;
+            if (nameEl.innerText === 'Chargement...' || nameEl.innerText === 'Loading...' || !nameEl.innerText.trim()) {
+                nameEl.innerText = fallbackName;
+            }
+            if (avatarEl && avatarEl.src.includes('seed=Player')) {
+                avatarEl.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fallbackName)}`;
+            }
+            if (labelEl && labelEl.innerText.toUpperCase() === 'CONNECTING...') {
+                labelEl.innerText = 'Offline';
+            }
+            if (inputEl && inputEl.placeholder === 'Message...') {
+                inputEl.placeholder = `Message ${fallbackName}...`;
+            }
+        }
+
+        function showServerError(msg) {
+            const container = document.getElementById('chatContainer');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full opacity-50 gap-3 p-10 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <p class="text-[11px] font-black uppercase tracking-[0.3em] text-red-400">${msg}</p>
+                    <p class="text-[10px] text-gray-500 max-w-md">Open DevTools (Ctrl+Shift+I) → Network tab and reload to inspect failing requests.</p>
+                </div>`;
+        }
+
+        async function fetchHistory() {
+            // Always show *some* meaningful header text first, even before any
+            // network call resolves, so the page never gets stuck on
+            // "Chargement..." if a fetch hangs or throws.
+            setHeaderFallback();
+            realinterlocutorId = interlocutorId; // Default — refined below if /users/search resolves the nickname.
+
+            if (!interlocutorId || interlocutorId === 'undefined' || interlocutorId === 'null') {
+                document.getElementById('headerNickname').innerText = 'Error';
+                document.getElementById('chatContainer').innerHTML = '<p class="text-center text-gray-500 p-20 uppercase font-black italic tracking-widest text-xs opacity-50">No recipient selected</p>';
+                return;
+            }
+
+            // 1. Profile (best-effort) — only used to know which messages are "self".
+            const me = await safeJson(`${API_URL}/auth/profile?_v=${Date.now()}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (me.ok && me.body) {
+                currentUserId = me.body.id || me.body._id || '';
+            } else if (me.status === 401) {
+                showServerError('Session expired — please log in again');
+                return;
+            } else if (me.status === 0) {
+                showServerError('Server unreachable');
+                return;
+            }
+
+            // 2. Resolve interlocutor nickname/avatar via /users/search?q=<id>.
+            //    Note: /users/:id (GET) does NOT exist on this backend — only /users/search.
+            const userQuery = await safeJson(
+                `${API_URL}/users/search?q=${encodeURIComponent(interlocutorId)}&_v=${Date.now()}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            if (userQuery.ok && Array.isArray(userQuery.body)) {
+                // Prefer exact ID match if interlocutorId looks like a Mongo ObjectId.
+                let match = null;
+                if (interlocutorId.length === 24) {
+                    match = userQuery.body.find(u => (u._id || u.id) === interlocutorId);
+                }
+                if (!match && userQuery.body.length > 0) match = userQuery.body[0];
+                if (match) {
+                    realinterlocutorId = match._id || match.id || realinterlocutorId;
+                    interlocutorName  = match.nickname || match.username || interlocutorName;
+                    document.getElementById('headerNickname').innerText = interlocutorName;
+                    const avatarEl = document.getElementById('headerAvatar');
+                    if (avatarEl) avatarEl.src = match.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(interlocutorName)}`;
+                    const inputEl = document.getElementById('messageInput');
+                    if (inputEl) inputEl.placeholder = `Message ${interlocutorName}...`;
+                }
+            }
+
+            // 3. Mark as read (fire-and-forget).
+            safeJson(`${API_URL}/chat/read/${realinterlocutorId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // 4. Conversation history.
+            const conv = await safeJson(`${API_URL}/chat/conversation/${realinterlocutorId}?_v=${Date.now()}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (conv.ok && Array.isArray(conv.body)) {
+                messages = conv.body;
+            } else {
+                messages = [];
+                if (conv.status && conv.status >= 400) {
+                    console.warn('[ChatDetail] /api/chat/conversation/:userId returned', conv.status, conv.body);
+                }
+            }
+
+            // 5. Last-resort nickname extraction from messages (covers users-search misses).
+            if ((interlocutorName === 'Player' || interlocutorName.startsWith('Player ')) && messages.length > 0) {
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    if (messages[i].senderId !== currentUserId && messages[i].senderNickname) {
+                        interlocutorName = messages[i].senderNickname;
+                        document.getElementById('headerNickname').innerText = interlocutorName;
+                        const avatarEl = document.getElementById('headerAvatar');
+                        if (avatarEl) avatarEl.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(interlocutorName)}`;
+                        const inputEl = document.getElementById('messageInput');
+                        if (inputEl) inputEl.placeholder = `Message ${interlocutorName}...`;
+                        break;
+                    }
+                }
+            }
+
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chatContainer');
+            if (!container) return;
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full opacity-20 gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <p class="text-[10px] font-black uppercase tracking-[0.4em]">Say hi 👋</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = messages.map((msg) => {
+                const isSelf = msg.senderId === currentUserId;
+                const time = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const msgId = msg._id || msg.id || '';
+                const safeContent = (msg.message || '').replace(/`/g, '\\`');
+
+                if (isSelf) {
+                    return `
+                        <div id="msg-${msgId}" class="flex items-end gap-3 max-w-[80%] self-end flex-row-reverse">
+                            <div class="flex flex-col gap-1 items-end relative group">
+                                <div class="chat-bubble-self rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] text-white shadow-sm"
+                                     onmousedown="startLongPress(event, '${msgId}', true, \`${safeContent}\`)"
+                                     onmouseup="endLongPress()"
+                                     onmouseleave="endLongPress()"
+                                     ontouchstart="startLongPress(event, '${msgId}', true, \`${safeContent}\`)"
+                                     ontouchend="endLongPress()">${msg.message}</div>
+                                <span class="text-[10px] text-gray-500 mr-1 font-bold uppercase tracking-widest">${time}</span>
+                            </div>
+                        </div>`;
+                }
+                const nickname = msg.senderNickname || interlocutorName || 'Player';
+                return `
+                    <div id="msg-${msgId}" class="flex items-end gap-3 max-w-[80%]">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nickname)}" class="w-8 h-8 rounded-full border border-white/10 flex-shrink-0 mb-1 shadow-md">
+                        <div class="flex flex-col gap-1 items-start">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-xs font-black text-white italic">${nickname}</span>
+                                <span class="text-[10px] text-gray-600 font-bold">${time}</span>
+                            </div>
+                            <div class="chat-bubble rounded-2xl rounded-bl-sm px-4 py-2.5 text-[15px] text-gray-200 shadow-sm"
+                                 onmousedown="startLongPress(event, '${msgId}', false, \`${safeContent}\`)"
+                                 onmouseup="endLongPress()"
+                                 onmouseleave="endLongPress()"
+                                 ontouchstart="startLongPress(event, '${msgId}', false, \`${safeContent}\`)"
+                                 ontouchend="endLongPress()">${msg.message}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            // Auto-scroll to bottom on new messages.
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = (input.value || '').trim();
+            if (!content) return;
+
+            // Use realinterlocutorId if resolved, otherwise fall back to the
+            // raw URL param (which is what /api/chat/send actually wants:
+            // the recipient's user-ID, not their nickname).
+            const receiverId = realinterlocutorId || interlocutorId;
+            if (!receiverId) {
+                alert('Recipient is missing — return to inbox and pick a conversation.');
+                return;
+            }
+
+            console.log('[ChatDetail] send: receiverId=', receiverId, 'len=', receiverId.length, 'content.len=', content.length);
+
+            const result = await postWithRetry(`${API_URL}/chat/send`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ receiverId, message: content })
+            }, 1);
+
+            if (result.ok && result.body) {
+                input.value = '';
+                // Optimistically append the just-sent message so the user sees it
+                // immediately even if the socket is delayed or down.
+                messages.push({
+                    _id: result.body._id || result.body.id || ('local-' + Date.now()),
+                    senderId: currentUserId,
+                    receiverId,
+                    message: content,
+                    senderNickname: 'You',
+                    createdAt: result.body.createdAt || new Date().toISOString(),
+                });
+                renderMessages();
+                return;
+            }
+
+            // Loud, useful error — surface the *actual* response body so we can
+            // diagnose backend-side problems without DevTools.
+            const status   = result.status;
+            const bodyMsg  = (result.body && (result.body.message || result.body.error)) || '';
+            const rawSnip  = (result.rawText || '').slice(0, 200);
+
+            let userMsg;
+            if (status === 401)         userMsg = 'Session expired — please log in again.';
+            else if (status === 404)    userMsg = 'Send endpoint missing (404). Backend chat routes are not deployed.';
+            else if (status === 0)      userMsg = 'Server unreachable — check backend is running on ' + __ARENA_ORIGIN;
+            else if (status === 503)    userMsg = 'Backend temporarily unavailable (503) after retry. Check the backend console — likely a Mongo timeout or NestJS reload.';
+            else if (status >= 500)     userMsg = `Server error (${status}) after retry. Backend log: ${bodyMsg || rawSnip || '(empty body)'}`;
+            else                         userMsg = `Send failed (${status}): ${bodyMsg || rawSnip || 'Unknown error'}`;
+
+            alert(userMsg);
+            console.error('[ChatDetail] /api/chat/send failed FINAL', { status, body: result.body, rawText: rawSnip, receiverId, contentLen: content.length });
+            initSocket();
+        }
+
+        function initSocket() {
+            if (!token || typeof io === 'undefined') return;
+            socket = io(SOCKET_URL, { auth: { token: `Bearer ${token}` } });
+
+            socket.on('newPrivateMessage', (msg) => {
+                if (msg.senderId === realinterlocutorId || msg.receiverId === realinterlocutorId) {
+                    const exists = messages.some(m => (m._id || m.id) === (msg._id || msg.id));
+                    if (!exists) { messages.push(msg); renderMessages(); }
+                }
+            });
+
+            socket.on('messageDeleted', (data) => {
+                messages = messages.filter(m => (m._id || m.id) !== data.messageId);
+                renderMessages();
+            });
+
+            socket.on('connect_error', (err) => console.error('[ChatDetail] socket error:', err && err.message));
+
+            presenceSocket = io(PRESENCE_URL, { auth: { token: `Bearer ${token}` } });
+            presenceSocket.on('friend-online',  (data) => { if (data && data.userId === realinterlocutorId) updateStatusUI(true); });
+            presenceSocket.on('friend-offline', (data) => { if (data && data.userId === realinterlocutorId) updateStatusUI(false); });
+            presenceSocket.on('connect_error', (err) => console.error('[Presence] socket error:', err && err.message));
+        }
+
+        function updateStatusUI(isOnline) {
+            const dot = document.getElementById('headerStatus');
+            const label = document.getElementById('headerStatusLabel');
+            if (!dot || !label) return;
+            if (isOnline) {
+                dot.classList.remove('bg-gray-500');
+                dot.classList.add('bg-[#00ff87]', 'animate-pulse');
+                label.innerText = 'Online';
+                label.classList.remove('text-gray-500');
+                label.classList.add('text-[#00ff87]');
+            } else {
+                dot.classList.remove('bg-[#00ff87]', 'animate-pulse');
+                dot.classList.add('bg-gray-500');
+                label.innerText = 'Offline';
+                label.classList.remove('text-[#00ff87]');
+                label.classList.add('text-gray-500');
+            }
+        }
+
+        // ── Long-press / context menu ──
+        let longPressTimer;
+        let activeMsgId = null;
+        let activeMsgContent = '';
+
+        window.startLongPress = function(e, msgId, isSelf, content) {
+            activeMsgId = msgId;
+            activeMsgContent = content;
+            longPressTimer = setTimeout(() => showMsgContextMenu(e, isSelf), 600);
+        };
+        window.endLongPress = function() { clearTimeout(longPressTimer); };
+
+        function showMsgContextMenu(e, isSelf) {
+            const menu = document.getElementById('msgContextMenu');
+            const deleteItem = document.getElementById('deleteMsgItem');
+            if (!menu || !deleteItem) return;
+            deleteItem.style.display = isSelf ? 'flex' : 'none';
+            const x = (e.clientX || (e.touches ? e.touches[0].clientX : 0)) + 10;
+            const y = (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - 20;
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.classList.add('active');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        window.copyActiveMessage = function() {
+            navigator.clipboard.writeText(activeMsgContent).then(() => {
+                document.getElementById('msgContextMenu').classList.remove('active');
+            });
+        };
+
+        window.deleteActiveMessage = function() {
+            if (!confirm('Delete this message?')) return;
+            if (activeMsgId && socket && socket.connected) {
+                socket.emit('deleteMessage', { messageId: activeMsgId, receiverId: realinterlocutorId }, (res) => {
+                    if (res && res.status === 'ok') {
+                        messages = messages.filter(m => (m._id || m.id) !== activeMsgId);
+                        renderMessages();
+                    }
+                });
+            }
+            document.getElementById('msgContextMenu').classList.remove('active');
+        };
+
+        window.clearConversation = function() {
+            if (!confirm('Erase the entire conversation with this player?')) return;
+            if (socket && socket.connected) {
+                socket.emit('deleteConversation', { interlocutorId: realinterlocutorId }, (res) => {
+                    if (res && res.status === 'ok') {
+                        messages = [];
+                        renderMessages();
+                    }
+                });
+            }
+        };
+
+        // ── Emoji picker + dropdown wiring ──
+        const emojiList = ['😀','😂','😍','😎','🎮','🔥','✨','👋','👍','❤️','😱','🤔','🤣','💀','💯','🚀','🌟','💥','🍀','🍕','🎉','💪','🙏','🏆','👑','💎','🎯','⚽'];
+
+        function setupEmojiPicker() {
+            const grid   = document.getElementById('emojiGrid');
+            const btn    = document.getElementById('emojiBtn');
+            const picker = document.getElementById('emojiPicker');
+            const input  = document.getElementById('messageInput');
+            if (!grid || !btn || !picker || !input) return;
+
+            emojiList.forEach(emoji => {
+                const el = document.createElement('div');
+                el.className = 'emoji-item';
+                el.innerText = emoji;
+                el.onclick = () => { input.value += emoji; input.focus(); };
+                grid.appendChild(el);
+            });
+
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                picker.classList.toggle('hidden');
+                picker.classList.toggle('active');
+            };
+            document.addEventListener('click', () => {
+                picker.classList.add('hidden');
+                picker.classList.remove('active');
+            });
+            picker.onclick = (e) => e.stopPropagation();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuBtn  = document.getElementById('headerMenuBtn');
+            const dropdown = document.getElementById('headerDropdown');
+            if (menuBtn && dropdown) {
+                menuBtn.onclick = (e) => { e.stopPropagation(); dropdown.classList.toggle('active'); };
+                document.addEventListener('mousedown', (e) => {
+                    const ctxMenu = document.getElementById('msgContextMenu');
+                    if (ctxMenu && !ctxMenu.contains(e.target)) ctxMenu.classList.remove('active');
+                    if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) dropdown.classList.remove('active');
+                });
+            }
+
+            const sendBtn  = document.getElementById('sendBtn');
+            const input    = document.getElementById('messageInput');
+            if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+            if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+            fetchHistory();
+            initSocket();
+            setupEmojiPicker();
+        });
     </script>
 </body>
 </html>

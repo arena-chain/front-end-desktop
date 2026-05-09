@@ -55,6 +55,7 @@ function attachSidebarNavigation() {
         'nav-channel': () => href('channel'),
         'nav-streams': () => href('streams'),
         'nav-duel': () => href('duel'),
+        'nav-groups': () => href('groupRooms'),
     };
 
     const allNavBtns = document.querySelectorAll('.sidebar-menu-btn.nav-menu-btn');

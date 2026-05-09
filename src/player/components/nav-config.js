@@ -23,6 +23,7 @@ const PLAYER_PAGES = {
     friends: 'freinds/freinds.html',
     recentGames: 'recent_games/recent_games.html',
     chat: 'chat/chat.html',
+    groupRooms: 'chat/group_rooms.html',
     training: 'training/dashboard.html',
     duel: 'duel/dashboard.html',
 };
@@ -62,6 +63,7 @@ function resolveActiveSidebarNavId() {
         stream_studio: 'nav-streams',
         stream: 'nav-streams',
         duel: 'nav-duel',
+        group_rooms: 'nav-groups',
     };
     if (byBase[base]) return byBase[base];
 
