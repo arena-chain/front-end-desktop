@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Recent Matches</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0b0f;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0b0f; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 135, 0.3); border-radius: 10px; }
+
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .neon-green-glow {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.5), 0 0 40px rgba(0, 255, 135, 0.2);
+        }
+
+        .nav-menu-btn.active {
+            background: rgba(0, 255, 135, 0.15);
+            color: #00ff87;
+        }
+
+        .win-glow { box-shadow: inset 4px 0 0 #00ff87; }
+        .loss-glow { box-shadow: inset 4px 0 0 #ff4654; }
+        .remake-glow { box-shadow: inset 4px 0 0 #6b7280; }
+
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes skeleton-pulse { 0%,100%{opacity:.4} 50%{opacity:.15} }
+        .skeleton-pulse { animation: skeleton-pulse 1.5s ease-in-out infinite; }
+
+.ai-md-h1 { font-size: 1.5rem; font-weight: 800; color: #ffffff; margin: 0 0 .5rem 0; letter-spacing: .01em; }
+.ai-md-h2 { font-size: 1.05rem; font-weight: 700; color: #00ff87; margin: 1.25rem 0 .5rem 0; }
+.ai-md-h3 { font-size: .9rem; font-weight: 700; color: #ffffff; margin: 1rem 0 .35rem 0; }
+.ai-md-p  { margin: 0 0 .6rem 0; color: rgba(229,231,235,.92); }
+.ai-md-ol { margin: 0 0 .6rem 1.1rem; padding: 0; color: rgba(229,231,235,.92); }
+.ai-md-ol li { margin-bottom: .25rem; }
+.ai-md-strong { color: #00ff87; font-weight: 700; }
+.ai-md-em { color: #c0c8d6; font-style: italic; }
+.ai-md-loading { display:flex; align-items:center; gap:.6rem; color:#9ca3af; font-size:.85rem; }
+.ai-md-loading::before { content:""; width:14px; height:14px; border-radius:50%; border:2px solid rgba(0,255,135,.25); border-top-color:#00ff87; animation: ai-spin 0.8s linear infinite; }
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            
+            <common-navbar src="top_navbar.html"></common-navbar>
+
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-2">Match History</h1>
+                        <p id="subtitle" class="text-gray-400 text-sm">Review your past performance across Riot Games.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="ai-analysis-btn"
+                                type="button"
+                                class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-black bg-[#00ff87] hover:bg-[#00ffa6] transition-all shadow-[0_0_20px_rgba(0,255,135,0.35)] disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span aria-hidden="true">🤖</span>
+                            <span id="ai-analysis-btn-label">Improve My Ranked Skills</span>
+                        </button>
+                        <div id="riot-badge" class="hidden">
+                            <div class="glass-panel rounded-xl px-4 py-2.5 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-[#ff4654]/20 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#ff4654]" viewBox="0 0 24 24" fill="currentColor"><path d="M3.877 2L1 6.838v14.29h5.663V24h3.186l3.174-2.872h4.857L24 15.293V2H3.877zm1.59 2.116h16.417v10.12l-3.77 3.77h-5.654L9.275 21.17v-3.166H5.467V4.116z"/></svg>
+                                </div>
+                                <div>
+                                    <p id="riot-name" class="text-sm font-bold text-white"></p>
+                                    <p id="riot-region" class="text-[10px] text-gray-500 uppercase tracking-wider"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Filters -->
+                <div id="game-filters" class="flex items-center gap-3 mb-6"></div>
+
+                <!-- Match List -->
+                <div id="match-list" class="space-y-3">
+                    <!-- Populated by renderer.js -->
+                </div>
+
+                <!-- Load More -->
+                <div id="load-more-container" class="mt-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Match Detail Modal -->
+    <div id="match-detail-overlay"
+         class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
+        <div id="match-detail-card"
+             class="w-full max-w-3xl glass-panel rounded-2xl border border-white/10 shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+            <div id="match-detail-content">
+                <!-- Populated by renderer.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Ranked Analysis Modal -->
+    <div id="ai-analysis-overlay"
+         class="fixed inset-0 z-[9999] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
+        <div id="ai-analysis-card"
+             class="w-full max-w-3xl glass-panel rounded-2xl border border-white/10 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-[#00ff87]/15 flex items-center justify-center">
+                        <span class="text-lg" aria-hidden="true">🤖</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white tracking-wide">Ranked Performance Analysis</p>
+                        <p id="ai-analysis-meta" class="text-[10px] text-gray-500 uppercase tracking-wider">Powered by Ollama · llama3.1</p>
+                    </div>
+                </div>
+                <button id="ai-analysis-close"
+                        type="button"
+                        class="text-gray-400 hover:text-white transition-colors text-2xl leading-none px-2"
+                        aria-label="Close">×</button>
+            </div>
+
+            <div id="ai-analysis-body" class="flex-1 overflow-y-auto px-6 py-6 text-sm text-gray-200 leading-relaxed">
+                <!-- Populated by renderer.js -->
+            </div>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>

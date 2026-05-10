@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARENA - Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+        .glass-panel {
+            background: rgba(18, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+    <script src="../_common/loadComponents.js"></script>
+</head>
+
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="left_side_navbar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="top_navbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10" style="scrollbar-width: none;">
+                <h1 class="text-4xl font-black text-white mb-2">Market</h1>
+                <p class="text-gray-400 mb-8">Skins, boosts, and arena cosmetics (coming soon).</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl">
+                    <div class="glass-panel rounded-2xl p-6 border border-white/10">
+                        <p class="text-xs font-bold text-[#00ff87] uppercase tracking-wider mb-2">Featured</p>
+                        <h3 class="text-lg font-bold text-white mb-2">Radiant nameplate</h3>
+                        <p class="text-sm text-gray-500 mb-4">Animated border for your profile card.</p>
+                        <p class="text-[#00ff87] font-black">2,400 AC</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 border border-white/10 opacity-60">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sold out</p>
+                        <h3 class="text-lg font-bold text-white mb-2">Season 3 banner</h3>
+                        <p class="text-sm text-gray-500">Limited drop — restock TBA</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-6 border border-white/10">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">XP</p>
+                        <h3 class="text-lg font-bold text-white mb-2">Double XP token</h3>
+                        <p class="text-sm text-gray-500 mb-4">2 hours of bonus mission XP.</p>
+                        <p class="text-[#00ff87] font-black">500 AC</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function highlightTopNav() {
+                var ev = document.getElementById('nav-page-events');
+                var mk = document.getElementById('nav-page-market');
+                if (mk) {
+                    mk.classList.add('bg-[#00ff87]', 'text-[#0a0b0f]');
+                    mk.classList.remove('text-gray-500');
+                }
+                if (ev) ev.classList.add('text-gray-500');
+            }
+            function bindLogout() {
+                var lb = document.getElementById('logoutBtn');
+                if (!lb) return false;
+                lb.addEventListener('click', function () {
+                    try {
+                        var api = require('../../../shared/api');
+                        if (api.logout) api.logout();
+                    } catch (e) {}
+                });
+                return true;
+            }
+            highlightTopNav();
+            if (!bindLogout()) setTimeout(function () { bindLogout(); }, 100);
+        });
+    </script>
+</body>
+</html>

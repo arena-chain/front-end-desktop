@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duel Result | Arena Chain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #0a0b0f;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.1) 0%, transparent 50%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-neon {
+            color: #00ff87;
+            text-shadow: 0 0 20px rgba(0, 255, 135, 0.6);
+        }
+        .text-defeat {
+            color: #ff4654;
+            text-shadow: 0 0 20px rgba(255, 70, 84, 0.4);
+        }
+        .pop-in {
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8) translateY(40px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .winner-card {
+            border: 2px solid #00ff87;
+            box-shadow: 0 0 40px rgba(0, 255, 135, 0.15);
+        }
+    </style>
+    <script src="../components/shell-loader.js"></script>
+</head>
+<body class="flex flex-col items-center justify-center p-8 min-h-screen">
+    
+    <!-- Result Header -->
+    <div class="text-center mb-16 pop-in">
+        <p id="result-status" class="text-xs font-black tracking-[0.5em] text-gray-500 uppercase mb-4">MATCH CONCLUDED</p>
+        <h1 id="winner-title" class="text-9xl font-black italic tracking-tighter leading-none mb-4 uppercase">...</h1>
+        <p id="winner-name" class="text-xl font-bold text-gray-400">CALCULATING FINAL SCORE...</p>
+    </div>
+
+    <!-- Comparison Grid -->
+    <div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 pop-in" style="animation-delay: 200ms">
+        
+        <!-- Player 1 (Local) -->
+        <div id="p1-result-card" class="glass-panel p-8 rounded-[3rem] relative overflow-hidden transition-all duration-500">
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <h3 id="p1-name" class="text-3xl font-black italic">PLAYER 1</h3>
+                    <div id="p1-grade" class="mt-2 text-6xl font-black text-white/10">S</div>
+                </div>
+                <div id="p1-crown" class="hidden">
+                    <svg class="w-12 h-12 text-neon" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">FINAL SCORE</span>
+                    <span id="p1-score" class="text-3xl font-black text-white italic tabular-nums">0</span>
+                </div>
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">ACCURACY</span>
+                    <span id="p1-acc" class="text-xl font-bold text-gray-300">0%</span>
+                </div>
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">AVG RESPONSE</span>
+                    <span id="p1-resp" class="text-xl font-bold text-gray-300">0ms</span>
+                </div>
+                <div class="flex justify-between items-end">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">PERFECTS</span>
+                    <span id="p1-perfects" class="text-xl font-bold text-neon">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player 2 (Opponent) -->
+        <div id="p2-result-card" class="glass-panel p-8 rounded-[3rem] relative overflow-hidden transition-all duration-500">
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <h3 id="p2-name" class="text-3xl font-black italic">PLAYER 2</h3>
+                    <div id="p2-grade" class="mt-2 text-6xl font-black text-white/10">S</div>
+                </div>
+                <div id="p2-crown" class="hidden">
+                    <svg class="w-12 h-12 text-neon" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">FINAL SCORE</span>
+                    <span id="p2-score" class="text-3xl font-black text-white italic tabular-nums">0</span>
+                </div>
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">ACCURACY</span>
+                    <span id="p2-acc" class="text-xl font-bold text-gray-300">0%</span>
+                </div>
+                <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">AVG RESPONSE</span>
+                    <span id="p2-resp" class="text-xl font-bold text-gray-300">0ms</span>
+                </div>
+                <div class="flex justify-between items-end">
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">PERFECTS</span>
+                    <span id="p2-perfects" class="text-xl font-bold text-neon">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-16 flex gap-8 pop-in" style="animation-delay: 400ms">
+        <button id="rematch-btn" class="px-12 py-5 rounded-2xl bg-[#00ff87] text-[#050505] font-black text-xs tracking-widest uppercase hover:scale-105 transition-all shadow-[0_0_30px_rgba(0,255,135,0.4)]">
+            REMATCH
+        </button>
+        <button id="dashboard-btn" class="px-12 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs tracking-widest uppercase hover:bg-white/10 transition-all">
+            EXIT TO LOBBY
+        </button>
+    </div>
+
+    <script src="./result.js"></script>
+</body>
+</html>

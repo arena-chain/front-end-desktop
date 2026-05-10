@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARENA - Groups & Rooms</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0b0f; margin: 0; overflow: hidden; height: 100vh; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,255,135,.3); border-radius: 10px; }
+
+    .glass { background: rgba(18,20,28,.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.06); }
+    .neon-border { border: 1px solid rgba(0,255,135,.3); }
+    .neon-glow { box-shadow: 0 0 20px rgba(0,255,135,.25), 0 0 40px rgba(0,255,135,.1); }
+    .purple-glow { box-shadow: 0 0 20px rgba(168,85,247,.25); }
+
+    .tab-active { background: rgba(0,255,135,.15); color: #00ff87; border-color: rgba(0,255,135,.3); }
+    .tab-inactive { background: rgba(255,255,255,.04); color: #6b7280; border-color: transparent; }
+
+    .group-card { transition: all .2s; border: 1px solid rgba(255,255,255,.05); }
+    .group-card:hover { border-color: rgba(0,255,135,.2); background: rgba(0,255,135,.04); transform: translateY(-1px); }
+    .room-card:hover { border-color: rgba(168,85,247,.2); background: rgba(168,85,247,.04); }
+
+    .msg-bubble-self { background: linear-gradient(135deg, #00ff87, #00c864); color: #0a0b0f; }
+    .msg-bubble-other { background: rgba(255,255,255,.07); color: #e5e7eb; }
+
+    .modal-overlay { backdrop-filter: blur(8px); background: rgba(0,0,0,.75); }
+    .slide-in { animation: slideIn .25s ease-out; }
+    @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+    .sidebar-collapsible { width: 90px; position: relative; z-index: 20; overflow: visible !important; transition: width 0.3s ease; }
+    .sidebar-collapsible:hover { width: 250px; }
+    .sidebar-collapsible .sidebar-brand-text, .sidebar-collapsible .sidebar-section-title, .sidebar-collapsible .sidebar-profile-text { display: none; }
+    .sidebar-collapsible:hover .sidebar-brand-text, .sidebar-collapsible:hover .sidebar-section-title, .sidebar-collapsible:hover .sidebar-profile-text { display: block; }
+    .sidebar-collapsible .sidebar-menu-btn { position: relative; justify-content: center; align-items: center; width: 46px; height: 40px; margin-left: auto; margin-right: auto; overflow: visible; z-index: 30; padding-left: 0!important; padding-right: 0!important; transition: all .22s ease; }
+    .sidebar-collapsible:hover .sidebar-menu-btn { width: 100%; justify-content: flex-start; padding-left: 16px!important; padding-right: 16px!important; }
+    .sidebar-collapsible .sidebar-label { opacity: 0; pointer-events: none; white-space: nowrap; transition: opacity .2s ease; position: absolute; left: 50px; }
+    .sidebar-collapsible:hover .sidebar-label { opacity: 1; }
+    .sidebar-scroll-area { overflow-y: auto; overflow-x: hidden; position: relative; width: 100%; }
+    .nav-menu-btn.active { background: rgba(0,255,135,.15); color: #00ff87; }
+  </style>
+  <script src="../_common/loadComponents.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+<div class="flex w-full min-w-0 h-full overflow-hidden">
+  <common-navbar src="left_side_navbar.html"></common-navbar>
+
+  <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+    <common-navbar src="top_navbar.html"></common-navbar>
+
+    <!-- CONTENT -->
+    <div class="flex-1 overflow-y-auto p-6 lg:p-10 flex flex-col gap-8">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 class="text-4xl font-black text-white uppercase tracking-wider mb-1">Groups &amp; Rooms</h1>
+          <p class="text-gray-500 text-sm">Create a group with friends or your own personal room.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="openCreateModal('group')" class="px-5 py-2.5 bg-[#00ff87]/20 text-[#00ff87] font-bold text-sm rounded-xl border border-[#00ff87]/30 hover:bg-[#00ff87]/30 transition-all flex items-center gap-2 neon-glow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            NEW GROUP
+          </button>
+          <button onclick="openCreateModal('room')" class="px-5 py-2.5 bg-[#a855f7]/20 text-[#a855f7] font-bold text-sm rounded-xl border border-[#a855f7]/30 hover:bg-[#a855f7]/30 transition-all flex items-center gap-2 purple-glow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            MY ROOM
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-2">
+        <button id="tab-groups" onclick="switchTab('groups')" class="tab-active px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all">GROUP CHATS</button>
+        <button id="tab-rooms" onclick="switchTab('rooms')" class="tab-inactive px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all">MY ROOMS</button>
+      </div>
+
+      <!-- Two Column: List + Chat -->
+      <div class="flex gap-6 flex-1 min-h-0" style="height: calc(100vh - 280px)">
+
+        <!-- Left: Group List -->
+        <div class="w-80 flex-shrink-0 flex flex-col gap-3 overflow-y-auto pr-1">
+          <div id="groupList" class="flex flex-col gap-3">
+            <p class="text-gray-600 text-xs uppercase font-bold text-center py-8 animate-pulse">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Right: Chat Area -->
+        <div class="flex-1 glass rounded-3xl flex flex-col overflow-hidden" id="chatArea">
+          <!-- Empty state -->
+          <div id="chatEmpty" class="flex-1 flex flex-col items-center justify-center gap-4 opacity-30">
+            <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <p class="text-gray-500 text-sm font-bold uppercase tracking-widest">Select a group to chat</p>
+          </div>
+
+          <!-- Active Chat -->
+          <div id="chatPanel" class="hidden flex-col h-full">
+            <!-- Header -->
+            <div class="flex items-center gap-4 p-5 border-b border-white/5">
+              <div id="chatGroupAvatar" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black" style="background: linear-gradient(135deg,#00ff87,#22d3ee); color: #0a0b0f;">G</div>
+              <div class="flex-1 min-w-0">
+                <h2 id="chatGroupName" class="text-base font-black text-white uppercase truncate">GROUP NAME</h2>
+                <button onclick="showMembers()" class="text-xs text-[#00ff87] font-bold hover:underline opacity-80" id="chatGroupMembers">0 members</button>
+              </div>
+              
+              <!-- Voice Button for Rooms -->
+              <button id="voiceBtn" onclick="toggleVoiceRoom()" class="hidden px-4 py-1.5 text-xs font-bold text-purple-400 border border-purple-400/30 rounded-lg hover:bg-purple-400/10 transition-all flex items-center gap-2">
+                <svg id="voiceIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                <span id="voiceText">REJOINDRE VOCAL</span>
+              </button>
+
+              <button id="inviteBtn" onclick="openInviteModal()" class="px-4 py-1.5 text-xs font-bold text-[#00ff87] border border-[#00ff87]/30 rounded-lg hover:bg-[#00ff87]/10 transition-all">+ INVITE</button>
+              <button id="clearBtn" onclick="clearGroupMessages()" class="hidden px-4 py-1.5 text-xs font-bold text-orange-400 border border-orange-400/30 rounded-lg hover:bg-orange-400/10 transition-all">CLEAR</button>
+              <button id="deleteBtn" onclick="deleteCurrentGroup()" class="hidden px-4 py-1.5 text-xs font-bold text-red-400 border border-red-400/30 rounded-lg hover:bg-red-400/10 transition-all">DELETE</button>
+
+              <button id="leaveBtn" onclick="leaveCurrentGroup()" class="px-4 py-1.5 text-xs font-bold text-red-100 border border-red-400/10 rounded-lg hover:bg-red-400/10 transition-all">LEAVE</button>
+            </div>
+
+            <!-- Messages -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+
+            <!-- Input -->
+            <div class="p-4 border-t border-white/5 flex gap-3">
+              <input id="groupInput" type="text" placeholder="Message the group..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#00ff87] transition-all placeholder-gray-600">
+              <button onclick="sendGroupMsg()" class="w-12 h-12 rounded-xl bg-[#00ff87] text-[#0a0b0f] flex items-center justify-center hover:bg-[#00e67a] transition-all flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ─── CREATE MODAL ─── -->
+<div id="createModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center">
+  <div class="glass neon-border rounded-3xl p-8 w-full max-w-md slide-in">
+    <h3 id="modalTitle" class="text-xl font-black text-white uppercase tracking-wider mb-1">Create Group</h3>
+    <p id="modalSubtitle" class="text-gray-500 text-sm mb-6">Invite your friends to start chatting together.</p>
+
+    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Name *</label>
+    <input id="createName" type="text" placeholder="e.g. Team Alpha Squad" class="w-full bg-white/5 border border-white/15 text-white rounded-xl py-3 px-4 mb-4 outline-none focus:border-[#00ff87] transition-all text-sm">
+
+    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Description</label>
+    <input id="createDesc" type="text" placeholder="Optional description..." class="w-full bg-white/5 border border-white/15 text-white rounded-xl py-3 px-4 mb-4 outline-none focus:border-[#00ff87] transition-all text-sm">
+
+    <div id="friendsSection">
+      <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Invite Friends</label>
+      <div id="friendCheckboxList" class="max-h-40 overflow-y-auto space-y-2 mb-6 pr-1">
+        <p class="text-gray-600 text-xs italic">Loading friends...</p>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="closeModal('createModal')" class="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all text-sm uppercase">Cancel</button>
+      <button id="createSubmitBtn" onclick="submitCreateGroup()" class="flex-1 py-3 rounded-xl bg-[#00ff87] text-black font-black hover:bg-[#00e67a] transition-all text-sm uppercase neon-glow">CREATE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── INVITE MODAL ─── -->
+<div id="inviteModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center">
+  <div class="glass neon-border rounded-3xl p-8 w-full max-w-md slide-in">
+    <h3 class="text-xl font-black text-white uppercase tracking-wider mb-6">Invite to Group</h3>
+    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Player User ID</label>
+    <input id="inviteUserId" type="text" placeholder="Paste player ID..." class="w-full bg-white/5 border border-white/15 text-white rounded-xl py-3 px-4 mb-6 outline-none focus:border-[#00ff87] transition-all text-sm">
+    <div class="flex gap-3">
+      <button onclick="closeModal('inviteModal')" class="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all text-sm uppercase">Cancel</button>
+      <button onclick="submitInvite()" class="flex-1 py-3 rounded-xl bg-[#00ff87] text-black font-black hover:bg-[#00e67a] transition-all text-sm uppercase">INVITE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MEMBERS MODAL ─── -->
+<div id="membersModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center">
+  <div class="glass neon-border rounded-3xl p-8 w-full max-w-sm slide-in">
+    <h3 class="text-xl font-black text-[#00ff87] uppercase tracking-wider mb-6">Group Participants</h3>
+    <div id="membersList" class="max-h-60 overflow-y-auto space-y-4 mb-6 pr-1">
+      <!-- Members here -->
+    </div>
+    <button onclick="closeModal('membersModal')" class="w-full py-3 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all text-sm uppercase">Close</button>
+  </div>
+</div>
+
+<script>
+// Resolve API origin via the shared helper convention (arena_base_url / fallback 127.0.0.1:3000).
+const __ARENA_ORIGIN = (() => {
+    try {
+        const stored = (typeof localStorage !== 'undefined' && localStorage.getItem('arena_base_url')) || '';
+        const raw = (stored.trim() || 'http://127.0.0.1:3000');
+        return raw.replace(/\/api\/?$/i, '').replace(/\/+$/, '');
+    } catch (_) {
+        return 'http://127.0.0.1:3000';
+    }
+})();
+const API_URL = `${__ARENA_ORIGIN}/api`;
+const SOCKET_URL = `${__ARENA_ORIGIN}/chat`;
+const token = localStorage.getItem('token');
+const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+const currentUserId = currentUser?.id || currentUser?._id || '';
+
+if (!token) {
+  window.location.href = '../auth/login.html';
+}
+
+let socket;
+let allGroups = [];
+let activeGroup = null;
+let activeTab = 'groups';
+let myFriends = [];
+
+// ─── API ───
+async function api(path, opts = {}) {
+  const res = await fetch(`${API_URL}${path}`, {
+    ...opts,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ─── TABS ───
+function switchTab(tab) {
+  activeTab = tab;
+  ['groups','rooms'].forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    btn.className = btn.className.replace(t === tab ? 'tab-inactive' : 'tab-active', t === tab ? 'tab-active' : 'tab-inactive');
+  });
+  renderGroupList();
+}
+
+// ─── LOAD ───
+async function load() {
+  try {
+    allGroups = await api('/group-chat/my');
+    renderGroupList();
+  } catch(e) {
+    console.error('Failed to load groups:', e);
+    document.getElementById('groupList').innerHTML = '<p class="text-red-400 text-xs text-center py-8">Failed to load groups</p>';
+  }
+
+  try {
+    const friendships = await api('/friendship/friends/' + currentUserId);
+    myFriends = Array.isArray(friendships) ? friendships.map(f => {
+      const isReq = (f.requesterId?._id || f.requesterId) === currentUserId;
+      const other = isReq ? f.recipientId : f.requesterId;
+      return {
+        id: (other?._id || other || '').toString(),
+        nickname: other?.nickname || 'Unknown Player'
+      };
+    }) : [];
+  } catch(e) { myFriends = []; }
+}
+
+function renderGroupList() {
+  const list = document.getElementById('groupList');
+  const filtered = allGroups.filter(g => g.type === (activeTab === 'groups' ? 'group' : 'room'));
+
+  if (filtered.length === 0) {
+    const type = activeTab === 'groups' ? 'group' : 'room';
+    list.innerHTML = `
+      <div class="flex flex-col items-center py-12 gap-4 opacity-40">
+        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">No ${type}s yet</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(g => {
+    const isOwner = (g.ownerId?._id || g.ownerId?.toString()) === currentUserId || g.ownerId === currentUserId;
+    const memberCount = g.members?.length || 0;
+    const color = g.type === 'room' ? '#a855f7' : '#00ff87';
+    const initial = (g.name || 'G')[0].toUpperCase();
+    const isActive = activeGroup?._id === g._id;
+    return `
+      <div class="group-card ${g.type === 'room' ? 'room-card' : ''} glass rounded-2xl p-4 cursor-pointer transition-all ${isActive ? 'border-[#00ff87]/40 bg-[#00ff87]/05' : ''}"
+           onclick="selectGroup('${g._id}')">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
+               style="background: ${color}22; color: ${color}; border: 1px solid ${color}33">
+            ${initial}
+          </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-black text-white text-sm uppercase truncate tracking-tight">${esc(g.name)}</h3>
+              <p class="text-xs text-gray-500">${memberCount} member${memberCount !== 1 ? 's' : ''} ${isOwner ? '· Owner' : ''} ${g.type === 'room' ? '· Voice Ready' : ''}</p>
+            </div>
+          <div class="w-2 h-2 rounded-full flex-shrink-0" style="background: ${color}; opacity: 0.6"></div>
+        </div>
+        ${g.description ? `<p class="text-xs text-gray-600 mt-2 truncate pl-14">${esc(g.description)}</p>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ─── SELECT GROUP ───
+async function selectGroup(groupId) {
+  try {
+    activeGroup = allGroups.find(g => g._id === groupId);
+    if (!activeGroup) return;
+
+    renderGroupList(); // update active state
+
+    const isOwner = (activeGroup.ownerId?._id || activeGroup.ownerId) === currentUserId;
+    document.getElementById('chatGroupName').textContent = activeGroup.name.toUpperCase();
+    document.getElementById('chatGroupMembers').textContent = `${activeGroup.members?.length || 0} members`;
+    
+    // Color the avatar
+    const color = activeGroup.type === 'room' ? '#a855f7' : '#00ff87';
+    const av = document.getElementById('chatGroupAvatar');
+    av.style.background = `linear-gradient(135deg, ${color}, ${color}99)`;
+    av.textContent = (activeGroup.name || 'G')[0].toUpperCase();
+    av.style.color = activeGroup.type === 'room' ? '#fff' : '#0a0b0f';
+
+    document.getElementById('chatEmpty').classList.add('hidden');
+    document.getElementById('chatPanel').classList.remove('hidden');
+    document.getElementById('chatPanel').classList.add('flex');
+
+    // Buttons show/hide
+    document.getElementById('inviteBtn').classList.toggle('hidden', !isOwner && activeGroup.type === 'group');
+    document.getElementById('clearBtn').classList.toggle('hidden', !isOwner);
+    document.getElementById('deleteBtn').classList.toggle('hidden', !isOwner);
+    document.getElementById('leaveBtn').classList.toggle('hidden', isOwner);
+
+    // Voice UI show/hide
+    const voiceBtn = document.getElementById('voiceBtn');
+    if (activeGroup.type === 'room') {
+      voiceBtn.classList.remove('hidden');
+      updateVoiceUI();
+    } else {
+      voiceBtn.classList.add('hidden');
+    }
+
+    // Load messages
+    const messages = await api(`/group-chat/${groupId}/messages`);
+    renderMessages(messages);
+
+    // Join socket room
+    if (socket && socket.connected) {
+      socket.emit('joinGroupRoom', { groupId }, (res) => {
+        console.log('[Group] Joined socket room:', res);
+      });
+    }
+  } catch(e) {
+    console.error('Failed to load group:', e);
+    alert('Failed to open group: ' + e.message);
+  }
+}
+
+// ─── RENDER MESSAGES ───
+function renderMessages(messages) {
+  const container = document.getElementById('chatMessages');
+  if (!messages || messages.length === 0) {
+    container.innerHTML = '<p class="text-gray-600 text-xs uppercase text-center py-8 font-bold tracking-widest">No messages yet. Say something! 👋</p>';
+    return;
+  }
+  container.innerHTML = messages.map(msg => {
+    const isSelf = msg.senderId?.toString() === currentUserId;
+    const time = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+    return `
+      <div class="flex ${isSelf ? 'justify-end' : 'justify-start'} gap-2">
+        ${!isSelf ? `<div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">${(msg.senderNickname||'?')[0].toUpperCase()}</div>` : ''}
+        <div class="max-w-xs lg:max-w-sm">
+          ${!isSelf ? `<p class="text-[10px] text-gray-500 mb-1 font-bold">${esc(msg.senderNickname || 'Player')}</p>` : ''}
+          <div class="rounded-2xl px-4 py-2.5 text-sm ${isSelf ? 'msg-bubble-self rounded-br-sm' : 'msg-bubble-other rounded-bl-sm'}">
+            ${esc(msg.message)}
+          </div>
+          <p class="text-[9px] text-gray-600 mt-1 ${isSelf ? 'text-right' : 'text-left'}">${time}</p>
+        </div>
+      </div>`;
+  }).join('');
+  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+}
+
+// ─── SEND MESSAGE ───
+function sendGroupMsg() {
+  const input = document.getElementById('groupInput');
+  const msg = input.value.trim();
+  if (!msg || !activeGroup || !socket?.connected) return;
+  socket.emit('sendGroupMessage', { groupId: activeGroup._id, message: msg }, (res) => {
+    if (res?.status === 'ok') {
+      input.value = '';
+    } else {
+      alert('Failed: ' + (res?.message || 'Unknown error'));
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('groupInput')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendGroupMsg();
+  });
+});
+
+// ─── CREATE MODAL ───
+let pendingCreateType = 'group';
+
+function openCreateModal(type) {
+  pendingCreateType = type;
+  document.getElementById('modalTitle').textContent = type === 'room' ? 'Create My Room' : 'Create Group Chat';
+  document.getElementById('modalSubtitle').textContent = type === 'room'
+    ? 'Your personal room — a private space others can join by invite.'
+    : 'Invite friends and chat together in real time.';
+  document.getElementById('friendsSection').style.display = type === 'room' ? 'none' : 'block';
+  document.getElementById('createSubmitBtn').style.background = type === 'room' ? 'rgba(168,85,247,0.8)' : '#00ff87';
+
+  // Populate friend checkboxes
+  if (type === 'group') {
+    const el = document.getElementById('friendCheckboxList');
+    if (myFriends.length === 0) {
+      el.innerHTML = '<p class="text-gray-600 text-xs italic">No friends yet. Add friends to invite them.</p>';
+    } else {
+      el.innerHTML = myFriends.map(f => {
+        return `<label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-white/5 transition-all">
+          <input type="checkbox" value="${f.id}" class="w-4 h-4 accent-[#00ff87]">
+          <span class="text-sm text-gray-300">${esc(f.nickname)}</span>
+        </label>`;
+      }).join('');
+    }
+  }
+
+  document.getElementById('createName').value = '';
+  document.getElementById('createDesc').value = '';
+  document.getElementById('createModal').classList.remove('hidden');
+}
+
+async function submitCreateGroup() {
+  const name = document.getElementById('createName').value.trim();
+  if (!name) { alert('Name is required'); return; }
+
+  const memberIds = [];
+  if (pendingCreateType === 'group') {
+    document.querySelectorAll('#friendCheckboxList input:checked').forEach(cb => memberIds.push(cb.value));
+  }
+
+  try {
+    const group = await api('/group-chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        description: document.getElementById('createDesc').value.trim(),
+        type: pendingCreateType,
+        memberIds,
+        isPrivate: pendingCreateType === 'room',
+      })
+    });
+    closeModal('createModal');
+    allGroups.unshift(group);
+    if (pendingCreateType !== activeTab.replace('s','')) {
+      switchTab(pendingCreateType === 'room' ? 'rooms' : 'groups');
+    } else {
+      renderGroupList();
+    }
+    selectGroup(group._id);
+  } catch(e) {
+    alert('Failed to create: ' + e.message);
+  }
+}
+
+// ─── INVITE ───
+async function openInviteModal() {
+  document.getElementById('inviteUserId').value = '';
+  document.getElementById('inviteModal').classList.remove('hidden');
+}
+
+async function submitInvite() {
+  const memberId = document.getElementById('inviteUserId').value.trim();
+  if (!memberId || !activeGroup) return;
+  try {
+    await api(`/group-chat/${activeGroup._id}/invite`, { method: 'POST', body: JSON.stringify({ memberId }) });
+    closeModal('inviteModal');
+    activeGroup.members = [...(activeGroup.members || []), memberId];
+    document.getElementById('chatGroupMembers').textContent = `${activeGroup.members.length} members`;
+    alert('Member invited successfully!');
+    // Reload group to get full member objects
+    const reloaded = await api(`/group-chat/${activeGroup._id}`);
+    activeGroup = reloaded;
+    allGroups = allGroups.map(g => g._id === reloaded._id ? reloaded : g);
+    renderGroupList();
+  } catch(e) {
+    alert('Failed to invite: ' + e.message);
+  }
+}
+
+// ─── SHOW MEMBERS ───
+function showMembers() {
+  if (!activeGroup || !activeGroup.members) return;
+  const isOwner = (activeGroup.ownerId?._id || activeGroup.ownerId) === currentUserId;
+  const list = document.getElementById('membersList');
+  list.innerHTML = activeGroup.members.map(m => {
+    const name = m.nickname || 'Unknown Player';
+    const mid = (m._id || m.userId);
+    const avatar = m.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+    const showKick = isOwner && mid !== currentUserId;
+    return `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full border border-white/10 overflow-hidden">
+          <img src="${avatar}" class="w-full h-full object-cover">
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-bold text-white uppercase italic tracking-tighter">${esc(name)}</p>
+        </div>
+        ${showKick ? `<button onclick="kickMember('${mid}')" class="text-red-400 hover:text-red-300"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg></button>` : ''}
+      </div>`;
+  }).join('');
+  document.getElementById('membersModal').classList.remove('hidden');
+}
+
+async function kickMember(mid) {
+  if (!confirm('Kick this member?')) return;
+  try {
+    const updated = await api(`/group-chat/${activeGroup._id}/leave?memberId=${mid}`, 'DELETE');
+    activeGroup = updated;
+    closeModal('membersModal');
+    showMembers();
+    renderGroupList();
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+async function clearGroupMessages() {
+  if (!activeGroup || !confirm(`Clear all messages in "${activeGroup.name}"?`)) return;
+  try {
+    await api(`/group-chat/${activeGroup._id}/messages`, { method: 'DELETE' });
+    renderMessages([]);
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+async function deleteCurrentGroup() {
+
+  if (!activeGroup || !confirm(`Delete "${activeGroup.name}" forever?`)) return;
+  const gid = activeGroup._id;
+  try {
+    await api(`/group-chat/${gid}`, { method: 'DELETE' });
+    allGroups = allGroups.filter(g => g._id !== gid);
+    activeGroup = null;
+    document.getElementById('chatPanel').classList.add('hidden');
+    document.getElementById('chatPanel').classList.remove('flex');
+    document.getElementById('chatEmpty').classList.remove('hidden');
+    renderGroupList();
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+
+// ─── LEAVE ───
+async function leaveCurrentGroup() {
+  if (!activeGroup || !confirm(`Leave "${activeGroup.name}"?`)) return;
+  try {
+    await api(`/group-chat/${activeGroup._id}/leave`, { method: 'DELETE' });
+    allGroups = allGroups.filter(g => g._id !== activeGroup._id);
+    activeGroup = null;
+    document.getElementById('chatPanel').classList.add('hidden');
+    document.getElementById('chatPanel').classList.remove('flex');
+    document.getElementById('chatEmpty').classList.remove('hidden');
+    renderGroupList();
+  } catch(e) {
+    alert('Failed to leave: ' + e.message);
+  }
+}
+
+// ─── SOCKET ───
+function initSocket() {
+  if (!token) return;
+  socket = io(SOCKET_URL, { auth: { token: `Bearer ${token}` } });
+
+  socket.on('newGroupMessage', (msg) => {
+    if (activeGroup && msg.groupId === activeGroup._id) {
+      // Append new message
+      const container = document.getElementById('chatMessages');
+      const isSelf = msg.senderId?.toString() === currentUserId;
+      const time = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+      const div = document.createElement('div');
+      div.className = `flex ${isSelf ? 'justify-end' : 'justify-start'} gap-2 slide-in`;
+      div.innerHTML = `
+        ${!isSelf ? `<div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">${(msg.senderNickname||'?')[0].toUpperCase()}</div>` : ''}
+        <div class="max-w-xs lg:max-w-sm">
+          ${!isSelf ? `<p class="text-[10px] text-gray-500 mb-1 font-bold">${esc(msg.senderNickname || 'Player')}</p>` : ''}
+          <div class="rounded-2xl px-4 py-2.5 text-sm ${isSelf ? 'msg-bubble-self rounded-br-sm' : 'msg-bubble-other rounded-bl-sm'}">
+            ${esc(msg.message)}
+          </div>
+          <p class="text-[9px] text-gray-600 mt-1 ${isSelf ? 'text-right' : 'text-left'}">${time}</p>
+        </div>`;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+  });
+
+  socket.on('connect_error', (err) => console.error('[Group Socket]', err.message));
+
+  // --- Voice Events ---
+  socket.on('user-joined', (data) => setupPeerConnection(data.userId, true));
+  socket.on('user-left', (data) => removePeerConnection(data.userId));
+  socket.on('voice-offer', (data) => handleVoiceOffer(data.from, data.offer));
+  socket.on('voice-answer', (data) => handleVoiceAnswer(data.from, data.answer));
+  socket.on('voice-ice-candidate', (data) => handleIceCandidate(data.from, data.candidate));
+}
+
+// ─────────────────────────────────────────────
+//         VOICE CHAT LOGIC (WebRTC Mesh)
+// ─────────────────────────────────────────────
+let localStream;
+let peerConnections = {}; // userId -> RTCPeerConnection
+let currentVoiceRoomId = null;
+
+async function toggleVoiceRoom() {
+  if (!activeGroup) return;
+  if (currentVoiceRoomId === activeGroup._id) {
+    leaveVoiceRoom();
+  } else {
+    joinVoiceRoom(activeGroup._id);
+  }
+}
+
+async function joinVoiceRoom(roomId) {
+  if (currentVoiceRoomId === roomId) return;
+  if (currentVoiceRoomId) leaveVoiceRoom();
+  
+  currentVoiceRoomId = roomId;
+
+  try {
+    if (!localStream) {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    }
+    
+    socket.emit('joinVoiceRoom', { roomId }, (res) => {
+      if (res.status === 'ok') {
+        console.log('[Voice] Joined room:', roomId, res.participants);
+        res.participants.forEach(uId => {
+          if (uId !== currentUserId) setupPeerConnection(uId, true);
+        });
+        updateVoiceUI();
+      }
+    });
+  } catch (err) {
+    console.error('[Voice] Media access error:', err);
+    alert('Microphone access required for voice room.');
+    leaveVoiceRoom();
+  }
+}
+
+function leaveVoiceRoom() {
+  if (!currentVoiceRoomId) return;
+  socket.emit('leaveVoiceRoom');
+  Object.keys(peerConnections).forEach(uId => removePeerConnection(uId));
+  currentVoiceRoomId = null;
+  updateVoiceUI();
+}
+
+function updateVoiceUI() {
+  const btn = document.getElementById('voiceBtn');
+  const text = document.getElementById('voiceText');
+  const isActive = currentVoiceRoomId && activeGroup && currentVoiceRoomId === activeGroup._id;
+  
+  if (isActive) {
+    btn.classList.add('bg-purple-500/20', 'border-purple-500');
+    text.textContent = 'CONNECTED';
+  } else {
+    btn.classList.remove('bg-purple-500/20', 'border-purple-500');
+    text.textContent = 'REJOINDRE VOCAL';
+  }
+}
+
+async function setupPeerConnection(userId, createOffer) {
+  if (peerConnections[userId]) return;
+  const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  peerConnections[userId] = pc;
+
+  localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+  pc.ontrack = (event) => {
+    let audio = document.getElementById(`audio-${userId}`);
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.id = `audio-${userId}`;
+      audio.autoplay = true;
+      document.body.appendChild(audio);
+    }
+    audio.srcObject = event.streams[0];
+    audio.play().catch(e => {
+      console.warn(`[Voice] Autoplay blocked for ${userId}, retrying on next interaction...`);
+      document.addEventListener('click', () => audio.play(), { once: true });
+    });
+  };
+
+  pc.onicecandidate = (event) => {
+    if (event.candidate) socket.emit('voice-ice-candidate', { to: userId, candidate: event.candidate });
+  };
+
+  if (createOffer) {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.emit('voice-offer', { to: userId, offer });
+  }
+}
+
+async function handleVoiceOffer(from, offer) {
+  setupPeerConnection(from, false);
+  const pc = peerConnections[from];
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  socket.emit('voice-answer', { to: from, answer });
+}
+
+async function handleVoiceAnswer(from, answer) {
+  const pc = peerConnections[from];
+  if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
+}
+
+function handleIceCandidate(from, candidate) {
+  const pc = peerConnections[from];
+  if (pc) pc.addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+function removePeerConnection(userId) {
+  if (peerConnections[userId]) {
+    peerConnections[userId].close();
+    delete peerConnections[userId];
+  }
+  const audio = document.getElementById(`audio-${userId}`);
+  if (audio) audio.remove();
+}
+
+// ─── UTILS ───
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  load();
+  initSocket();
+});
+</script>
+</body>
+</html>

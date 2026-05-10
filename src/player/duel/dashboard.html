@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1v1 Duel | Arena Chain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #0a0b0f;
+            color: #fff;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(0, 255, 135, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(34, 211, 238, 0.05) 0%, transparent 40%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .text-neon {
+            color: #00ff87;
+            text-shadow: 0 0 10px rgba(0, 255, 135, 0.4);
+        }
+        .btn-neon {
+            background: rgba(0, 255, 137, 0.1);
+            border: 1px solid rgba(0, 255, 137, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-neon:hover:not(:disabled) {
+            background: #00ff87;
+            color: #050505;
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.4);
+            transform: translateY(-2px);
+        }
+        .difficulty-btn.active {
+            background: #00ff87;
+            color: #050505;
+            border-color: #00ff87;
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.3);
+        }
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .lobby-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+    <script src="../components/shell-loader.js"></script>
+</head>
+<body class="bg-[#0a0b0f] text-white antialiased h-screen overflow-hidden m-0">
+    <div class="flex w-full min-w-0 h-full overflow-hidden">
+        <common-navbar src="sidebar.html"></common-navbar>
+        <main class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <common-navbar src="topbar.html"></common-navbar>
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-12 pop-in">
+            <div>
+                <h1 class="text-5xl font-black tracking-tighter mb-2 italic">1V1 <span class="text-neon">DUEL</span></h1>
+                <p class="text-xs text-gray-500 uppercase tracking-[0.3em] font-bold">Synchronized Combat Protocol</p>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-600 uppercase font-black mb-1">Authenticated As</p>
+                    <p id="user-nickname" class="text-sm font-bold text-gray-200">LOADING...</p>
+                </div>
+                <button id="back-btn" class="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Create & Join -->
+            <div class="lg:col-span-8 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Create Card -->
+                    <div class="glass-panel p-8 rounded-[2rem] pop-in" style="animation-delay: 100ms">
+                        <div class="mb-8">
+                            <h2 class="text-xl font-black mb-1">INITIATE <span class="text-neon">SESSION</span></h2>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Setup a new combat lobby</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-[10px] text-gray-600 uppercase font-black block mb-3 pl-1">Visibility</label>
+                                <div class="flex p-1 bg-black/40 rounded-2xl border border-white/5">
+                                    <button class="flex-1 py-2 text-xs font-bold rounded-xl transition-all" id="toggle-public" data-public="true">PUBLIC</button>
+                                    <button class="flex-1 py-2 text-xs font-bold rounded-xl transition-all" id="toggle-private" data-public="false">PRIVATE</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] text-gray-600 uppercase font-black block mb-3 pl-1">Difficulty</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button class="difficulty-btn py-3 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black tracking-widest active transition-all" data-value="EASY">EASY</button>
+                                    <button class="difficulty-btn py-3 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black tracking-widest transition-all" data-value="MEDIUM">MEDIUM</button>
+                                    <button class="difficulty-btn py-3 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black tracking-widest transition-all" data-value="HARD">HARD</button>
+                                </div>
+                            </div>
+
+                            <button id="create-btn" class="w-full btn-neon py-4 rounded-2xl font-black text-xs tracking-widest uppercase">
+                                GENERATE LOBBY
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Join Card -->
+                    <div class="glass-panel p-8 rounded-[2rem] pop-in" style="animation-delay: 200ms">
+                        <div class="mb-8">
+                            <h2 class="text-xl font-black mb-1">JOIN <span class="text-neon">LOBBY</span></h2>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Enter access code</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-[10px] text-gray-600 uppercase font-black block mb-3 pl-1">6-Digit Code</label>
+                                <input type="text" id="lobby-code-input" maxlength="6" 
+                                    class="w-full bg-black/40 border-2 border-white/5 focus:border-[#00ff87]/30 outline-none rounded-2xl p-4 text-center text-2xl font-black tracking-[0.5em] text-neon uppercase transition-all" 
+                                    placeholder="XXXXXX">
+                            </div>
+
+                            <button id="join-btn" class="w-full btn-neon py-4 rounded-2xl font-black text-xs tracking-widest uppercase">
+                                DEPLOY TO LOBBY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lobby View (Appears after joining/creating) -->
+                <div id="lobby-view" class="glass-panel p-8 rounded-[2rem] hidden pop-in">
+                    <div class="flex justify-between items-start mb-12">
+                        <div id="code-container">
+                            <p class="text-[10px] text-gray-500 uppercase font-black mb-1">LOBBY ACCESS CODE</p>
+                            <h2 id="display-code" class="text-6xl font-black text-neon tracking-tighter italic">------</h2>
+                        </div>
+                        <div id="public-status" class="hidden">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Match Type</p>
+                            <p class="text-3xl font-black text-neon tracking-tight italic">PUBLIC ARENA</p>
+                            <p class="text-[8px] text-white/40 font-bold uppercase tracking-[0.2em] mt-1 space-x-2">
+                                <span>NO CODE REQUIRED</span>
+                                <span class="text-neon/20">•</span>
+                                <span>DISCOVERABLE BY OTHERS</span>
+                            </p>
+                        </div>
+                        <div id="lobby-status-pill" class="px-4 py-2 rounded-full border border-[#00ff87]/20 bg-[#00ff87]/5 text-[#00ff87] text-[10px] font-black tracking-widest">
+                            WAITING FOR OPPONENT
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8 mb-12">
+                        <!-- Player 1 -->
+                        <div id="p1-card" class="p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl bg-[#00ff87]/10 flex items-center justify-center border border-[#00ff87]/20">
+                                <span class="text-2xl font-black text-neon">P1</span>
+                            </div>
+                            <div>
+                                <p id="p1-name" class="font-black text-xl tracking-tight">PLAYER 1</p>
+                                <p id="p1-ready" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">NOT READY</p>
+                            </div>
+                        </div>
+
+                        <!-- Player 2 -->
+                        <div id="p2-card" class="p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center gap-4 transition-all opacity-40">
+                            <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                                <span class="text-2xl font-black text-gray-600">P2</span>
+                            </div>
+                            <div>
+                                <p id="p2-name" class="font-black text-xl tracking-tight">WAITING...</p>
+                                <p id="p2-ready" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">NOT READY</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="ready-btn" class="flex-[2] btn-neon py-5 rounded-2xl font-black text-xs tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed">
+                            I AM READY
+                        </button>
+                        <button id="leave-btn" class="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all py-5 rounded-2xl font-black text-xs tracking-widest uppercase">
+                            LEAVE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Public Lobbies -->
+            <div class="lg:col-span-4 space-y-8">
+                <div class="glass-panel p-8 rounded-[2rem] h-full flex flex-col pop-in" style="animation-delay: 300ms">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 class="text-xl font-black mb-1">PUBLIC <span class="text-neon">GAMES</span></h2>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Join active sessions</p>
+                        </div>
+                        <button id="refresh-lobbies" class="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                            <svg class="w-4 h-4 text-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        </button>
+                    </div>
+
+                    <div id="public-lobbies-list" class="flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-2">
+                        <!-- Lobbies inject here -->
+                        <div class="py-8 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.2em]">Searching for active signals...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-4 glass-panel border-red-500/20 bg-red-500/10 rounded-2xl flex items-center gap-4 hidden transition-all">
+        <span class="text-red-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </span>
+        <span id="error-message" class="text-xs font-bold text-gray-200">Error message here</span>
+    </div>
+
+    <script src="./dashboard.js"></script>
+</body>
+</html>
