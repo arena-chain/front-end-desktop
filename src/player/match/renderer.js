@@ -1921,7 +1921,11 @@
                     status.style.color = '';
                 }
                 try {
+<<<<<<< HEAD
                     const res = await fetch('http://127.0.0.1:7777/start-bot', { method: 'POST' });
+=======
+                    const res = await fetch('http://127.0.0.1:3000/start-bot', { method: 'POST' });
+>>>>>>> 123027a145945914e13e8b55dd59de450e103d8c
                     await res.text();
                     $('gr-lol-host-spinner')?.classList.add('hidden');
                     btn.classList.add('hidden');

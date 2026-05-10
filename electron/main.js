@@ -548,6 +548,7 @@ app.whenReady().then(() => {
     liveGame.registerLiveGameIpc(ipcMain);
     startLcuPhaseWatcher();
 
+<<<<<<< HEAD
     // ── Voice trigger bot ──────────────────────────────────
     try {
         execSync('taskkill /F /IM python.exe', { stdio: 'ignore' });
@@ -588,6 +589,8 @@ app.whenReady().then(() => {
     }, 2000);
     // ───────────────────────────────────────────────────────
 
+=======
+>>>>>>> 123027a145945914e13e8b55dd59de450e103d8c
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
