@@ -581,6 +581,9 @@ async function checkRiotLink() {
         if (nameEl) nameEl.textContent = `${link.riotGameName}#${link.riotTagLine}`;
         if (regionEl) regionEl.textContent = (link.riotRegion || '').toUpperCase();
 
+        const aiBtn = document.getElementById('ai-analysis-btn');
+        if (aiBtn) aiBtn.classList.remove('hidden');
+
         return true;
     } catch (e) {
         console.error('[RecentGames] Link status check failed:', e);
@@ -664,8 +667,160 @@ if (detailOverlay) {
     });
 }
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMatchDetail();
+    if (e.key === 'Escape') {
+        closeMatchDetail();
+        closeAiAnalysisModal();
+    }
 });
+
+// ── AI Ranked Analysis ─────────────────────────────────────────────────
+
+/**
+ * Tiny self-contained markdown → HTML converter.
+ * Supports the subset Ollama is instructed to emit:
+ *   ## h2, ### h3, **bold**, *italic*, "1. " ordered list, blank-line paragraphs.
+ * No new deps; html-escapes everything before applying inline marks.
+ */
+function aiMarkdownToHtml(md) {
+    if (!md) return '';
+    const escaped = esc(md);
+    const blocks = escaped.split(/\n{2,}/);
+    const out = [];
+
+    for (const raw of blocks) {
+        const block = raw.trim();
+        if (!block) continue;
+
+        // Ordered list: every line starts with "<digits>. "
+        const lines = block.split(/\n/);
+        const isOl = lines.every((l) => /^\s*\d+\.\s+/.test(l));
+        if (isOl) {
+            const items = lines
+                .map((l) => l.replace(/^\s*\d+\.\s+/, ''))
+                .map((l) => `<li>${applyInline(l)}</li>`)
+                .join('');
+            out.push(`<ol class="ai-md-ol">${items}</ol>`);
+            continue;
+        }
+
+        // Headings (only on a single-line block)
+        if (lines.length === 1) {
+            const h2 = block.match(/^##\s+(.+)$/);
+            if (h2) { out.push(`<h2 class="ai-md-h2">${applyInline(h2[1])}</h2>`); continue; }
+            const h3 = block.match(/^###\s+(.+)$/);
+            if (h3) { out.push(`<h3 class="ai-md-h3">${applyInline(h3[1])}</h3>`); continue; }
+            const h1 = block.match(/^#\s+(.+)$/);
+            if (h1) { out.push(`<h1 class="ai-md-h1">${applyInline(h1[1])}</h1>`); continue; }
+        }
+
+        // Default: paragraph with hard line breaks
+        const html = lines.map(applyInline).join('<br>');
+        out.push(`<p class="ai-md-p">${html}</p>`);
+    }
+
+    return out.join('\n');
+
+    function applyInline(s) {
+        return s
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="ai-md-strong">$1</strong>')
+            .replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, '$1<em class="ai-md-em">$2</em>');
+    }
+}
+
+function openAiAnalysisModal() {
+    const overlay = document.getElementById('ai-analysis-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeAiAnalysisModal() {
+    const overlay = document.getElementById('ai-analysis-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function setAiAnalysisBody(html) {
+    const body = document.getElementById('ai-analysis-body');
+    if (body) body.innerHTML = html;
+}
+
+function setAiAnalysisMeta(text) {
+    const meta = document.getElementById('ai-analysis-meta');
+    if (meta) meta.textContent = text;
+}
+
+function setAiBtnState({ disabled, label }) {
+    const btn = document.getElementById('ai-analysis-btn');
+    const lbl = document.getElementById('ai-analysis-btn-label');
+    if (btn) btn.disabled = !!disabled;
+    if (lbl && typeof label === 'string') lbl.textContent = label;
+}
+
+async function requestAiAnalysis() {
+    setAiBtnState({ disabled: true, label: 'Analyzing…' });
+    setAiAnalysisBody(
+        '<div class="ai-md-loading">Fetching your last 10 ranked games and asking the AI coach…</div>'
+    );
+    setAiAnalysisMeta('Powered by Ollama · llama3.1');
+    openAiAnalysisModal();
+
+    try {
+        const data = await apiRequest('/riot-api/ai-analysis', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+
+        const generated = data.generatedAt ? new Date(data.generatedAt) : new Date();
+        const cachedTag = data.cached ? ' · cached (24h)' : '';
+        setAiAnalysisMeta(
+            `Powered by Ollama · llama3.1 · ${data.gamesAnalyzed || 0} ranked games · ${generated.toLocaleString()}${cachedTag}`
+        );
+        setAiAnalysisBody(aiMarkdownToHtml(data.analysis || ''));
+    } catch (e) {
+        console.error('[RecentGames] AI analysis failed:', e);
+        const status = e && e.status;
+        let title = 'Analysis failed';
+        let detail = (e && e.message) || 'Unexpected error.';
+
+        if (status === 503) {
+            title = 'Ollama is not running';
+            detail =
+                'Start the local AI server with <code>ollama serve</code> and make sure you have run <code>ollama pull llama3.1</code> on the same machine as the backend.';
+        } else if (status === 429) {
+            title = 'Riot rate limit hit';
+            detail = 'Riot is throttling our API key. Try again in a minute.';
+        } else if (status === 400) {
+            title = 'Riot account not linked';
+            detail = 'Link and verify your Riot account from the dashboard, then try again.';
+        } else if (e && e.networkError) {
+            title = 'Backend unreachable';
+            detail = 'Make sure the NestJS backend is running on port 3000.';
+        }
+
+        setAiAnalysisBody(`
+            <div class="glass-panel rounded-xl p-5 border border-[#ff4654]/30">
+                <p class="text-[#ff4654] font-bold text-sm mb-2">${esc(title)}</p>
+                <p class="text-gray-300 text-sm leading-relaxed">${detail}</p>
+            </div>
+        `);
+    } finally {
+        setAiBtnState({ disabled: false, label: 'Improve My Ranked Skills' });
+    }
+}
+
+// Wire up button + modal close handlers
+const aiBtnEl = document.getElementById('ai-analysis-btn');
+if (aiBtnEl) {
+    aiBtnEl.addEventListener('click', () => requestAiAnalysis());
+}
+const aiCloseBtn = document.getElementById('ai-analysis-close');
+if (aiCloseBtn) {
+    aiCloseBtn.addEventListener('click', closeAiAnalysisModal);
+}
+const aiOverlayEl = document.getElementById('ai-analysis-overlay');
+if (aiOverlayEl) {
+    aiOverlayEl.addEventListener('click', (e) => {
+        if (e.target === aiOverlayEl) closeAiAnalysisModal();
+    });
+}
 
 (async function init() {
     renderFilters();

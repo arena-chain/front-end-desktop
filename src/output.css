@@ -3168,6 +3168,10 @@
     --tw-shadow: 0 0 20px var(--tw-shadow-color, rgba(0,255,135,0.4));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
+  .shadow-\[0_0_20px_rgba\(0\,255\,135\,0\.35\)\] {
+    --tw-shadow: 0 0 20px var(--tw-shadow-color, rgba(0,255,135,0.35));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .shadow-\[0_0_20px_rgba\(255\,255\,255\,0\.1\)\] {
     --tw-shadow: 0 0 20px var(--tw-shadow-color, rgba(255,255,255,0.1));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -3886,6 +3890,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: color-mix(in oklab, #00ff87 30%, transparent);
+      }
+    }
+  }
+  .hover\:bg-\[\#00ffa6\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #00ffa6;
       }
     }
   }
@@ -4618,6 +4629,11 @@
   .disabled\:opacity-50 {
     &:disabled {
       opacity: 50%;
+    }
+  }
+  .disabled\:opacity-60 {
+    &:disabled {
+      opacity: 60%;
     }
   }
   .sm\:block {
